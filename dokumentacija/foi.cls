@@ -322,7 +322,7 @@ unicode
     \vskip 15mm
     \begin{flushleft}
     {\bfseries{\@author}}\\[8pt]
-    {\bfseries{\prijevod{Matični broj}{Student ID}:} \bfseries{\@indeks}}\\[8pt]
+    {\bfseries{\prijevod{Matični brojevi}{Student IDs}:} \bfseries{\@indeks}}\\[8pt]
     {\bfseries{\prijevod{Studij}{Programme}:} \bfseries{\@smjer}}\\[8pt]
     \end{flushleft}
     

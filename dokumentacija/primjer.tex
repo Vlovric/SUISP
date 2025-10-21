@@ -1,0 +1,1209 @@
+\documentclass[]{foi}
+\usepackage{lipsum}
+\usepackage[utf8]{inputenc}
+\usepackage{float}
+
+\vrstaRada{\seminar}
+\predmet{Strate\v{s}ko upravljanje informacijskom sigurno\v{s}\'{c}u i privatno\v{s}\'{c}u}
+\title{Klijentski kriptirani trezor datoteka s revizijskim tragom u Pythonu}
+
+\author{Viktor Lovrić, Magdalena Markovinović, David Matijanić}
+\spolStudenta{\musko}
+\mentor{Izv. prof. dr. sc. Igor Tomičić}
+\spolMentora{\musko}
+\godina{2025}
+\mjesec{Listopad}
+\date{2025}
+\status{redoviti}
+\indeks{0016154953, 0016155896, 0016153844}
+\smjer{Informacijsko i programsko inženjerstvo}
+\titulaProfesora{}
+
+\sazetak{Ovaj rad opisuje blockchain tehnologiju s fokusom na sigurnosni aspekt iste, opisujući različite napade, poput 51\% napada, smart contract ranjivosti ili double spending napada.
+Opisuje i alate za auditanje i nadzor sigurnosti, poput Truffle Suite Ganache ili Securify.
+Uz teoretski dio, rad će se detaljno fokusirati na praktične demonstracije prethodno spomenutih napada, koristeći nabrojane alate.
+Na kraju svake demonstracije opisuje se strategija za sigurno korištenje blockchain tehnologije.}
+
+\kljucneRijeci{Blockchain, Ethereum, napadi, sigurnost, Hyperledger}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\pagestyle{plain}
+\chapter{Uvod}
+
+Tema ovog seminarskog rada je analiza sigurnosti blockchain tehnologija.
+U radu je općenito obrađen blockchain kao tehnologija, mehanizmi konsenzusa, kriptovalute, napadi, alati za reviziju i nadzor sigurnosti, demonstracije istih te konačno zaključak.
+Ova tema je značajna jer je blockchain tehnologija sve popularnija i poznatija široj zajednici, većim dijelom kroz kriptovalute, ali i poduzećima i organizacijama koje ju implementiraju u svojem poslovanju i sustavima.
+Blockchain se sve više koristi u domenama poput financija, zdravstva, opskrbnih lanaca, i drugih \cite{investopedia_blockchain.asp}.
+Također, decentralizacija je vrlo važna za autonomnost i sigurnost nekih sustava od političkih utjecaja i pokušaja manipulacije od autoritativnih tijela.
+Motivacija za odabir ove teme je u tome što blockchain ima potencijal za implementaciju u vrlo važnim sustavima poput sudstva, bankarstva, i sličnih, a sigurnost i pouzdanost takvih sustava je od najveće važnosti te se autorima
+ovoga rada ova tema pokazala vrlo važnom za budućnost cjeloukupnog društva i informacijskih sustava koji to društvo podržavaju.
+
+\chapter{Metode i tehnike rada}
+
+Za pisanje teksta i formatiranje ovog rada korišten je LaTeX sustav s lokalnom TeX Live distribucijom \cite{tex_live} na raznim Linux operacijskim sustavima.
+Kao uređivač teksta korišten je Visual Studio Code s dodatkom LaTeX Workshop.
+Za verzioniranje i kolaboraciju korišten je Git sustav s GitHub repozitorijem.
+Zbog brzog rasta blockchain tehnologija, korišteni su najnoviji izvori informacija u obliku internetskih članaka od stručnih autora i organizacija, kao i knjige i znanstveni radovi.
+
+\chapter{Blockchain tehnologija}
+
+U ovom je poglavlju obrađena kratka povijest i osnove blockchain tehnologija, mehanizmi konsenzusa i njihova implementacija i konačno neke od najpoznatijih kriptovaluta.
+
+\section{Općenito o blockchain tehnologiji}
+
+Prema \cite{aws_blockchain} blockchain tehnologija je "napredni mehanizam baze podataka koji dopušta transparentno širenje informacija sa mrežom sudionika.".
+Blockchain je decentralizirana baza podataka koja štiti od neovlaštene ili maliciozne promjene podataka na njoj.
+Ova tehnologija se sve više implementira u poslovanju, pa tako imamo primjere velikih poduzeća poput Singapore Exchange Limited u domeni financija i Sony Music Entertainment Japan u domeni medija i zabave \cite{aws_blockchain}.
+\newline \newline
+Povijest blockchain tehnologije počinje 1970-ih godina kada je Ralph Merkle patentirao strukturu podataka zvanu \textit{Hash trees} ili drugim nazivom \textit{Merkle trees}. U toj strukturi podataka se podatci povezuju blokovima koristeći kriptografiju. Ova implementacija se kasnih 90-ih godina 20. stoljeća iskoristila od strane Stuart Habera i W. Scott Stornetta za implementaciju sustava u kojemu se vremenske oznake nastanka dokumenata ne mogu izmjenjivati \cite{aws_blockchain}.
+Blockchain tehnologija je do danas imala tri generacije \cite{aws_blockchain}. Prva generacija je došla s Bitcoinom 2008. godine kada je anonimna grupa ili osoba pod pseudonimom Satoshi Nakamoto objavila dokument kojim se opisuje implementacija današnjeg Bitcoin blockchaina \cite{bitcoin_whitepaper}.
+Druga generacija je nastala sa Ethereum blockchainom 2015. godine koja je uvela koncept pametnih ugovora (engl. \textit{smart contracts}). Treća generacija označava bližu budućnost gdje će blockchain tehnologija implementirati u raznim domenama poslovanja sa ciljem smanjivanja troškova i povećanjem efikasnosti korištenjem različitih mehanizama konsenzusa.
+\newline \newline
+Postoji više vrsta blockchain mreža s obzirom na mogućnosti pristupa mreži \cite{ibm_blockchain}:
+\begin{enumerate}
+    \item \textbf{Javna} (engl. \textit{public}): U ovoj mreži bilo tko može sudjelovati. Nedostatci ovog pristupa su što je potrebna velika potrošnja resursa i energije, nema privatnosti i sigurnost je slabija zbog javnog pristupa mreži.
+    \item \textbf{Privatna} (engl. \textit{private}): Ovom mrežom upravlja jedna organizacija koja kontrolira pristup sudionicima mreže, može biti sakrivena iza vatrozida (engl. \textit{firewall}) ili samo lokalno dostupna na infrastrukturi organizacije koja ju posjeduje te je s toga sigurnija.
+    \item \textbf{Dozvoljena} (engl. \textit{permissioned}): U ovu kategoriju blockchain mreže mogu spadati i javne i privatne mreže iz razloga što ova kategorija označava da blockchain mreža ima ograničenja tko može sudjelovati i u kojoj transakciji.
+    \item \textbf{Konzorcijska} (engl. \textit{consortium}): Ova mreža je slična privatnoj, no razlikuje se što u ovoj mreži više organizacija dijeli odgovornost za održavanje blockchaina. Ovaj pristup je dobar kada više organizacija trebaju imati dopuštenja i dijele jednaku odgovornost za održavanje mreže.
+\end{enumerate}
+
+Blockchain mreže generalno imaju sljedeći način rada \cite{aws_blockchain}:
+\begin{enumerate}
+    \item Korisnici blockchaina izvršavaju transakcije na blockchainu.
+    \item Transakcije se šalju u "bazen transakcija" (engl. \textit{memory pool, mempool}).
+    \item Validator ili rudar (engl. \textit{miner}) grupira transakcije u blok.
+    \item Validator ili rudar koristi mehanizam konsenzusa (engl. \textit{consensus mechanism}) kako bi postavio blok na blockchain.
+    \item Blok se validira i finalizira se dodavanje na blockchain.
+    \item Najnovija kopija blockchaina se distribuira svim sudionicima blockchaina.
+\end{enumerate}
+
+Blockchain se sastoji od dvije "gradivne jedinice", a to su blok (engl. \textit{block}) i lanac (engl. \textit{chain}).
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{slike/blocks.png}
+    \caption{Blockchain blokovi \cite{nist_blockchain}}
+\end{figure}
+Blok se generalno sastoji od \cite{pow}:
+\begin{itemize}
+    \item \textbf{Zaglavlja} (engl. \textit{block header})
+    \item \textbf{Broja transakcija} (engl. \textit{transaction counter})
+    \item \textbf{Transakcija} (engl. \textit{transactions})
+\end{itemize}
+
+Zaglavlje se generalno sastoji od \cite{nist_blockchain}:
+\begin{itemize}
+    \item \textbf{Hash vrijednosti prijašnjeg bloka}
+    \item \textbf{Vremenske oznake} (engl. \textit{timestamp})
+    \item \textbf{Brojača} (engl. \textit{nonce})
+    \item \textbf{Hash vrijednosti toga bloka}
+    \item \textbf{Ciljane težine} (engl. \textit{difficulty target})
+\end{itemize}
+
+Svaki blok sadrži hash vrijednost prijašnjeg bloka te to čini "lanac" blockchaina.
+
+\section{Mehanizmi konsenzusa}
+
+U generalnom radu blockchaina spomenut je mehanizam konsenzusa.
+Prema \cite{investopedia_consensus} mehanizam konsenzusa je "programiranje i proces korišten u blockchain sustavima kako bi se postigao distribuirani dogovor o stanju transakcija i stanju blockchaina.".
+U nastavku su opisani najčešći mehanizmi konsenzusa, i manje detaljno opisani manje popularni mehanizmi.
+
+\subsection{Proof of Work (PoW)}
+
+\textbf{Proof of Work} je prvi i najpoznatiji mehanizam konsenzusa koji je korišten u kriptovalutama (engl. \textit{cryptocurrency}) poput Bitcoina, Litecoina i prve verzije Ethereuma \cite{investopedia_consensus}.
+
+Prema \cite{pow} koraci u PoW mehanizmu su sljedeći:
+\begin{enumerate}
+    \item Korisnici izvršavaju transakcije na blockchainu.
+    \item Transakcije ulaze u mempool i imaju određenu naknadu (engl. \textit{fee}) koju korisnik isplaćuje za izvršavanje te transakcije.
+    \item Rudari uzimaju transakcije sa većom naknadom i grupiraju ih u blok dok blok ne dosegne propisanu veličinu blockchaina.
+    \item Rudari hash vrijednost od prošlog validnog bloka stavljaju u zaglavlje novog bloka.
+    \item Rudari rudare na način da mijenjaju brojač i ponovno izvršavaju hash funkciju nad blokom dok se ne dobije hash koji je u vrijednosti manji od hasha zadanog u ciljanoj težini.
+    \item Ciljana težina je postavljena s ciljem da se mora izvršiti određen broj hash funkcija po sekundi prije nego se dobije validna hash funkcija.
+    \item Kada se dobije validan hash, on dokazuje da je rudar obavio posao (engl. \textit{proof of work}) i taj blok se dodaje na blockchain gdje se validira kroz pune čvorove (engl. \textit{full nodes}), tj. dobrovoljna računala koja validiraju transakcije u svakom novo dodanom bloku \cite{bitcoin_full_node}.
+    \item Sljedeći blokovi uzimaju hash najnovijeg validnog bloka i to ih čini ulančanima, može postojati više lanaca ali uzima se najduži jer je najveća vjerojatnost da je validan.
+\end{enumerate}
+Ovaj mehanizam konsenzusa počiva na principu da je postavljanje novog bloka resursno skupo i da nije isplativo pokušati napasti blockchain preuzimanjem više od polovice snage izračuna (engl. \textit{computational power}). Težina i cijena postavljanja novog bloka na blockchain također olakšava koliko dobrovoljni čvorovi za validiranje moraju validirati blokova jer se ne može namjerno postavljati veliki broj malicioznih blokova.
+
+\subsection{Proof of Stake (PoS)}
+
+\textbf{Proof of Stake} je mehanizam konsenzusa koji je nastao kao resursno i energetski efektivnija alternativa PoW-u.
+U ovom mehanizmu se rudari nazivaju validatorima. Umjesto računalne snage koristi se kriptovaluta tog blockchaina na način da validatori ulože (engl. \textit{stake}) svoje novčiće (engl. \textit{coins}) kako bi mogli biti validatori. Ethereum kao doljnju granicu za postati validator ima 32 ETH novčića.
+Koraci u PoS mehanizmu su sljedeći \cite{pos}:
+\begin{itemize}
+    \item Blockchain nasumično odabire validatora koji će postaviti novi blok.
+    \item Što validator ima više uloženih novčića, to je veća šansa da bude izabran.
+    \item Validator uzima transakcije iz mempoola i stvara novi blok kojeg potpisuje privatnim ključem i postavlja na blockchain.
+    \item Ostali validatori validiraju blok
+    \item Tek nakon što više validatori potvrdi blok se blok dodaje na blockchain.
+\end{itemize}
+Ovaj mehanizam je energetski učinkovitiji i umjesto da se malicioznog validatora kazni kroz potrošnju energije kao što PoW mehanizam to radi, u PoS mehanizmu ako validatori ne potvrde blok uloženi novčići validatori koji je stvorio blok se zapale (engl. \textit{burn}) te se na taj način kažnjava maliciozne validatore.
+Ako validator ima povijest malicioznog ponašanja, može biti u potpunosti izbačen iz ulaganja novčića u svrhu dobivanja funkcije validatora.
+
+\subsection{Ostali}
+
+Ostali manje prošireni mehanizmi konsenzusa su:
+\begin{itemize}
+    \item \textbf{Proof of Capacity (PoC)} \cite{poc}: Ovaj mehanizam umjesto resursa računalne snage koristi podatkovni prostor uređaja. Za razliku od PoW mehanizma gdje se brojač pogađa i blok daje hash funkciji, u ovom mehanizmu se na disk uređaja sprema lista mogućih rješenja. Što je prostor za pohranu podataka veći to se više rješenja može pohraniti i s time oni imaju veću šansu dobivanja točnog rješenja.
+    \item \textbf{Proof of Activity (PoA)} \cite{poa}: Ovaj mehanizam kombinira PoW i PoS mehanizme. Za postavljanje blokova koristi se PoW princip, ali se validira sa PoS principom umjesto punih čvorova koji volontiraju bez financijske inicijative.
+    \item \textbf{Proof of Burn (PoB)} \cite{pob}: Uzima sličan pristup kao i PoW mehanizam, no umjesto da se financijski resurse potroše na kupnju fizičkih komponenti za rudarenje, novčići kriptovalute se spaljuju te se dobivaju prava za rudarenje u proporciji sa količinom spaljenih novčića. Moć spaljenih novčića se smanjuje s vremenom ili se smanjuje s novim blokovima kako bi se kontinuirano morali spaljivati novčići što je energetski učinkovitiji način rudarenja.
+    \item \textbf{Proof of History (PoH)} \cite{poh}: Najpopularnija kriptovaluta koji koristi ovaj mehanizam je Solana. Ovaj mehanizam smatra da je slijed događaja jednako važan kao i sami događaji. Blockchain koristi kriptografske metode kako bi generirao provjerljivi slijed događaja za transakcije. Validatori izvršavaju VDF (engl. \textit{Verifiable Delay Function}) funkciju koristeći hash vrijednost prijašnjeg bloka i sadržaja novog bloka te time kao i u PoW mehanizmu ulažu neki trud kako bi se dobila nova vremenska oznaka bloka. Zbog provjerljivosti slijeda događaja su blockchain mreže koje koriste ovaj mehanizam vrlo skalabilne i efikasne.
+    \item \textbf{Proof of Elapsed Time (PoET)} \cite{poet}: PoET mehanizam je razvijen od strane Intel korporacije. Najčešće se koristi na dozvoljenim blockchain mrežama jer zahtjeva da su sudionici u blockchainu do neke mjere vjerodostojni. U ovom mehanizmu svaki čvor dobije nasumično vrijeme spavanja od centralnog povjerljivog okruženja te čvor koji ima najmanje vrijeme spavanja tj. koji se prvi vrati iz spavanja "pobjeđuje" i dobiva pravo postaviti block na blockchain. Blokovi se također validiraju punim čvorovima.
+\end{itemize}
+
+\section{Kriptovalute}
+
+Prema \cite{kaspersky_cryptocurrency} kriptovaluta je "digitalni sustav za plaćanje koji se ne oslanja na banke kako bi se validirale transakcije.". To je P2P (engl. \textit{peer-to-peer}) sustav koji omogućava bilo kome slanje i primanje plaćanja.
+Prva i najpoznatija kriptovaluta je Bitcoin. 
+
+\subsection{Bitcoin} 
+
+\textbf{Bitcoin} je nastao 2008. godine kada je Satoshi Nakamoto objavio svoj rad o Bitcoin sustavu \cite{bitcoin_whitepaper}. Bitcoin koristi PoW mehanizam konsenzusa i pune čvorove za validiranje, a također ima sustav prepolovljavanja (engl. \textit{halving}).
+Prepolovljavanje je mehanizam gdje se nagrada za rudarenje smanjuje na pola svakih otprilike 4 godine \cite{investopedia_halving}. Svrha ovog sustava je smanjiti inflaciju kriptovalute kako joj se povećava popularnost, a zadnje prepolovljavanje se očekuje 2140. godine kada će financijska motivacija za rudarenje proizlaziti samo iz naknade za provođenje transakcije koju plaća izvršitelj transakcije.
+Bitcoin je svoje početke imao kao sustav za plaćanje, zbog svoje decentralizacije i anonimnosti se koristio i za trgovanje na crnom tržištu (engl. \textit{black market}) i drugim ilegalnim aktivnostima.
+Danas se Bitcoin koristi kao sredstvo štednje i ulaganja te je dobio status "digitalnog zlata" iako mu je cijena u potpunosti spekulativna. Neke države poput El Salvadora su Bitcoin proglasile zakonskim sredstvom plaćanja \cite{el_salvador}.
+\subsection{Ether}
+
+\textbf{Ether} je kriptovaluta koja se koristi na Ethereum blockchain platformi. Ethereum je drugi najveći blockchain iza Bitcoina. Nastao je 2015. godine i uveo inovativne tehnologije poput pametnih ugovora (engl. \textit{smart contracts}), decentraliziranih aplikacija (engl. \textit{dApps}) i drugih.
+Ethereum ima svoj Turing-kompletan jezik zvan Solidity koji omogućava programerima kreiranje pametnih ugovora i aplikacija kao npr. prodajnih mjesta, decentraliziranih mjenjačnica, igrica i drugih \cite{solidity}.
+Ethereum je prvo koristi PoW mehanizam konsenzusa, ali je u 2022. godini prešao na PoS mehanizam kako bi smanjio troškove transakcija \cite{eth_2_0}.
+\newline
+
+\subsection{Hyperledger}
+
+\textbf{Hyperledger} je "kolekcija open-source projekata stvorenih da podrže razvoj distribuiranih \textit{ledgera} baziranih na blockchainu" \cite{noauthor_what_is_hyperledger_nodate}.
+Linux Foundation najavila je Hyperledger Project 2015. godine, a 2016. je stvoren \cite{noauthor_what_is_hyperledger_nodate}. Najpopularniji projekt unutar Hyperledgera je \textbf{Hyperledger Fabric}, 
+što je "dozvoljena blockchain infrastruktura koja se koristi za izgradnju proizvoda, softvera i aplikacija temeljenih na blockchainu" \cite{noauthor_what_is_hyperledger_nodate}.
+Hyperledger Fabric je modularan blockchain okvir na kojemu kolaboriraju preko 120000 organizacija i 15000 inženjera \cite{noauthor_what_is_hyperledger_2021}.
+Hyperledger Fabric nudi i mogućnost stvaranja kanala, što dopušta grupi članova da stvore zaseban \textit{ledger} transakcija, što može biti bitno gdje su neki sudionici u mreži konkurenti \cite{noauthor_hyperledger_introduction_nodate}.
+
+Kako je Hyperledger Fabric privatan i dozvoljen, članovi unutar mreže dodaju se preko Membership Service Provider (MSP) \cite{noauthor_hyperledger_introduction_nodate}.
+To je "mehanizam koji omogućuje identitetu da bude od povjerenja i da bude prepoznat od ostatka organizacije" \cite{noauthor_hyperledger_msp_nodate}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{slike/hyperledger_msp.png}
+    \caption{Kako funkcionira MSP \cite{noauthor_hyperledger_msp_nodate}}
+\end{figure}
+
+Za razliku od Ethereuma, Hyperledger Fabric je B2B (\textit{business-to-business}), dok je Ethereum više pogodan za B2C (\textit{business-to-consumer}) poslovanje \cite{anuska_ethereum_vs_hyperledger_2022}.
+"Ethereum je stvoren sa svrhom da izvršava pametne ugovore na \textit{Ethereum Virtual Machine}, dok je Hyperledger zamišljen sa svrhom da ubrzava kolaboraciju unutar industrija,
+stvara blockchaine visokih performansi i pruža poduzećima privatnost koja bi im trebala" \cite{anuska_ethereum_vs_hyperledger_2022}.
+Razlike se još javljaju i u programskim jezicima za pisanje pametnih ugovora, gdje se u Ethereumu najčešće koristi Solidity, a u Hyperledgeru se primarno koristi Golang \cite{anuska_ethereum_vs_hyperledger_2022}.
+Ethereum je javna mreža, gdje su sve transakcije vidljive, a Hyperledger je ograničen i dozvoljen blockchain, gdje samo odabrani pojedinci imaju pristup transakcijama \cite{anuska_ethereum_vs_hyperledger_2022}.
+
+Odabir platforme na kraju ovisi o nekoliko ključnih faktora, kao što su vrsta blockchaina, sigurnosni zahtjevi, privatnost, brzina transakcija i scenarij korištenja.
+Ethereum je bolje odabrati ako je potrebna decentralizirana i globalna mreža, a Hyperledger Fabric ako je potrebna privatnost i skalabilnost za poslovne procese.
+
+\chapter{Napadi}
+
+Blockchain tehnologija je stekla ogromnu popularnost i povjerenje zahvaljujući svojim temeljnim obećanjima: decentralizaciji, transparentnosti, nepromjenjivosti (immutability) i sigurnosti temeljenoj na kriptografskim načelima \cite{Nakamoto2008}. Distribuirana priroda i mehanizmi konsenzusa dizajnirani su da stvore sustav otporan na cenzuru i manipulaciju od strane pojedinačnog entiteta \cite{BlockchainSecurityOverview}. Međutim, unatoč ovim snažnim sigurnosnim temeljima, blockchain mreže nisu apsolutno neranjive \cite{VulnerabilitiesSurvey}. Kao i svaki složeni tehnološki sustav, one predstavljaju potencijalnu metu za različite vrste napada.
+
+Razumijevanje vektora napada ključno je za procjenu stvarne sigurnosti pojedine blockchain mreže i za razvoj učinkovitih obrambenih mehanizama. Napadi na blockchain mogu ciljati različite slojeve sustava: od temeljnog protokola i mehanizama konsenzusa, preko mrežne komunikacije između čvorova, do aplikacija izgrađenih povrh blockchaina (npr. pametni ugovori) pa čak i samih korisnika (kroz socijalni inženjering ili napade na njihove privatne ključeve).
+
+Motivacije napadača su raznolike. Najčešće se radi o financijskoj dobiti, primjerice kroz krađu kriptovaluta, manipulaciju cijenama ili izvođenje napada dvostruke potrošnje. Drugi motivi mogu uključivati remećenje rada mreže iz ideoloških razloga, cenzuriranje određenih transakcija, stjecanje konkurentske prednosti ili jednostavno dokazivanje ranjivosti sustava.
+
+Uspješni napadi mogu imati razorne posljedice. Oni mogu dovesti do direktnih financijskih gubitaka za sudionike mreže, narušiti integritet i povjerenje u zapisane podatke (ledger), umanjiti vrijednost povezane kriptovalute te potkopati povjerenje javnosti u samu tehnologiju. U nekim slučajevima, napadi mogu dovesti do privremenog ili čak trajnog prekida funkcioniranja mreže ili zahtijevati kontroverzne intervencije poput "hard forka" kako bi se poništile posljedice napada.
+
+Stoga je analiza sigurnosnih prijetnji i potencijalnih napada neizostavan dio proučavanja blockchain tehnologije. U nastavku ovog poglavlja detaljnije će biti istražene neke od najznačajnijih i tehnički najzanimljivijih napada koji ciljaju temeljne mehanizme rada blockchaina \cite{BlockchainSecurityOverview}.
+
+\section{51\% napad}
+
+Napad 51\%, poznat i kao većinski napad (majority attack), predstavlja jedan od najfundamentalnijih i najviše raspravljanih sigurnosnih rizika za blockchain mreže \cite{FiftyOneAttackExplained}, posebno one koje koriste \textit{Proof-of-Work} (PoW) kao mehanizam konsenzusa \cite{PoWSecurityAnalysis}. Iako je teoretski primjenjiv i na \textit{Proof-of-Stake} (PoS)\cite{PoSAttacks} sustave (gdje bi napadač trebao kontrolirati 51\% ukupnog uloga - stakea), klasično se objašnjava u kontekstu PoW mreža poput Bitcoina.
+
+\textbf{Osnovni Princip:}
+Temeljna ideja PoW blockchaina jest da se rudari (miners) natječu u rješavanju složenog kriptografskog zadatka kako bi dobili pravo dodavanja novog bloka transakcija u lanac. Mreža postiže konsenzus prihvaćajući najdužu (ili tehnički, "najtežu" - s najviše akumuliranog rada) važeću verziju lanca blokova kao onu istinitu. Napad 51\% događa se kada jedan entitet ili koordinirana grupa entiteta uspije steći kontrolu nad \textbf{više od 50\% ukupne računalne snage (hash rate)} mreže \cite{FiftyOneAttackExplained}.
+
+\textbf{Mehanizam Napada (u PoW kontekstu):}
+Napadač s većinskom kontrolom nad hash rateom može rudariti nove blokove brže od ostatka mreže zajedno. To mu omogućuje izvođenje nekoliko zlonamjernih radnji, od kojih je najpoznatija \textbf{dvostruka potrošnja (double-spending)} \cite{DoubleSpendTechniques}:
+
+\begin{enumerate}
+    \item \textbf{Privatno Rudarenje:} Napadač započinje s rudarenjem blokova u tajnosti, ne dijeleći ih odmah s ostatkom mreže. On stvara vlastitu, privatnu verziju blockchaina koja se odvaja (fork) od javnog lanca u nekom trenutku. Budući da ima većinu hash snage, njegov privatni lanac raste brže (u prosjeku) od javnog lanca kojeg održava ostatak mreže.
+    \item \textbf{Transakcija na Javnom Lancu:} Istovremeno, dok privatno rudari, napadač izvršava transakciju na javnom, legitimnom lancu. Tipično, ovo uključuje slanje kriptovalute nekoj trećoj strani, često mjenjačnici (exchange), u zamjenu za drugu kriptovalutu ili fiat novac. Napadač čeka da ova transakcija dobije dovoljan broj potvrda na javnom lancu (npr. 6 potvrda) \cite{Nakamoto2008} kako bi je primatelj (mjenjačnica) smatrao konačnom.
+    \item \textbf{Objavljivanje Privatnog Lanca:} Nakon što je transakcija na javnom lancu potvrđena i napadač je primio vrijednost (npr. povukao fiat novac s mjenjačnice), on objavljuje svoj privatno rudareni lanac ostatku mreže. Budući da njegov lanac sadrži više akumuliranog rada (jer je imao više hash snage i rudario je duže ili efikasnije), pravila konsenzusa nalažu da čvorovi u mreži prihvate ovaj \textbf{novi, duži lanac} kao ispravan.
+    \item \textbf{Reorganizacija Lanca (Reorg):} Mreža odbacuje kraći, originalni javni lanac (onaj na kojem je bila napadačeva transakcija prema mjenjačnici) i prelazi na novi, duži lanac koji je napadač upravo objavio. Ovaj proces se naziva reorganizacija lanca (chain reorganization ili reorg).
+    \item \textbf{Posljedica - Dvostruka Potrošnja:} U novom, sada dominantnom lancu, transakcija koju je napadač poslao mjenjačnici \textbf{nikada nije postojala}. Umjesto toga, taj lanac sadrži drugačiju transakciju (ili je ne sadrži uopće) gdje su isti novčići potrošeni na drugi način (npr. poslani natrag na napadačevu adresu). Napadač je uspješno povukao vrijednost s mjenjačnice, a istovremeno je zadržao originalne kripto-novčiće jer je povijest transakcija efektivno prebrisana.
+\end{enumerate}
+
+\textbf{Druge Moguće Akcije Napadača:}
+Osim dvostruke potrošnje, napadač s 51\% kontrole može:
+\begin{itemize}
+    \item \textbf{Spriječiti potvrđivanje transakcija:} Može odabrati ignorirati određene transakcije ili transakcije s određenih adresa, efektivno ih cenzurirajući i sprječavajući da ikada budu uključene u blockchain dok god napad traje.
+    \item \textbf{Spriječiti druge rudare da rudare:} Može ignorirati blokove koje pronađu drugi, legitimni rudari, čime ih onemogućuje u dobivanju nagrada za rudarenje i dodatno centralizira kontrolu.
+\end{itemize}
+
+\textbf{Ograničenja Napada 51\%:}
+Važno je napomenuti što napadač \textbf{ne može} učiniti čak ni s 51\% kontrole:
+\begin{itemize}
+    \item \textbf{Ukrasti tuđe novčiće (koje nije prethodno posjedovao):} Ne može kreirati transakcije s adresa za koje nema privatne ključeve. Kriptografska zaštita privatnih ključeva ostaje netaknuta.
+    \item \textbf{Promijeniti pravila protokola:} Ne može promijeniti osnovna pravila mreže, poput nagrade za blok ili ukupne količine novčića (osim ako ne uvjeri ostatak mreže da prihvati promjenu koda, što nije dio samog 51\% napada).
+    \item \textbf{Poništiti vrlo stare transakcije:} Iako može prebrisati nedavnu povijest, poništavanje transakcija koje su duboko zakopane u lancu (imaju jako puno potvrda) postaje eksponencijalno teže i zahtijevalo bi ogromnu količinu kontinuirane hash snage i vremena, čineći to praktički neizvedivim za duboke reorganizacije \cite{ReorgAnalysis}.
+\end{itemize}
+
+\textbf{Izvedivost i Posljedice:}
+Izvođenje 51\% napada na velikim, etabliranim mrežama poput Bitcoina izuzetno je skupo i teško. Zahtijeva ogromna ulaganja u specijalizirani hardver (ASIC rudare) i električnu energiju. Međutim, manje PoW kriptovalute s znatno nižim ukupnim hash rateom znatno su ranjivije i bile su žrtve uspješnih 51\% napada u prošlosti (npr. Ethereum Classic, Bitcoin Gold, Verge).
+
+Uspješan 51\% napad može imati katastrofalne posljedice: narušava povjerenje u sigurnost i nepromjenjivost mreže, dovodi do financijskih gubitaka za žrtve dvostruke potrošnje (često mjenjačnice) i može uzrokovati drastičan pad vrijednosti napadnute kriptovalute. Sama prijetnja ovakvim napadom dovoljna je da utječe na percepciju sigurnosti blockchaina. Zbog toga je visoka razina decentralizacije hash snage (ili uloga u PoS-u) ključna za dugoročnu sigurnost blockchain mreže.
+
+\section{Smart contract ranjivosti}
+
+Pametni ugovori (engl. \textit{Smart contracts}) su "digitalni ugovori pohranjeni na blockchainu koji se automatski izvršavaju kod ispunjenja unaprijed određenih uvjeta" \cite{what_are_smart_contracts_2021}.
+To su ustvari skripte koje automatiziraju radnje između dva sudionika u blockchain transakciji, koje su, nakon izvršavanja, nepovratne i mogu se pratiti \cite{investopedia_what_are_smart_contracts}.
+Koriste se za razne svrhe, a neke od najčešćih su kupovina i isporuka robe, transakcije nekretninama, trgovanje dionicama, zajmovi, opskrbni lanac i ostalo \cite{investopedia_what_are_smart_contracts}.
+
+Kako su pametni ugovori razvijeni od strane developera \cite{what_are_smart_contracts_2021}, podložni su greškama koji se javljaju u svim programskim kodovima.
+\cite{wang_overview_2019} navodi tri napada na pametne ugovore:
+\begin{itemize}
+    \item \textbf{Reentrancy Attack}: ključ ovog napada je "otimanje" tijeka kontrole pametnog ugovora, kako bi se uništila atomarnost transakcije \cite{wang_overview_2019}.
+        U programskom jeziku Solidity, koji služi za pisanje pametnih ugovoru na Ethereum-u \cite{solidity_home}, postoji mehanizam koji zahtijeva da svaki pametni ugovor koji dobiva Ether implementira \textit{fallback} funkciju,
+        koja se izvršava ako pametni ugovor primi Ether sa drugih adresa \cite{yang_uncover_reentrancy_attacks_2024}. Ako pametni ugovor žrtve prebaci Ethere na maliciozni pametni ugovor, on može "oteti" tijek kontrole
+        i neprestano pozivati žrtvu u \textit{fallback} funkciji \cite{yang_uncover_reentrancy_attacks_2024}. Samo ova vrsta napada dovela je do financijskog gubitka milijuna i milijuna dolara \cite{yang_uncover_reentrancy_attacks_2024}.
+        Zaštita protiv ovog napada uključuje korištenje najnovije verzije Solidity-ja, koje dodaju sintaksne provjere i provjere u kompajleru kako bi se izbjeglo kreiranje funkcija koje su ranjive \cite{astrakode_what_reentrancy_attack_prevent_2024}.
+        Također je dobro koristiti \textit{Reentrancy Guards} \cite{astrakode_what_reentrancy_attack_prevent_2024}.
+
+    \item \textbf{Unauthorized Access Attack}: ovaj napad temelji se na "neuspjehu postavlja eksplicitnih vidljivosti funkcija, ili neuspjehu da se naprave dostatne provjere dozvole, koji mogu dopustiti napadaču da pristupi ili izmijeni funkciju ili varijablu kojoj ne bi smio pristupiti" \cite{wang_overview_2019}.
+        Kako je Solidity programski jezik, treba paziti na vidljivost funkcija i varijabli, kao i u ostalim programskim jezicima, a pogotovo kako se ovdje prenose stvarni iznosi novaca.
+        Primjer bi bio pametni ugovor koji omogućuje korisincima da polažu i podižu novce (Ether), a pametni ugovor bio bi implementiran na sljedeći način \cite{time_access_control_vulnerabilities_2023}:
+        \begin{listing}[H]
+            \begin{minted}{solidity}
+                contract Bank {
+                    // The contract's balance of ether
+                    uint256 public balance;
+                
+                    // A mapping that stores the balances of each user
+                    mapping (address => uint256) public userBalances;
+                
+                    // Allows users to deposit ether into their account
+                    function deposit(uint256 amount) public {
+                        // Update the user's balance
+                        userBalances[msg.sender] += amount;
+                
+                        // Update the contract's balance
+                        balance += amount;
+                    }
+                
+                    // Allows users to withdraw ether from their account
+                    function withdraw(uint256 amount) public {
+                        // Check if the user has sufficient balance
+                        require(userBalances[msg.sender] >= amount, "Insufficient balance");
+                
+                        // Update the user's balance
+                        userBalances[msg.sender] -= amount;
+                
+                        // Update the contract's balance
+                        balance -= amount;
+                    }
+                }
+            \end{minted}
+            \caption{Pametni ugovor 'Bank' \cite{time_access_control_vulnerabilities_2023}}
+        \end{listing}
+        Ovaj je pametni ugovor ranjiv na spomenuti napad jer funkcija \texttt{withdraw} ne provjerava ispravno prava korisnika prije izvršavanja, tako da napadač
+        može pozivati ovu funkciju od korisnika bez njegove dozvole \cite{time_access_control_vulnerabilities_2023}.
+
+    \item \textbf{Solidity Development Security}: ovo uključuje potencijalne greške u razvoju programskog koda u Solidity-ju, kao što su \cite{wang_overview_2019}:
+        \textit{Race condition}, \textit{Transaction-Ordering Dependence}, \textit{Integer overflow} i \textit{underflow} ili \textit{DoS Attack Based on Exception Rollback}.
+        Na većinu tih stvari potrebno je paziti u bilo kojem programskom jeziku. Na primjer kod \textit{Transaction-Ordering Dependence} napada, napadač može napisati vlastiti pametni ugovor na temelju informacija o poretku
+        transakcija na čekanju i na taj način pokušati implementirati svoju transakciju tako da bude upisana u blockchain prije drugih \cite{wang_overview_2019}.
+\end{itemize}
+
+Pametni ugovor je teško izmijeniti nakon isporuke i distribucije, a i blockchain se ne može vratiti na prethodno stanje prije sigurnosnog incidenta.
+Prema \cite{wang_overview_2019}, potrebno je prije same izgradnje pametnih ugovora zaštiti se od napada koji su se već dogodili i treba provesti sigurnosne testove prije izdavanja ugovora.
+Developeri trebaju redovno izvršavati recenzije koda i pratiti nenormalno ponašanje na već isporučenim ugovorima \cite{wang_overview_2019}.
+
+\section{Eclipse napad}
+
+Eclipse napad je vrsta mrežnog napada usmjerenog na izolaciju određenog čvora (ili grupe čvorova) unutar peer-to-peer (P2P) mreže \cite{Heilman2015Eclipse}, kakve koriste blockchain sustavi poput Bitcoina ili Ethereuma \cite{Heilman2015Eclipse}. Za razliku od 51\% napada koji cilja mehanizam konsenzusa manipuliranjem većine računalne snage, Eclipse napad djeluje na nižoj, mrežnoj razini. Cilj napadača je preuzeti kontrolu nad svim mrežnim vezama (dolaznim i odlaznim) ciljanog čvora, čime ga "zasjenjuje" (engl. \textit{eclipse}) od ostatka legitimne mreže \cite{Heilman2015Eclipse}.
+
+\textbf{Osnovni Princip:}
+Svaki čvor u decentraliziranoj blockchain mreži održava vezu s određenim brojem drugih čvorova (peerova) kako bi primao i slao informacije o transakcijama i blokovima. Eclipse napad uspijeva kada napadač uspije osigurati da su \textbf{svi peerovi} s kojima ciljani čvor komunicira zapravo čvorovi pod kontrolom samog napadača. Na taj način, žrtvin čvor ostaje potpuno odsječen od iskrenog dijela mreže, iako s njegove točke gledišta sve može izgledati normalno – i dalje ima aktivne mrežne veze \cite{Heilman2015Eclipse}.
+
+\textbf{Mehanizam Napada:}
+Izvođenje Eclipse napada obično uključuje sljedeće korake i tehnike \cite{Heilman2015Eclipse}:
+
+\begin{enumerate}
+    \item \textbf{Preuzimanje Kontrole nad IP Adresama:} Napadač treba kontrolirati značajan broj IP adresa. To se može postići korištenjem botneta, zakupljivanjem velikog broja virtualnih privatnih poslužitelja (VPS) ili drugim metodama.
+    \item \textbf{Manipulacija Peer Tablicom Žrtve:} Blockchain čvorovi obično pohranjuju listu poznatih peerova (IP adresa i portova) u svojoj peer tablici (peer table). Napadač nastoji popuniti ovu tablicu isključivo svojim IP adresama \cite{Heilman2015Eclipse}. To može postići:
+        \begin{itemize}
+            \item \textbf{Flooding (Preplavljivanje):} Slanjem velikog broja poruka o "novim" peerovima (koji su zapravo napadačevi čvorovi) žrtvinom čvoru.
+            \item \textbf{Iskorištavanje Ponovnog Pokretanja Čvora:} Kada se čvor ponovno pokrene, često se pokušava spojiti na adrese iz svoje (potencijalno već kompromitirane) peer tablice. Ako napadač uspije "ugurati" dovoljan broj svojih adresa u tablicu prije gašenja, velika je šansa da će se čvor nakon restarta spojiti isključivo na napadačeve čvorove, pogotovo ako čvor ima ograničen broj odlaznih veza.
+            \item \textbf{Ciljanje Specifičnih Adresnih Prostora:} Neki čvorovi mogu preferirati spajanje na peerove unutar istog /16 ili /24 IP adresnog bloka \cite{Heilman2015Eclipse}. Ako napadač kontrolira velik dio takvog bloka, lakše mu je monopolizirati veze čvora unutar tog bloka.
+        \end{itemize}
+    \item \textbf{Monopolizacija Veza:} Cilj je zauzeti sve dostupne ulazne i izlazne konekcijske "slotove" žrtvinog čvora. Većina P2P klijenata ima ograničen broj istovremenih veza (npr., Bitcoin Core po defaultu ima 8 odlaznih i do 117 dolaznih veza) \cite{BitcoinCoreDev}. Napadač treba osigurati da su sve te veze uspostavljene s njegovim čvorovima.
+\end{enumerate}
+
+\textbf{Posljedice Eclipse Napada:}
+Jednom kada je čvor uspješno "zasjenjen", napadač može izvesti niz štetnih radnji \cite{Heilman2015Eclipse}:
+
+\begin{itemize}
+    \item \textbf{Manipulacija Pogleda na Blockchain:} Napadač može žrtvi slati lažne informacije o stanju lanca. Može prikazivati nevažeće blokove kao važeće ili zadržavati informacije o najnovijim blokovima s legitimne mreže.
+    \item \textbf{Olakšavanje Dvostruke Potrošnje:} Napadač može iskoristiti izolirani čvor za potvrdu transakcije prema žrtvi (npr., ako je žrtva trgovac). Istovremeno, na pravoj mreži, napadač može izvršiti dvostruku potrošnju tih istih sredstava. Žrtvin čvor neće vidjeti tu dvostruku potrošnju jer prima informacije isključivo od napadača.
+    \item \textbf{Manipulacija Rudarenjem (ako je žrtva rudar):}
+        \begin{itemize}
+            \item \textbf{Neutralizacija Hash Snage:} Ako je žrtva rudar, napadač može spriječiti da njegovi ispravno izrudareni blokovi dođu do prave mreže ili mu može slati lažne informacije o vrhu lanca, tjerajući ga da rudari na pogrešnom bloku. Time se efektivno rasipa žrtvina računalna snaga i smanjuje ukupna sigurnost mreže.
+            \item \textbf{Poticanje sebičnog rudarenja (Selfish Mining):} Napadač može iskoristiti zasjenjene rudare kako bi potajno izgradio duži lanac, slično kao kod 51\% napada, ali s manjim udjelom ukupne hash snage mreže, koristeći zasjenjene čvorove da mu daju prednost.
+        \end{itemize}
+    \item \textbf{Inženjering Konsenzusa (N-Confirmation Attack):} Napadač može prikazati žrtvi da je određena transakcija dobila dovoljan broj potvrda (N potvrda) na lažnom lancu, dok na pravom lancu ta transakcija možda nikada nije ni potvrđena ili je već poništena.
+    \item \textbf{Ometanje Mreže:} Izoliranjem značajnog broja čvorova, napadač može oslabiti povezanost i otpornost cijele mreže.
+\end{itemize}
+
+\textbf{Obrana od Eclipse Napada:}
+Blockchain zajednica i razvojni timovi svjesni su prijetnje Eclipse napada i implementirali su različite obrambene mehanizme \cite{BitcoinCoreImprovements}:
+
+\begin{itemize}
+    \item \textbf{Povećanje Broja Konekcija:} Povećanje broja odlaznih veza čini napad eksponencijalno težim jer napadač mora kontrolirati više IP adresa i uspješno monopolizirati više konekcijskih slotova.
+    \item \textbf{Nasumični Odabir Peerova:} Korištenje kriptografski sigurnih generatora slučajnih brojeva za odabir peerova iz različitih dijelova interneta (različiti AS-ovi, IP prefiksi).
+    \item \textbf{Pohrana Peerova u Više Tablica (Buckets):} Razvrstavanje poznatih peerova u različite "spremnike" (buckets) na temelju IP adresa ili AS brojeva kako bi se osiguralo da se čvor povezuje s topološki raznolikim setom peerova.
+    \item \textbf{Sidrene Veze (Anchor Connections):} Održavanje dugotrajnih veza s malim brojem pažljivo odabranih, pouzdanih čvorova koji se ne brišu iz peer tablice prilikom restarta.
+    \item \textbf{Testiranje Dosegljivosti (Feelers):} Povremeno testiranje veza prema nasumičnim čvorovima iz poznate liste kako bi se provjerilo postoji li veza s ostatkom mreže.
+    \item \textbf{Identifikacija i Blokiranje Napadača:} Mehanizmi za detekciju sumnjivog ponašanja (npr. slanje ogromnog broja peer adresa) i privremeno ili trajno blokiranje takvih IP adresa.
+\end{itemize}
+
+Eclipse napad predstavlja ozbiljnu prijetnju na mrežnoj razini za decentralizirane sustave. Iako možda ne dopušta direktnu krađu sredstava kao neki drugi napadi (bez kombinacije s njima), može značajno narušiti funkcionalnost, sigurnost i povjerenje u blockchain mrežu izoliranjem njenih sudionika. Kontinuirano poboljšanje P2P protokola ključno je za obranu od ovakvih napada.
+
+\chapter{Alati za reviziju i nadzor sigurnosti}
+
+Alati za reviziju sigurnosti automatizirani su alati posebno dizajnirani za prepoznavanje
+ranjivosti u informacijskom sustavu koje bi se mogle iskoristiti za pristup povlaštenim osobama
+informacije. Ovi alati rade brže i pouzdaniji su od manualnih procedura. Njima se uklanja ljudska pogreška, 
+može skenirati kompletna mreža u potrazi za slabostima i pomažu u raspodijeli važnosti prijetnji ovisno o njihovom utjecaju \cite{school_of_science_and_technology_bangladesh_open_university_security_2021}.
+S razvojem revizije pametnih ugovora, neke tradicionalne metode analize ranjivosti kao što su simboličko izvršenje, test fuzzinga i analiza mrlja postupno se uvode u reviziju pametnih ugovora \cite{he_smart_2020}.
+
+\section{Truffle Suite Ganache}
+
+Truffle je svjetski poznato razvojno okruženje, okvir za testiranje i pipeline za upravljanje resursima, namijenjeno blockchainima koji koriste Ethereum Virtual Machine (EVM), s ciljem olakšavanja života programerima. Neke od značajki okruženja su: 
+\begin{itemize}
+    \item Ugrađeno kompiliranje, povezivanje, implementaciju i upravljanje binarnim datotekama pametnih ugovora
+    \item Napredno debuggiranje s mogućnostima postavljanja točaka prekida, analize varijabli i korak-po-korak funkcionalnosti
+    \item Korištenje console.log u pametnim ugovorima
+    \item Implementaciju i transakcije putem MetaMask-a uz Truffle Dashboard za zaštitu vašeg mnemonika
+    \item Vanjski izvršitelj skripti koji pokreće skripte unutar Truffle okruženja
+    \item Interaktivnu konzolu za izravnu komunikaciju s ugovorima
+    \item Automatizirano testiranje ugovora za brži razvoj
+    \item Skriptabilan i proširiv okvir za implementaciju i migracije
+    \item Upravljanje mrežama za implementaciju na bilo koju javnu ili privatnu mrežu
+    \item Upravljanje paketima uz NPM, koristeći ERC190 standard
+    \item Konfigurabilni pipeline za izgradnju s podrškom za tijesnu integraciju
+\end{itemize} \cite{truffle_documentation}
+
+Truffle Suite se instalira koristeći \texttt{npm
+} biblioteku. Inicializacija projekta vrši se komandom \texttt{truffle init}, a kao referencu za početne primjere mogu se uzeti razni predlođci (\textit{engl. Boxes}). Nakon inicijalizacije projekta, generira se projektna struktura i može se započeti s razvojem \cite{truffle_boxes_collection}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{slike/truffle_vsc.png}
+    \caption{Struktura početnog Truffle projekta \cite{truffle_vsc}}
+    \label{oznaka}
+\end{figure}
+
+Za razvoj u sigurnom okruženju, potrebno je lokalno simulirati blockchain mrežu kako bi se testirali ugovori prije nego što se implementiraju na stvarnu mrežu. Ulogu sigurnog testnog okruženja prauzima Ganache, koji je lokalni blockchain dizajniran za brzi razvoj i testiranje Ethereum i Filecoin aplikacija. Pruža sigurno i kontrolirano okruženje za izgradnju, implementaciju i testiranje DApp-ova tijekom razvojnog ciklusa.
+Dolazi u dvije verzije: \textbf{Ganache UI}, desktop aplikacija za Ethereum i Filecoin, i \textbf{Ganache CLI} prilagođen za Ethereum. Ključne značajke uključuju:
+
+\begin{itemize}
+    \item Solidity debugging s console.log-om
+
+    \item Mainnet/testnet račvanje(fork) bez konfiguracije
+    
+    \item Trenutačno rudarenje blokova i manipulacija vremenom
+    
+    \item Snimka i vraćanje stanja
+    
+    \item Ethereum JSON-RPC podrška preko HTTP/WebSoket-a
+    
+    \item Oponašanje računa bez privatnih ključeva
+    
+    \item Integracija s Node.js za automatizaciju
+\end{itemize} \cite{ganache_documentation}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{slike/ganache-accounts.png}
+    \caption{Ganache sučelje \cite{ganache_ethereum_workspace}}
+    \label{oznaka}
+\end{figure}
+
+\section{Etherscan}
+
+\textbf{Etherscan} je platforma za istraživanje blokova u blockchainu (engl. \textit{block explorer}) koja prati i sortira podatke na Ethereum blockchainu i prezentira ih kao lako-navigabilne informacije \cite{noauthor_what_etherscan_nodate}, pruživši pritom prijateljsko korisničko sučelje.
+Pomaže korisnicima da vizualiziraju blockchain, odnosno funkcionira kao "tražilica" (engl. \textit{search engine}) na blockchainu \cite{noauthor_what_etherscan_nodate}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{slike/etherscan_pocetna.png}
+    \caption{Početna stranica \url{https://etherscan.io/} \cite{etherscanio_homepage}}
+\end{figure}
+
+Neke od mogućnosti Etherscana su sljedeće \cite{noauthor_what_etherscan_nodate}:
+omogućuje praćenje transakcija na blockchainu, interakciju ugovora, mrežne statistike \cite{sehgal_comprehensive_2024} ili NFT kovnice, iznose novčanika i ostalo \cite{noauthor_what_etherscan_nodate}. Tako Etherscan pomaže u prepoznavanju i ublažavanju potencijalnih prijetnji \cite{sehgal_comprehensive_2024}.
+Također pomaže sa sljedećim pitanjima \cite{what_is_etherscan_coinledger}:
+\begin{itemize}
+    \item "Je li transakcija potvrđena na blockchainu?"
+    \item "Koliko je \textit{gasa} potrošeno na transakciju?"
+    \item "Sa kojim adresama novčanika sam imao transakcije u prošlosti?"
+    \item "Gdje je moj kripto novčanik otišao?"
+    \item "Sa kojim decentraliziranim aplikacijama i pametnim ugovorima sam imao interakciju u prošlosti?"
+\end{itemize}
+
+Etherscan radi tako što "dohvaća Ethereum podatke u stvarnom vremenu, održavajući organiziran zapis podataka i predstavlja ih korisnicima u gotovo stvarnom vremenu" \cite{noauthor_what_etherscan_nodate}. Za komunikaciju s Ethereumom koristi RPC (\textit{remote procedure call}) protokol \cite{noauthor_what_etherscan_nodate}.
+Da bi se koristio, potrebna je adresa Ethereum novčanika, pametnog ugovora ili ID transakcije \cite{what_is_etherscan_bitstamp}.
+Također se tokeni mogu pretraživati po nazivu \cite{what_is_etherscan_bitstamp}.
+
+Etherscan ima vlastiti API za developere koji omogućuje direktan pristup Etherscanovom \textit{block exploreru} preko GET i POST zahtjeva \cite{noauthor_introduction_etherscan_1_2025}.
+Pomoću tog API-ja moguće je pristupiti podacima o transakcijama, pametnim ugovorima, računima, statistikama i ostalim dijelovima Ethereum blockchaina \cite{noauthor_etherscan_4_2020}.
+Sljedeća slika prikazuje planove za korištenje njihove API platforme \cite{noauthor_etherscan_2_nodate}:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{slike/etherscan_planovi.png}
+    \caption{Planovi za korištenje Etherscan API \cite{noauthor_etherscan_2_nodate}}
+\end{figure}
+
+Primjer korištenja bio bi dobivanje izvornog koda pametnog ugovora \cite{noauthor_contracts_etherscan_3_2025}:
+\begin{listing}[H]
+    \begin{minted}{text}
+        https://api.etherscan.io/v2/api
+            ?chainid=1
+            &module=contract
+            &action=getabi
+            &address=0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413
+            &apikey=YourApiKeyToken
+    \end{minted}
+    \caption{API putanja za dobivanje izvornog koda pametnog ugovora \cite{noauthor_contracts_etherscan_3_2025}}
+\end{listing}
+API ključ se može dobiti na stranici \url{https://docs.etherscan.io/etherscan-v2/getting-started/getting-an-api-key}, ako prethodno postoji račun na Etherscanu.
+
+Iako je Etherscan moćan alat, neće se koristiti u praktičnom dijelu ovog rada, jer će se Truffle Suite Ganache koristiti lokalno, a Etherscan radi samo s javnim mrežama \cite{boetticher_answer_etherscan_5_2022}.
+Sam Ganache dolazi s \textit{block explorerom} \cite{ganache_documentation} i to će se koristiti.
+
+\section{Securify}
+
+\textbf{Securify} je sigurnosni skener za pametne ugovore na Ethereumu \cite{noauthor_eth-srisecurify2_2025}. Specijaliziran je za "formalnu verifikaciju pametnih ugovora, osiguravajući da se pridržavaju unaprijed definiranih sigurnosnih specifikacija" \cite{sehgal_comprehensive_2024}.
+Koristeći Securify analizirano je preko 18 tisuća pametnih ugovora \cite{sehgal_comprehensive_2024}.
+Dostupan je na GitHubu na sljedećoj poveznici: \url{https://github.com/eth-sri/securify2}.
+Analiza pametnog ugovora koristeći Securify provodi se u 2 koraka \cite{tsankov_securify_2018}:
+\begin{enumerate}
+    \item Simbolički analizira graf ovisnosti pametnih ugovora za izdavanje precizne semantičke informacije iz koda.
+    \item Provjerava sukladnosti koda sa poznatim sigurnosnim pravilima i ranjivostima, kako bi identificirao moguće ranjivosti.
+\end{enumerate}
+Securify prepoznaje 37 ranjivosti, kao što su DAO ranjivost, UnrestrictedWrite ili UnhandledException \cite{noauthor_eth-srisecurify2_2025}.
+Klasificira detektirana ponašanja pametnog ugovora u sljedeće kategorije \cite{tsankov_securify_2018}:
+\begin{itemize}
+    \item \textit{Violations}: definitivna kršenja sigurnosti.
+    \item \textit{Warnings}: upozorenja, na korisniku je hoće li ih ispraviti ili neće \cite{tsankov_securify_2018}.
+    \item \textit{Compliant}: sigurna ponašanja pametnog ugovora.
+\end{itemize}
+
+Securify je ovdje u prednosti jer za razliku od drugih alata za analizu pametnih ugovora, ne klasificira ponašalja isključivo kao pozitivna i negativna (što može dovesti do \textit{false positive}), nego dopušta korisnicima da \textit{warning} protumače kako žele \cite{tsankov_securify_2018}.
+Svi \textit{violations} su sigurno kršenje i dovode do ranjivosti te ih treba ispraviti.
+
+Sljedeći isječak programskog koda prikazuje ranjivost u programskom jeziku Solidity \cite{tsankov_securify_2018}:
+\begin{listing}[H]
+    \begin{minted}{solidity}
+        contract OwnableWallet {
+            address owner;
+            // called by the constructor
+            function initWallet(address _owner) {
+                owner = _owner; // any user can change owner
+                // more setup
+            }
+            // function that allows the owner to withdraw ether
+            function withdraw(uint _amount) {
+                if (msg.sender == owner) {
+                    owner.transfer(_amount);
+                }
+            }
+            // ...
+        }
+    \end{minted}
+    \caption{Ranjivost koja omogućuje bilo kojem korisniku da promijeni vlasnika \cite{tsankov_securify_2018}}
+\end{listing}
+Programski isječak iznad je pojednostavljena verzija prave ranjivosti u novčaniku, koja je omogućila napadaču da u srpnju 2017. godine ukrade 30 milijuna dolara \cite{tsankov_securify_2018}.
+Securify prepoznaje propust u redu \texttt{owner = \_owner} i može spriječiti izdavanje pametnog ugovora s ovom ranjivošću.
+
+\section{Hyperledger Caliper}
+
+Hyperledger Caliper je open-source alat za mjerenje performansi blockchain mreža, razvijen unutar Hyperledger projekta \cite{hyperledger_fundation}. Caliper omogućuje korisnicima da testiraju i ocjenjuju performanse različitih blockchain rješenja (uključujući Hyperledger Fabric, Ethereum, Hyperledger Besu i druge) pomoću unaprijed definiranih testova i scenarija. Glavne značajke su:
+
+\begin{itemize}
+    \item \textbf{Performansno testiranje:} omogućuje simulaciju stvarnih scenarija kako bi se testirale performanse blockchain mreže, uključujući brzinu transakcija, latenciju, propusnost i druge ključne metrike.
+
+    \item \textbf{Podrška za više blockchain platformi:} podržava različite blockchain platforme, što omogućuje usporedbu performansi između njih (npr. Hyperledger Fabric, Ethereum, i drugi).
+
+    \item \textbf{Automatizacija testiranja:} omogućava automatizirano izvođenje testova performansi u različitim uvjetima, što olakšava analizu učinkovitosti blockchain mreže tijekom vremena ili pod različitim uvjetima opterećenja.
+
+    \item \textbf{Analiza i izvještaji:} pruža detaljne izvještaje o rezultatima testiranja, što pomaže u prepoznavanju potencijalnih problema u performansama blockchain sustava i u optimizaciji rada mreže.
+\end{itemize} \cite{hyperledger_geeks} \cite{hyperledger_introduction_nodate}
+
+Caliper dolazi u oblik sučelja naredbenog retka (CLI). Glavne komande za izvršavanje u programu su:
+\begin{itemize}
+    \item \texttt{\textbf{bind}} - određuje koju platformu treba ciljati i koju verziju SDK platforme treba koristiti. \\
+    Primjer korištenja:\\
+    \texttt{caliper bind --caliper-bind-sut fabric:fabric-gateway --caliper-bind-cwd ./ --caliper-bind-args="-g"}
+        
+  \item \texttt{\textbf{unbind}} - CLI pruža naredbu za odvajanje, ako se želi prebacivati između SUT SDK verzija/vezivanja tijekom mjerenja ili razvoja projekta. Ova naredba koristi iste argumente kao i naredba za vezivanje, ali umjesto instaliranja paketa, ona ih uklanja, čime se izbjegavaju neželjeni paketi i nejasne pogreške pri ponovnom povezivanju
+  
+    \item \texttt{\textbf{launch}} - dolazi sa dvije podkomande, manager i worker. Radnički procesi Calipera odgovorni su za generiranje radnog opterećenja tijekom izvođenja referentne vrijednosti. Obično se izvodi više od jednog radnog procesa, koordiniran od strane jednog procesa upravitelja.\\
+    Primjer korištenja:\\
+    \texttt{caliper launch manager --caliper-bind-sut fabric:2.2 [other options]}
+
+    \item \texttt{\textbf{completion}} - generirata skriptu za završetak
+\end{itemize} \cite{hyperledger_installing}
+
+\chapter{Demonstracije}
+
+U ovom poglavlju prikazane su demonstracije nekoliko poznatih napada na blockchain sustave kao ilustracija njihove sigurnosne ranjivosti u praksi. Fokus imaju tri tipa napada: 51 napad, iskorištavanje ranjivosti pametnih ugovora te eclipse napad. Za potrebe demonstracije korišteni su alati poput Truffle Suite, Ganache te dodatne razvojne i analitičke alate koji omogućuju simulaciju stvarnog blockchain okruženja i ponašanja mreže.
+
+\section{Instalacija Truffle i Truffle Suite Ganache}
+
+U određenim primjerima koristit će se Truffle i Truffle Suite Ganache. Prije kreiranja novog Truffle projekta, potrebno ga je instalirati koristeći naredbu \texttt{npm install truffle -g} \cite{truffle_yt_install}.
+Zatim se novi projekt pravi koristeći naredbu \texttt{truffle init} \cite{truffle_yt_install}. Struktura novog projekta je sljedeća:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{slike/truffle_prazan_projekt.png}
+    \caption{Struktura strukture Truffle projekta [slika zaslona]}
+\end{figure}
+
+Sljedeći korak je instalacija Truffle Suite Ganache, koji je dostupan na poveznici \url{https://archive.trufflesuite.com/ganache/}.
+Nakon što se preuzme i pokrene, otvara se sljedeći prozor:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{slike/ganache_pocetna.png}
+    \caption{Pokrenut Truffle Suite Ganache [slika zaslona]}
+\end{figure}
+
+Odabirom opcije \textit{Quickstart}, kreira se novi lokalni \textit{blockchain}. Tada su vidljive sve informacije o tom blockchainu i projektu:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{slike/truffle_projekt.png}
+    \caption{Projekt unutar Truffle Suite Ganache [slika zaslona]}
+\end{figure}
+
+Kako bi se povezao Truffle projekt sa blockchainom unutar Truffle Suite Ganache, potrebno je učiniti sljedeće \cite{truffle_yt_ganache}:
+\begin{enumerate}
+    \item Izmijeniti datoteku \textit{truffle-config.js} unutar Truffle projekta.
+    \item Povezati projekt odabirom opcije \textit{Link Truffle Projects} unutar samog Truffle Suite Ganache.
+\end{enumerate}
+
+Datoteka \textit{truffle-config.js} mijenja se tako da se otkomentira \texttt{networks} dio i \texttt{development} dio i upiše IP i port koji se javlja untuar Truffle Suite Ganache:
+\begin{listing}[H]
+    \begin{minted}{javascript}
+networks: {
+    development: {
+        host: "127.0.0.1",     // Localhost (default: none)
+        port: 7545,            // Standard Ethereum port (default: none)
+        network_id: "*",       // Any network (default: none)
+    },
+// Ostatak...
+    \end{minted}
+    \caption{Dio koda unutar \textit{truffle-config.js}}
+\end{listing}
+
+Unutar Truffle Suite Ganache je potrebno otići na karticu \textit{Contracts}:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{slike/tsg_contracts.png}
+    \caption{Kartica \textit{Contracts} unutar Truffle Suite Ganache [slika zaslona]}
+\end{figure}
+
+Odabirom opcije \textit{Link Trufffle Projects} i dodavanjem datoteke \textit{truffle-config.js} novokreiranog projekta, Truffle Suite Ganache je povezan s istim.
+
+\subsection{Pisanje i izvršavanje pametnih ugovora}
+
+Unutar Truffle projekta, kreira se nova \textit{.sol} datoteka što predstavlja pametni ugovor pisan u programskom jeziku Solidity.
+Primjer pametnog ugovora koji će se izvršavati je sljedeći:
+
+\begin{listing}[H]
+    \begin{minted}{solidity}
+        // SPDX-License-Identifier: GPL-3.0
+
+        pragma solidity >=0.8.2 <0.9.0;
+        contract Storage {
+
+            uint256 number;
+
+            function store(uint256 num) public {
+                number = num;
+            }
+
+            function retrieve() public view returns (uint256){
+                return number;
+            }
+        }
+    \end{minted}
+    \caption{Jednostavan pametni ugovor Storage \cite{remix_ide}}
+\end{listing}
+
+Osim pametnog ugovora u direktoriju \textit{contracts}, potrebno je napraviti još jednu datoteku unutar direktorija \textit{migrations}.
+To je JavaScript datoteka za izdavanje ugovora, naziva se \textit{1\_deploy\_contracts.js}:
+
+\begin{listing}[H]
+    \begin{minted}{javascript}
+        const Storage = artifacts.require('Storage.sol');
+
+        module.exports = function(deployer) {
+            deployer.deploy(Storage);
+        }
+    \end{minted}
+    \caption{Datoteka \textit{1\_deploy\_contracts.js} \cite{truffle_yt_long}}
+\end{listing}
+
+Kako bi se pametni ugovor \textit{deployao}, potrebno je izvršiti sljedeće naredbe po redu \cite{truffle_yt_long}:
+
+\begin{enumerate}
+    \item \texttt{truffle compile} - kompajlira pametni ugovor
+    \item \texttt{truffle console ---network development} - otvara Truffle konzolu iz koje će se deployati pametni ugovor
+    \item \texttt{migrate ---reset} - deploya pametni ugovor
+\end{enumerate}
+
+Pametni ugovor je deployan i vidljiv je unutar Truffle Suite Ganache:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{slike/pametni_ugovor_unutar_tsg.png}
+    \caption{Deployan pametni ugovor unutar Truffle Suite Ganache [slika zaslona]}
+\end{figure}
+
+Kako bi se isprobavao, može se testirati unutar \textit{truffle console}.
+
+\section{51\% napad, Double spending, Truffle Suite Ganache}
+
+Ova demonstracija prikazuje kako 51\% napad funkcionira na blockchainu, konkretno napad "dvostruke potrošnje" (engl. double spend) gdje napadač troši ista sredstva dvaput stvaranjem dužeg lanca koji ne uključuje njegovu originalnu transakciju.
+
+\subsection{Kako napad funkcionira}
+
+U stvarnom scenariju:
+\begin{enumerate}
+    \item \textbf{Početni polog}: Napadač polaže sredstva na Bank ugovor.
+    \item \textbf{Stvaranje forka}: Napadač tajno počinje stvarati fork (grananje) blockchaina od ove točke.
+    \item \textbf{Javna isplata}: Napadač povlači sredstva na javnom/glavnom lancu.
+    \item \textbf{Tajno rudarenje}: U međuvremenu, napadač rudari blokove na svom privatnom forku (ne uključujući isplatu).
+    \item \textbf{Reorganizacija lanca}: Jednom kada napadačev fork postane duži od javnog lanca, on postaje novi kanonski lanac.
+    \item \textbf{Dvostruka potrošnja}: Originalna transakcija isplate sada je "izbrisana" iz povijesti, omogućujući napadaču da ponovno povuče svoja sredstva.
+\end{enumerate}
+
+\subsection{Kako funkcionira simulacija}
+
+Budući da je postavljanje više blockchain čvorova složeno, simulacija koristi Ganacheovu funkcionalnost snimanja/vraćanja stanja (snapshot/revert) kako bi demonstrirala isti koncept:
+\begin{enumerate}
+    \item Polažu se sredstva na ugovor.
+    \item Snima se stanje blockchaina (predstavljajući točku grananja).
+    \item Povlače se sredstva (predstavljajući isplatu na javnom lancu).
+    \item Vraća se na snimku stanja (simulirajući prebacivanje na napadačev lanac).
+    \item Rudari se nekoliko blokova kako bi se ovaj lanac učinio "dužim".
+    \item Ponovno se povlače sredstva (predstavljajući drugu isplatu na napadačevom lancu).
+\end{enumerate}
+
+\subsection{Upute za Postavljanje}
+
+\begin{enumerate}
+    \item Pokrenuti Ganache na zadanom portu (7545).
+    \item Postavite (deploy) Bank ugovor.
+    \item Ažurirati adresu ugovora u datoteci \texttt{attackSimulation.js}.
+    \item Pokrenuti simulaciju naredbom \texttt{node attackSimulation.js}.
+\end{enumerate}
+
+\subsection{Sigurnosne Implikacije}
+
+Ova demonstracija pokazuje zašto:
+\begin{enumerate}
+    \item \textbf{Zahtjevi za potvrdom}: Mjenjačnice čekaju višestruke potvrde prije prihvaćanja pologa.
+    \item \textbf{Veličina mreže je bitna}: Manji blockchaini su ranjivi na napade rudara sa značajnom hash snagom.
+    \item \textbf{Ekonomija sigurnosti}: Sigurnost blockchaina izravno je povezana s troškom stjecanja 51\% rudarske snage.
+\end{enumerate}
+
+\subsection{Strategija}
+
+Neke strategije za spriječavanje ovih napada uključuju:
+\begin{itemize}
+    \item \textbf{Odgođene potvrde}: Zahtijevanje više potvrda blokova za transakcije visoke vrijednosti.
+    \item \textbf{Specifični mehanizmi obrane za lanac}: Poput Ethereumovih "uncle" blokova.
+    \item \textbf{Unakrsna validacija lanaca}: Korištenje kontrolnih točaka (checkpointa) potvrđenih od strane drugih blockchaina.
+    \item \textbf{Dokaz o ulogu (Proof of Stake)}: Činjenje napada prohibitivno skupima zbog potrebnog uloga.
+\end{itemize}
+
+\subsection*{Ograničenja simulacije drugih 51\% napada u Ganacheu}
+
+Iako Ganache izvrsno služi za demonstraciju napada dvostruke potrošnje pomoću svojih funkcionalnosti snimanja i vraćanja stanja (\texttt{evm\_snapshot} i \texttt{evm\_revert}), važno je napomenuti da je Ganache prvenstveno alat za lokalni razvoj i testiranje. On simulira jedan, izolirani blockchain čvor pod potpunom kontrolom korisnika. Zbog toga su neki drugi oblici 51\% napada, koji se oslanjaju na dinamiku decentralizirane mreže s više neovisnih rudara i mrežne latencije, teško ili nemoguće vjerno simulirati isključivo unutar Ganachea.
+
+Sljedeći 51\% napadi (ili srodne strategije) su primjeri onoga što je teško simulirati u Ganacheu na način koji bi odražavao stvarne uvjete:
+
+\begin{itemize}
+    \item \textbf{Cenzura transakcija (Transaction Censorship):}
+    U stvarnom 51\% napadu, napadač koji kontrolira većinu hash snage može odbiti uključiti određene transakcije u blokove koje rudari. U Ganacheu, transakcije se obično automatski uključuju u sljedeći blok kada se rudari (ili kada se pozove \texttt{evm\_mine}). Iako se može ručno upravljati redoslijedom transakcija do neke mjere slanjem jedne po jedne i rudarenjem, Ganache ne nudi jednostavan mehanizam za simulaciju rudara koji aktivno i selektivno cenzurira transakcije iz \textit{mempoola} na način na koji bi to radio maliciozni entitet s većinskom snagom u pravoj mreži.
+
+    \item \textbf{Strateško rudarenje praznih blokova (Strategic Empty Block Mining):}
+    Napadač s 51\% snage mogao bi rudariti prazne blokove kako bi usporio mrežu ili spriječio druge da potvrde transakcije, dok i dalje prikuplja nagrade za blok. Iako Ganache može izrudariti prazan blok (pozivom \texttt{evm\_mine} kada nema transakcija na čekanju), simulacija \textit{strateškog} i \textit{kontinuiranog} rudarenja praznih blokova s ciljem narušavanja mreže ili stjecanja prednosti nad drugim (nepostojećim u Ganache simulaciji) rudarima nije nešto za što je Ganache dizajniran. Nedostaje element natjecanja i utjecaja na druge rudare.
+
+    \item \textbf{Namjerno stvaranje orphan blokova drugih rudara (Intentional Orphan-Block Creation):}
+    Dok naša simulacija dvostruke potrošnje rezultira orphaniranjem bloka koji sadrži prvu isplatu, scenarij gdje napadač aktivno radi na tome da blokovi drugih, poštenih rudara postanu orphan (bez nužne dvostruke potrošnje) zahtijeva simulaciju više konkurentskih rudara i mrežne propagacije blokova. Ganache funkcionira kao jedinstveni autoritet nad lancem i ne simulira postojanje drugih, konkurentskih rudara čije bi blokove napadač mogao ciljano orphanirati.
+
+    \item \textbf{Sebično rudarenje (Selfish Mining):}
+    Ovo je složena strategija gdje napadač tajno rudari blokove na svom privatnom lancu i pušta ih u mrežu u strateškim trenucima kako bi maksimizirao svoj profit na štetu poštenih rudara (npr. uzrokujući da njihovi blokovi postanu orphan i da napadač dobije prednost). Simulacija ovoga zahtijeva modeliranje mrežne latencije, komunikacije između više neovisnih rudara koji se natječu, i preciznog vremenskog usklađivanja objave blokova. Ove kompleksne interakcije mrežne dinamike nadilaze standardne mogućnosti Ganachea kao alata za testiranje pametnih ugovora na jednom čvoru.
+\end{itemize}
+
+Ukratko, Ganache je izuzetno koristan za razumijevanje mehanike blockchaina na lokalnoj razini i za testiranje pametnih ugovora, uključujući i demonstraciju koncepta dvostruke potrošnje kroz manipulaciju stanjem lanca. Međutim, za potpunu i vjernu simulaciju složenijih napada koji proizlaze iz dinamike i natjecateljske prirode decentralizirane mreže s više sudionika, bili bi potrebni specijaliziraniji alati za simulaciju mreže ili postavljanje privatne testne mreže s više čvorova.
+
+\section{Smart contract ranjivosti, Truffle Suite Ganache, Securify}
+
+Za statičku analizu programskog koda pametnog ugovora, koristit će se alat Securify2,
+dostupan na poveznici \url{https://github.com/eth-sri/securify2}.
+
+Na uspostavljenom Truffle blockchainu deployati će se pametni ugovor \texttt{OwnableWallet}:
+\begin{listing}[H]
+    \begin{minted}{solidity}
+        // SPDX-License-Identifier: MIT
+        pragma solidity >=0.5.12;
+
+        contract OwnableWallet {
+            address payable owner;
+            
+            function initWallet(address payable _owner) external {
+                owner = _owner;
+            }
+
+            function withdraw(uint _amount) external {
+                if (msg.sender == owner) {
+                    owner.transfer(_amount);
+                }
+            }
+        }
+    \end{minted}
+    \caption{Malo izmijenjen pametni ugovor OwnableWallet \cite{tsankov_securify_2018}}
+\end{listing}
+
+Iako pametni ugovor izgleda jednostavno, ima jednu veliku ranjivost. Prije deployanja potrebno je ispitati pametni ugovor koristeći Securify2.
+
+Kako bi se instalirao Securify2, potrebno je prvo klonirati repozitorij koristeći naredbu \texttt{git clone https://github.com/eth-sri/securify2.git}.
+Koristit će se putem Dockera, pa je potrebno pratiti upute vezane uz instalaciju koristeći Docker sa poveznice \url{https://github.com/eth-sri/securify2}.
+Pošto je projekt nešto stariji, treba napraviti određene izmjene unutar \textit{Dockerfile} unutar samog repozitorija:
+\begin{enumerate}
+    \item Primijeniti promjenu sa \textit{pull requesta} na poveznici \url{https://github.com/eth-sri/securify2/pull/46}
+    \item Maknuti dio na liniji 61 \texttt{RUN cd /sec/securify/ \&\&...}
+\end{enumerate}
+Nakon što su ti koraci gotovi, moguće je izgraditi Docker kontejner koristeći naredbu \texttt{sudo docker build -t securify .}.
+Kako bi se analizirao pametni ugovor, koristi se naredba \texttt{sudo docker run -it -v "\textit{puna-putanja-do-ugovora}:/share/\textit{naziv-ugovora}.sol" securify /share/\textit{naziv-ugovora}.sol}.
+
+Pametni ugovor \textit{OwnableWallet} analizira se koristeći Securify2 na gore spomenut način. Neke od ranjivosti koje su se ispisale u konzolu su sljedeće:
+\begin{listing}[H]
+    \begin{minted}{text}
+Severity:    CRITICAL
+Pattern:     Transaction Order Affects Execution of Ether Transfer
+Description: Ether transfers whose execution can be manipulated by
+             other transactions must be inspected for unintended
+             behavior.
+Type:        Violation
+Contract:    OwnableWallet
+Line:        13
+Source: 
+>         if (msg.sender == owner) {
+>             owner.transfer(_amount);
+>             ^^^^^^^^^^^^^^^^^^^^^^^
+>         }
+
+
+Severity:    HIGH
+Pattern:     Uninitialized State Variable
+Description: State variables should be explicitly initialized.
+Type:        Violation
+Contract:    OwnableWallet
+Line:        5
+Source: 
+> contract OwnableWallet {
+>     address payable owner;
+>     ^^^^^^^^^^^^^^^^^^^^^
+>     
+
+
+Severity:    CRITICAL
+Pattern:     Unrestricted write to storage
+Description: Contract fields that can be modified by any user must be
+             inspected.
+Type:        Violation
+Contract:    OwnableWallet
+Line:        8
+Source: 
+>     function initWallet(address payable _owner) external {
+>         owner = _owner;
+>         ^^^^^^^^^^^^^^
+>     }
+    \end{minted}
+    \caption{Ranjivosti koje je ispisao Securify2 za pametni ugovor \textit{OwnableWallet} [vlastiti rad]}
+\end{listing}
+
+Zadnja ranjivost je \textbf{critical} i ako se ne ispravi, omogućuje bilo kojem korisniku da promijeni vlasnika novčanika.
+Ispravljen pametni ugovor bi bio sljedeći:
+\begin{listing}[H]
+    \begin{minted}{solidity}
+        // SPDX-License-Identifier: MIT
+        pragma solidity >=0.6.0;
+
+        contract OwnableWalletFixed {
+            address payable owner;
+
+            constructor() public {
+                owner = payable(msg.sender);
+            }
+
+            function initWallet(address payable _owner) external {
+                require(owner == address(0), "Vlasnik je vec postavljen");
+                owner = _owner;
+            }
+
+            function withdraw(uint _amount) external {
+                if (msg.sender == owner) {
+                    owner.transfer(_amount);
+                }
+            }
+        }
+    \end{minted}
+    \caption{Ispravljen pametni ugovor OwnableWallet \cite{tsankov_securify_2018}}
+\end{listing}
+
+U ispravljenom pametnom ugovoru više nema ranjivosti jer se vlasnik sada postavlja samo jednom.
+
+\subsection{Strategija}
+
+Jako je jednostavno ostaviti kritičnu grešku unutar pametnog ugovora i deployati takav, pa je samo pitanje vremena kad će netko otkriti ranjivost i iskoristiti ju.
+Koristeći alat poput Securify2, na iznimno brz i jednostavan način moguće je ispitati sve ranjivosti i ispraviti ih prije nego što se pametni ugovor krene stvarno koristiti.
+Jedina mana alata Securify2 je što je star četiri godine, i ne radi s novijim verzijama Solidityja, no pošto je to alat otvorenog koda, ako je nekome stvarno potreban, može ga nadograditi.
+Tako su se javljali i problemi kod korištenja alata jer je primjer spušten na verziju Solidity kompajlera 0.5.12 radi demonstracije.
+
+\section{Eclipse napad, Hyperledger Besu}
+
+Za simuliranje Eclipse napada korišten je alat Hyperledger Besu koji je Ethereum klijent otvorenog koda napisan u Java jeziku \cite{Besu_welcome}.
+U svrhu simuliranja korišten je Hyperledger Besu kroz Docker kontejner zbog lakšeg korištenja. Sve upute za ovaj napad napisane su za Ubuntu distribuciju. Kako bi se koristio alat potrebno je instalirati Docker i njegov Docker Compose dodatak što se može napraviti sa sljedećim koracima:
+% \begin{listing}[H]
+%     \begin{minted}{bash}
+        
+%     \end{minted}
+%     \caption{}
+% \end{listing}
+
+\begin{listing}[H]
+    \begin{minted}{bash}
+        sudo  apt update && sudo apt install -y docker.io
+        docker --version
+
+        sudo apt update
+        sudo apt install ca-certificates curl gnupg
+        sudo install -m 0755 -d /etc/apt/keyrings
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+        echo \
+            "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+            https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | \
+            sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+        sudo apt update
+
+        sudo apt install docker-compose-plugin
+
+        docker compose version
+    \end{minted}
+    \caption{Naredbe za instalaciju programa Docker i dodatka Docker Compose}
+\end{listing}
+
+Ako zadnja naredba ispisuje verziju, znači da je sve uspješno instalirano i spremno za pokretanje alata. Sljedeće je potrebno napraviti sljedeću strukturu direktorija:
+\begin{listing}[H]
+    \begin{minted}{bash}
+        mkdir -p besu-config/victim/data
+        mkdir -p besu-config/honest/data
+        mkdir -p besu-config/attacker1/data
+        mkdir -p besu-config/attacker2/data
+    \end{minted}
+    \caption{Naredbe za izradu strukture direktorija}
+\end{listing}
+
+Ova struktura se koristi kako bi svaki čvor mogao pohraniti svoje podatke u svoj direktorij.
+Sljedeća se Docker yaml datoteka \cite{Besu_docker} koristi za jednostavno podizanje četiri različita čvora: žrtva, pošteni, napadač 1 i napadač 2.
+
+\begin{center}
+    \begin{minted}[breaklines=true, breakanywhere=true]{yaml}
+        
+        services:
+        victim:
+            image: hyperledger/besu:latest
+            volumes:
+            - ./besu-config/victim:/config
+            command: >
+            --network=dev
+                --data-path=/config/data
+                --rpc-http-enabled
+                --rpc-http-host=0.0.0.0
+            --rpc-http-api=ADMIN,NET,ETH,WEB3,MINER
+                --host-allowlist=*
+                --p2p-port=30303
+                --discovery-enabled=true
+                --miner-enabled
+                --miner-coinbase=0x0000000000000000000000000000000000000001
+                --bootnodes=
+            ports:
+            - "8545:8545"
+            - "30303:30303"
+            networks:
+            besu-net:
+                ipv4_address: 172.28.0.10
+
+        honest:
+            image: hyperledger/besu:latest
+            volumes:
+            - ./besu-config/honest:/config
+            command: >
+            --network=dev
+                --data-path=/config/data
+                --rpc-http-enabled
+                --rpc-http-host=0.0.0.0
+                --host-allowlist=*
+                --miner-enabled
+                --miner-coinbase=0x0000000000000000000000000000000000000001
+            --rpc-http-api=ETH,NET,WEB3,MINER
+                --bootnodes=
+            networks:
+            besu-net:
+                ipv4_address: 172.28.0.11
+
+        attacker1:
+            image: hyperledger/besu:latest
+            volumes:
+            - ./besu-config/attacker:/config
+            command: >
+            --network=dev
+                --data-path=/config/data
+                --rpc-http-enabled
+                --rpc-http-host=0.0.0.0
+                --host-allowlist=*
+                --miner-enabled
+                --miner-coinbase=0x0000000000000000000000000000000000000002
+            --rpc-http-api=ETH,NET,WEB3,MINER
+            networks:
+            besu-net:
+                ipv4_address: 172.28.0.12
+
+        attacker2:
+            image: hyperledger/besu:latest
+            volumes:
+            - ./besu-config/attacker2:/config
+            command: >
+            --network=dev
+                    --data-path=/config/data
+                    --rpc-http-enabled
+                    --rpc-http-host=0.0.0.0
+                    --host-allowlist=*
+                    --miner-enabled
+                    --miner-coinbase=0x0000000000000000000000000000000000000001
+                --rpc-http-api=ETH,NET,WEB3,MINER
+            networks:
+            besu-net:
+                ipv4_address: 172.28.0.13
+
+        networks:
+        besu-net:
+            driver: bridge
+            ipam:
+            config:
+                - subnet: 172.28.0.0/16
+    \end{minted}
+    \captionof{listing}{yaml datoteka za podizanje čvorova koristeći Docker}
+\end{center}
+
+Pod “image” je za svaki čvor dana najnovija Hyperledger Besu slika, pod “volumes” je svaki čvor upućen na direktorij gdje će pohranjivati svoje podatke. Pod “command” je postavljeno da svaki čvor odmah počinje sa rudarenjem kada se pokrene i da se koristi razvojni način rada. Za svaki čvor je pod “ports” postavljeno koje mrežne priključke taj čvor koristi, a pod “networks” koja je IPv4 adresa tog čvora. Važno je napomenuti da su IP adrese čvorova sljedeće:
+\begin{itemize}
+    \item \textbf{žrtva} - 172.28.0.10
+    \item \textbf{pošteni} - 172.28.0.11
+    \item \textbf{napadač 1} - 172.28.0.12
+    \item \textbf{napadač 2} - 172.28.0.13
+\end{itemize}
+
+Za pokretanje rada izvršava se sljedeća naredba.
+\begin{listing}[H]
+    \begin{minted}{bash}
+        docker compose up --force-recreate
+    \end{minted}
+    \caption{Naredba za pokretanje rada Docker kontejnera}
+\end{listing}
+
+Zatim je potrebno u drugom terminalu koji će biti korišten za rad izvršiti sljedeću naredbu kako bi se verificiralo da su svi čvorovi ispravno podignuti.
+\begin{listing}[H]
+    \begin{minted}{bash}
+        docker ps
+    \end{minted}
+    \caption{Naredba za provjeru pokrenutih kontejnera}
+\end{listing}
+
+Rezultat naredbe bi trebao biti poput sljedećeg:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{slike/docker_ps.png}
+    \caption{Podignuti čvorovi u Docker kontejnerima}
+\end{figure}
+
+Čvorovi su počeli sa rudarenjem. U svrhu demonstracije pretpostavka je da čvor žrtve može primiti do maksimalno dvije konekcije s drugim čvorovima, tj. da mu je veličina tablice peerova 2. Za bolju preglednost, gotovo sve sljedeće naredbe svoj rezultat preusmjeravaju u datoteke. Kako bi provjerili čvorove s kojima je povezan čvor žrtve, potrebno je izvršiti naredbu:
+\begin{listing}[H]
+    \begin{minted}{bash}
+        curl http://localhost:8545 -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"admin_peers","params":[],"id":1}' > zrtva_peers.json
+    \end{minted}
+    \caption{Naredba za provjeru povezanih čvorova}
+\end{listing}
+
+Ova naredba vraća da je popis konekcija čvora žrtve trenutno prazan:
+\begin{listing}[H]
+    \begin{minted}{json}
+        {"jsonrpc":"2.0","id":1,"result":{"peers":[]}}
+    \end{minted}
+    \caption{Rezultat provjere povezanih čvorova}
+\end{listing}
+
+Sljedeće je potrebno izvršiti naredbe:
+\begin{listing}[H]
+    \begin{minted}{bash}
+        curl http://172.28.0.11:8545 -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' > posteni_blok.json
+        curl http://172.28.0.10:8545 -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' > zrtva_blok.json
+        curl http://172.28.0.12:8545 -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' > napadac1_blok.json
+        curl http://172.28.0.13:8545 -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' > napadac2_blok.json
+    \end{minted}
+    \caption{Naredbe za provjeru trenutnog bloka svakog čvora}
+\end{listing}
+
+Ove naredbe za svaki čvor vraćaju broj bloka kojeg čvor trenutno rudari. Vraćeni podatci naredbe su:
+\begin{listing}[H]
+    \begin{minted}{json}
+        "žrtva": {"jsonrpc":"2.0","id":1,"result":"0x15b"}
+        "napadač 1": {"jsonrpc":"2.0","id":1,"result":"0xfd"}
+        "napadač 2": {"jsonrpc":"2.0","id":1,"result":"0xf5"}
+        "pošteni": {"jsonrpc":"2.0","id":1,"result":"0x15a"}
+    \end{minted}
+    \caption{Rezultat provjere trenutnog bloka svakog čvora}
+\end{listing}
+
+Vidljivo je kako su sva četiri čvora na različitim brojevima blokova, što znači da svaki čvor rudari svoj lanac. Pretpostavimo da su do ovog trenutka pošteni čvor i čvor žrtve rudarili ispravni lanac, no čvor žrtve se ponovno pokrenuo ili su napadači preplavili njegovu tablicu povezanih čvorova i postigli da je čvor žrtva povezan samo s napadačima. Kako bi se simulirala opisana situacija, potrebno je izvršiti:
+\begin{listing}[H]
+    \begin{minted}[breaklines=true, breakanywhere=true]{bash}
+        curl -X POST http://localhost:8545 -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"admin_addPeer","params":["enode://c2ccf04c68933b42db58a6afa86064dfda01f297c0d06165d8006526a58b16729705f3f8c9640a8a6b3bcc70af1d56818065704b9a219cebeb4e70728200efbd@172.28.0.12:30303"],"id":1}'
+        curl -X POST http://localhost:8545 -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"admin_addPeer","params":["enode://bb968b2f6b4490ca3404c744ee70c3f5d07fe70f7f09d235c37ea56241323b93e9cd93ccdcd369f7c544231a493ae891672899cc43db0f408f7be7d7cca50e09@172.28.0.13:30303"],"id":1}'
+    \end{minted}
+    \caption{Naredbe za spajanje napadača sa čvorom žrtve}
+\end{listing}
+\textbf{Params} argument je dobiven na sljedeći način. Potrebno je za svaki čvor izvršiti sljedeću naredbu koja je dana na primjeru poštenog čvora:
+\begin{listing}[H]
+    \begin{minted}{bash}
+        docker exec -it eclipse-honest-1 besu --data-path=/config/data public-key export --to=/tmp/key
+    \end{minted}
+    \caption{Naredba za dobivanje ključa čvora}
+\end{listing}
+Čvor ispisuje svoj ključ u formatu 0x\verb|<vrijednost_kljuca>|. Za params je potrebno dati sljedeći format: enode://\verb|<vrijednost_kljuca>|@\verb|<IPv4_adresa>|:\verb|<port>|.
+Sada je čvor žrtven spojen samo na čvorove napadača. To se može vidjeti ponovnim izvršavanjem naredbe za dobivanje popisa spojenih čvorova na čvor žrtve koji daje sljedeće:
+
+\begin{listing}[H]
+    \begin{minted}{json}
+        {
+            "result": [
+                {
+                    "network": {
+                        "localAddress": "172.28.0.10:50412",
+                        "remoteAddress": "172.28.0.12:30303"
+                    }
+                },
+                {
+                    "network": {
+                        "localAddress": "172.28.0.10:38498",
+                        "remoteAddress": "172.28.0.13:30303"
+                    }
+                }
+            ]
+        }
+    \end{minted}
+    \caption{Skraćeni rezultat IP adresa povezanih napadača na čvor žrtve}
+\end{listing}
+Iz rezultata je vidljivo kako je čvor žrtve spojen samo na čvorove napadača. Ponovnim izvršavanjem naredbe za broj bloka koji čvor rudari dobiveno je:
+
+\begin{listing}[H]
+    \begin{minted}{json}
+        "žrtva": {"jsonrpc":"2.0","id":1,"result":"0x192"}
+        "napadač 1": {"jsonrpc":"2.0","id":1,"result":"0x192"}
+        "napadač 2": {"jsonrpc":"2.0","id":1,"result":"0x192"}
+        "pošteni": {"jsonrpc":"2.0","id":1,"result":"0x193"}
+    \end{minted}
+    \caption{Rezultat provjere trenutnog bloka svakog čvora}
+\end{listing}
+
+Iz rezultata je vidljivo kako su trenutno čvor žrtve i oba napadača na lažnom lancu, dok je pošteni čvor na ispravnom lancu. Ovo je zapravo Eclipse napad gdje su napadački čvorovi uspješno izolirali čvor žrtve od ostatka mreže i iskoristili čvor žrtve kako bi rudario njihov lažni lanac. Čvor žrtve bi se daljenje mogao iskoristiti kako bi validirao lažne transakcije i izgubio svoja sredstva ili slično, no to izlazi izvan opsega demonstracije. Sada kada je uspješno demonstriran napad, potrebno je demonstrirati kako se čvor može oporaviti.
+Pretpostavljeno je da blockchain mreža ima implementiran mehanizam obrane koji provjerava povezanosti čvorova i da je prepoznato da je žrtvin čvor izoliran. Čvor se spaja s ostatkom mreže, no zbog manjka resursa ovo se može demonstrirati odspojavanjem čvorova napadača od čvora žrtve i spajanjem poštenog čvora sa sljedećim naredbama:
+\begin{listing}[H]
+    \begin{minted}[breaklines=true, breakanywhere=true]{bash}
+        curl -X POST http://localhost:8545 -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"admin_removePeer","params":["enode://c2ccf04c68933b42db58a6afa86064dfda01f297c0d06165d8006526a58b16729705f3f8c9640a8a6b3bcc70af1d56818065704b9a219cebeb4e70728200efbd@172.28.0.12:30303"],"id":1}'
+        curl -X POST http://localhost:8545 -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"admin_removePeer","params":["enode://bb968b2f6b4490ca3404c744ee70c3f5d07fe70f7f09d235c37ea56241323b93e9cd93ccdcd369f7c544231a493ae891672899cc43db0f408f7be7d7cca50e09@172.28.0.13:30303"],"id":1}'
+
+        sudo docker stop eclipse_napad-attacker1-1
+        sudo docker stop eclipse_napad-attacker2-1
+
+        curl -X POST http://localhost:8545 -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"admin_addPeer","params":["enode://1038f13147b05635708fb44ed83fa3d22cb3d48cd27dceb1650be5cd417bdcf45b12b2d9b77859eaf18a236a36e429f9453b89719783c9ab95b398f252bd4c74@172.28.0.11:30303"],"id":1}'
+    \end{minted}
+    \caption{Naredbe za odspajanje i gašenje čvorova napadača i spajanje poštenog čvora}
+\end{listing}
+Provjerom popisa povezanosti čvora žrtve dobiveno je sljedeće:
+\begin{listing}[H]
+    \begin{minted}{json}
+        {
+            "result": [
+                {
+                    "network": {
+                        "localAddress": "172.28.0.10:37566",
+                        "remoteAddress": "172.28.0.11:30303"
+                    }
+                },
+            ]
+        }
+    \end{minted}
+    \caption{Skraćeni rezultat IP adrese poštenog čvora povezanog na čvor žrtve}
+\end{listing}
+
+Vidljivo je kako je čvor žrtve sada spojen s poštenim čvorom koji predstavlja ostatak mreže. Provjerom broja blokova svih čvorova dobiveno je:
+\begin{listing}[H]
+    \begin{minted}{json}
+        "žrtva": {"jsonrpc":"2.0","id":1,"result":"0x1d2"}
+        "pošteni": {"jsonrpc":"2.0","id":1,"result":"0x1d2"}
+    \end{minted}
+    \caption{Rezultat provjere trenutnog bloka svakog čvora}
+\end{listing}
+
+Vidljivo je kako se čvor žrtve sinkronizirao sa ostatkom mreže i rudari na ispravnom lancu. U pravoj blockchain mreži bi nakon završetka izolacije čvor prepoznao ispravni lanac kao najduži tj. da je lanac s najvećom ukupnom težinom i prebacio se na njega, no navedeno nije bilo moguće izvesti u alatu iz nepoznatog razloga iako bi pošteni čvor imao najduži lanac. Vrlo vjerojatno je potrebno imati više poštenih čvorova te bi njihov ispravni lanac bio najduži, no kompleksnost te izvedbe izlazi izvan opsega ove demonstracije.
+Kako bi se svi čvorovi ugasili potrebno je izvršiti sljedeću naredbu:
+\begin{listing}[H]
+    \begin{minted}{bash}
+        docker compose down
+    \end{minted}
+    \caption{Naredba za gašenje svih čvorova}
+\end{listing}
+
+
+\subsection{Strategija}
+
+Kako je demonstrirano, napadač može izolirati čvor velikim brojem IP adresa kako bi popunio žrtvinu peer tablicu. Kako bi se mreža obranila od ovakvog napada, potrebno je implementirati sljedeće mehanizme:
+\begin{itemize}
+    \item Povećanjem broja konekcija bi čvor žrtve mogao primiti više konekcija, napadač bi morao imati više IP adresa kako bi popunio žrtvinu tablicu peerova te je veća šansa da ju ne bi mogao ispuniti u cijelosti kako je to napravljeno u ovoj demonstraciji
+    \item Nasumičnim odabirom peerova bi se smanjila šansa da bi se nakon ponovnog pokretanja čvor povezao samo s napadačevim IP adresama
+    \item Pohranom peerova u više tablica bi se ostvarili topološki raznoliki skupovi peerova na temelju IP adresa
+    \item Sidrenim vezama bi se održala dugotrajna veza s malim brojem pouzdanih čvorova te se u scenariju demonstracije nakon ponovnog pokretanja čvor žrtve ne bi odspojio od poštenog čvora koji predstavlja ostatak mreže
+    \item Testiranjem dosegljivosti bi se povremeno testirala veza prema nasumičnim čvorovima i provjerilo postoji li veza s ostatkom mreže. Ovaj mehanizam je bio naveden kao pretpostavka zašto se čvor žrtve ponovno pokrenuo i odspojio od napadača jer bi ovakav mehanizam prepoznao njegovu izoliranost.
+    \item Identifikacijom i blokiranjem napadača bi napadačeve IP adrese bile blokirane jer bi bio potreban veliki broj IP adresa u mreži koje bi imale sumnjivo ponašanje
+\end{itemize}
+
+\chapter{Zaključak}
+
+Blockchain se može promatrati kao distribuirana baza podataka u kojoj se transakcije grupiraju u blokove, a njihova valjanost potvrđuje se kroz konsenzusne algoritme poput Proof of Work (PoW) i Proof of Stake (PoS). Ovi mehanizmi osiguravaju da nitko pojedinačno ne raspolaže dovoljnom moći da nenamjerno ili zlonamjerno promijeni povijest transakcija. Unatoč tome, upravo zbog složenosti i decentralizirane prirode mreža, u praksi se javljaju specifični vektori napada koji mogu ugroziti integritet, dostupnost ili povjerljivost sustava.
+
+Da bi se što bolje razumjele i spriječile ove prijetnje, u radu su detaljno predstavljeni alati za reviziju i nadzor sigurnosti. Truffle Suite i Ganache omogućuju izgradnju i testiranje pametnih ugovora u lokalnom emulatoru blockchaina, što je važno za reproduciranje sigurnog okruženja za testiranje. Etherscan služi kao javni preglednik blockchain transakcija i pametnih ugovora, dok alat Securify nudi statičku i semantičku analizu codebase-a za otkrivanje ranjivosti poput reentrancyja ili integer over/underflow-a. Hyperledger Caliper mjeri performanse i pouzdanost mreže pod različitim radnim opterećenjima, što pomaže pri ocjeni otpornosti infrastrukture na napade velikog opsega.
+
+Uz pomoć tih alata demonstirane su tri vrste napada. 51\% napad simulacijom kontrole većine rudarske snage lokalne mreže, čime je moguće poništiti transakcije i ostvariti double-spending. Analiza pametnih ugovora pomoću Securify2 prikazala je manipulaciju redoslijeda transakcija, neinicializirane varijable i neograničene promjene skladišta. Eclipse napad izveden je izolacijom čvora u Hyperledger Besu, dajući mu manipulirani pogled na lanac i naglasivši potrebu za diversifikacijom peersa, rotacijom IP adresa i mrežnim zaštitama.
+
+Kroz ove demonstracije, stekli smo dublji uvid u to kako teorija blockchaina funkcionira u praksi i na koje načine mogu nastati prijetnje čak i u dobro dizajniranim sustavima. Osim toga, uočili smo da su alati za reviziju i nadzor neophodni za rano otkrivanje slabih točaka i pravovremeno reagiranje.
+\makebackmatter
+
+\end{document}
