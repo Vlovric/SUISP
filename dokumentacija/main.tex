@@ -41,7 +41,39 @@ Piše Megi
 
 \chapter{Mehanizmi potrebni za implementaciju}
 
-Piše Viktor
+U ovom dijelu rada su opisani svi mehanizmi potrebni za implementaciju klijentskog kriptiranog trezora s revizijskim tragom koji je u skladu s ISO 27001 standardom.
+U kasnijem dijelu rada su ovi mehanizmi pretvoreni u funkcionalne i nefunkcionalne zahtjeve te i implementirani.
+
+\section{Slojevita enkripcija (engl. \textit{envelope encryption})}
+
+Slojevita enkripcija je proces kriptiranja ključa drugim ključem\cite{google_envelope}.
+Ključ za kriptiranje podataka (engl. \textit{data encryption key}), u nastavku teksta \textbf{DEK}, je simetrični ključ koji se koristi za kriptiranje i dekriptiranje podataka jedne datoteke jednog korisnika.
+Za svaku datoteku se koristi zaseban DEK koji se nakon generiranja kriptira pri pohrani što zadovoljava zahtjev kriptiranja pri pohrani (engl. \textit{encryption at rest})\cite{google_envelope}.
+\newline
+Ključ za kriptiranje ključa (engl. \textit{key encryption key}), u nastavku teksta \textbf{KEK}, je asimetrični javni ključ koji koji se koristi za \textit{omotavanje} (engl. \textit{wrapping}) DEK-a, tj. kriptiranje DEK-a\cite{google_envelope}.
+KEK se generira prilikom kreiranja korisničkog računa koristeći RSA (engl. \textit{Rivest-Shamir-Adleman}) ili ECC (engl. \textit{Elliptic Curve Cryptography}) algoritme i koristi se kako bi jedan KEK kriptirao više DEK-ova što eliminira potrebu za rotiranem ključeva za svaku datoteku, već je potrebno rotirati samo KEK.
+Za generiranje DEK-a je preporućeno korištenje AES-256 (engl. \textit{Advanced Encryption Standard}) algoritma u GCM (engl. \textit{Galois Counter Mode}) načinu rada zbog njegove sigurnosti i brzine\cite{google_envelope}.
+AES-256-GCM pruža i efikasnu provjeru integriteta podataka koristeći autentifikacijsku oznaku (engl. \textit{authentication tag}) kojom prilikom dekriptiranja provjerava integritet podataka.
+
+
+\section{Kontrola pristupa i revizija}
+
+Kontrola pristupa se sastoji od autorizacije i autentifikacije korisnika. Autentifikacija je proces u kojemu sustav provjerava identitet korisnika kako bi mu omogućio pristup\cite{ibm_access}, što se radi kroz jedno od 3 metode: nešto što korisnik zna (npr. lozinka), nešto što korisnik ima (npr. token) ili nešto što korisnik jest (npr. biometrijski podaci).
+Autorizacija je proces određivanja razine pristupa resursima sustava na temelju korisničkog identiteta i njegovih dopuštenja\cite{ibm_access}. S obzirom da je naš sustav klijentski i zamišljen samo za jednog korisnika po uređaju, autorizacija se neće obavljati već će jedinstveni korisnik imati potpune ovlasti.
+Odabrana metoda autentifikacije je lozinka iz koje se generira ključ koristeći neki od algoritama za derivaciju ključa poput PBKDF2 (engl. \textit{Password-Based Key Derivation Function 2}), scrypt ili Argon2 kako bi se taj ključ mogao pohraniti za autentifikaciju, a da pritom ostane zaštićen\cite{kdf}.
+\newline
+Revizija je proces pregleda i preispitivanja procesa i stanja kako bi se prosudila razina usklađenosti stanja s unaprijed definiranim kriterijima\cite{revizija}.
+Kako bi se revizija mogla provesti, potrebno je voditi revizijski trag (engl. \textit{audit log}) svih važnih događaja i radnji u sustavu. Važna osobina revizijskog traga je njegova nepromjenjivost kako bi se spriječile zloupotrebe i manipulacije podacima\cite{audit}. Iz tog razloga se za validaciju ispravnosti revizijskog traga koriste mehanizmi poput digitalnog potpisa i lanca sažetaka (engl. \textit(hash chain)) gdje se svaki novi zapis povezuje sa sažetkom prethodnog zapisa, čime se osigurava da bilo kakva izmjena u prethodnim zapisima rezultira promjenom u sažetcima i time postaje vidljiva, što je ista tehnika koja se koristi u blockhain sustavima.
+Još jedna važna karakteristika revizijskog traga je što on mora biti izvoziv (engl. \texit(exportable)) kako bi se mogao analizirati izvan samog sustava, npr. u slučaju inspekcije od strane treće strane.
+U tom je slučaju potrebno revizijski trag kriptirati javnim ključem osobe koja će vršiti inspekciju kako bi se osigurala povjerljivost podataka.
+
+\section{Životni ciklus ključa}
+
+\section{Sigurnosno dijeljenje}
+
+\section{Sigurnosno brisanje}
+
+\section{Mehanizam zaključavanja ili odgode}
 
 \chapter{Tehnologije za implementaciju}
 
