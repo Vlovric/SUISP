@@ -33,16 +33,20 @@
 
 \chapter{Uvod}
 
-Piše Megi
+Digitalni trezori ili sigurni spremišta podataka važan su alati za zaštitu osjetljivih informacija, kako privatnih, tako i onih poslovnih. Moderni sustavi pohrane koriste razne načine upravljanja pristupa i zaštite podataka, ali ne osiguravaju uvijek adekvatnu razinu sigurnosti i privatnosti. 
+Lako su ranjivi na različite prijetnje, uključujući neovlašteni pristup, krađu podataka i gubitak podataka zbog tehničkih kvarova ili ljudskih pogrešaka. Kriptografska enkripcija podataka pruža dodatnu razinu zaštite. Ovaj rad želi prikazati složenost implementacije jednog takvog sustava, fokusirajući se na ključne aspekte kao što su slojevita enkripcija, kontrola pristupa, revizija, životni ciklus ključa, sigurnosno brisanje, sigurnosno dijeljenje i mehanizmi zaključavanja ili odgode.
 
 \section{ISO 27001}
 
-Piše Megi
+ISO 27001 međunarodni je standard koji definira zahtjeve za sustav upravljanja informacijskom sigurnošću (ISMS). Ovaj standard pruža okvir za zaštitu povjerljivosti, cjelovitosti i dostupnosti informacija unutar organizacije. Implementacija ISO 27001 standarda pomaže organizacijama u identifikaciji i upravljanju rizicima vezanim uz informacije te osigurava usklađenost s pravnim i regulatornim zahtjevima.
+Ključan dio ISO 27001 standarda za ovaj projekt su \textbf{kontrole kriptografske} definirane u sekciji \textbf{A.10} (Politika korištenja kriptografskih kontrola A.10.1.1 i Upravljanje klučevima A.10.1.2). One uključuju zahtjeve za upravljanje kriptografskim ključevima, zaštitu podataka tijekom prijenosa i pohrane te osiguranje integriteta i povjerljivosti informacija. 
 
-\chapter{Mehanizmi potrebni za implementaciju}
+\textbf{Kontrole pristupa i autentikacije (A.9.4.2 i A.9.4.3)} zahtjevaju definiranje i upravljanje pravima pristupa korisnika te implementaciju sigurnih metoda autentikacije prije pristupanja resursima. Ove kontrole direktno se odnose na implementaciju lozinki i autentikacijskih mehanizama temeljenih na klučevima. 
 
-U ovom dijelu rada su opisani svi mehanizmi potrebni za implementaciju klijentskog kriptiranog trezora s revizijskim tragom koji je u skladu s ISO 27001 standardom.
-U kasnijem dijelu rada ovi su mehanizmi pretvoreni u funkcionalne i nefunkcionalne zahtjeve te i implementirani.
+\textbf{Kontrola A.11.2.7} (Sigurno odlaganje ili ponovna upotreba opreme) zahtijeva da sva oprema koja sadrži medije za pohranu bude provjerena kako bi se osiguralo da su svi podaci uklonjeni ili zaštićeni, što projekt adresira kroz secure deletion workflow koji osigurava kriptografski siguran način brisanja podataka i ključeva.
+
+\textbf{Kontrole zapisivanja i zaštite zapisa revizije (A.12.4.1, A.12.4.2 i A.12.4.3)} zahtijevaju izradu zapisnika događaja koji bilježe aktivnosti korisnika, iznimke i greške u sustavu, te zaštitu tih zapisa od neovlaštenih promjena. Projekt implementira nepromjenjivi zapisnik revizije koji evidentira sve operacije s ključevima, rotacije, pristupe datotekama te administratorske aktivnosti. Zapisnici su zaštićeni od izmjena i omogućuju export za eksterne revizije, čime se osigurava transparentnost i mogućnost revizije sigurnosnih događaja u skladu s regulatornim zahtjevima.
+\cite{iso_27001}
 
 \section{Slojevita enkripcija (engl. \textit{envelope encryption})}
 
