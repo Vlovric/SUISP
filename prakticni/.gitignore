@@ -1,0 +1,19 @@
+
+# Python stvari
+ __pycache__/
+*.pyc
+
+# Virtualno
+venv/
+env/
+.venv/
+
+# env varijable ak cemo koristit
+.env
+
+# Logovi
+*.log
+
+# IDE
+.idea/
+.vscode/
