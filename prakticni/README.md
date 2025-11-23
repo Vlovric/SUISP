@@ -1,3 +1,20 @@
 # Praktični dio
 
-## Stvaranje datoteka koje se ne verzioniraju
+Svugdje gdje piše "python" kod mene npr ide "python3" tako da imajte na umu mozda i kod vas.
+Ja imam Python 3.12.3, ako netko ima noviju mozda da se prebacimo na tu? Ili instalirajte ovu pa ju koristite
+
+## Stvaranje virtualnog okuženja
+python -m venv venv
+
+## Aktiviranje venv i izlaženje iz venv
+source venv/bin/activate
+deactivate
+
+## Instaliranje biblioteka u requirements.txt
+pip install -r requirements.txt
+
+## Pokretanje aplikacije
+python main.py
+
+## Preporuke
+Na vsc-u instalirajte extention "SQLite Viewer" za pregledavanje baze

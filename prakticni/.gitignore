@@ -17,3 +17,6 @@ env/
 # IDE
 .idea/
 .vscode/
+
+# Baza
+*.db
