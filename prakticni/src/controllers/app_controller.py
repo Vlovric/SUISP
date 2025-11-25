@@ -1,28 +1,40 @@
-from PySide6.QtWidgets import QMainWindow, QStackedWidget
+from PySide6.QtWidgets import QMainWindow, QStackedWidget, QToolBar
+from PySide6.QtGui import QAction
 
+from functools import partial
 from src.controllers.primjer.primjer_controller import PrimjerController
 
 class AppController(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Secure File Vault")
-        self.resize(600, 400)
+        self.resize(800, 600)
 
+        # Kreiramo toolbar za navigaciju
+        nav_bar = QToolBar("Navigation")
+        nav_bar.setMovable(False)
+        self.addToolBar(nav_bar)
+
+        # Kreiramo stack widget za content ekrana
         self.stack = QStackedWidget()
         self.setCentralWidget(self.stack)
 
-        # Registriramo individualne controllere
         self.controllers = {}
+
+        # OVAKO registriramo nove kontrolere za svaki feature
         self._register_controller("primjer", PrimjerController())
+        primjer_action = QAction("Primjer", self)
+        primjer_action.triggered.connect(partial(self._show_controller, "primjer"))
+        nav_bar.addAction(primjer_action)
 
         # Palimo prvi controller tj. inicijalni ekran
-        self.show_controller("primjer")
+        self._show_controller("primjer")
 
     def _register_controller(self, name: str, controller):
         self.controllers[name] = controller
         self.stack.addWidget(controller.root_widget)
 
-    def show_controller(self, name: str):
+    def _show_controller(self, name: str):
         ctrl = self.controllers.get(name)
         if not ctrl:
             return
