@@ -21,7 +21,7 @@ class AppController(QMainWindow):
 
         self.controllers = {}
 
-        # OVAKO registriramo nove kontrolere za svaki feature
+        # OVAKO registriramo nove kontrolere za svaki feature koji zelimo na navigaciji na main menu
         self._register_controller("primjer", PrimjerController())
         primjer_action = QAction("Primjer", self)
         primjer_action.triggered.connect(partial(self._show_controller, "primjer"))

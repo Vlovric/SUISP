@@ -1,0 +1,73 @@
+
+/* --- General --- */
+* {
+    font-family: "Segoe UI";
+    font-size: 14px;
+}
+
+/* --- Windows and Base Widgets --- */
+QMainWindow, QWidget {
+    background-color: #2b2b2b;
+    color: #f0f0f0;
+}
+
+/* --- Labels --- */
+QLabel {
+    color: #f0f0f0;
+    background-color: transparent; /* Important for labels on colored backgrounds */
+}
+
+/* --- Input Fields --- */
+QLineEdit {
+    background-color: #3c3f41;
+    color: #f0f0f0;
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 5px;
+}
+
+QLineEdit:focus {
+    border: 1px solid #007bff; /* Highlight on focus */
+}
+
+/* --- Buttons --- */
+QPushButton {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    min-width: 80px; /* Set a minimum width */
+}
+
+QPushButton:hover {
+    background-color: #0056b3;
+}
+
+QPushButton:pressed {
+    background-color: #004494;
+}
+
+/* --- Toolbar --- */
+QToolBar {
+    background-color: #3c3f41;
+    border: none;
+    padding: 2px;
+}
+
+/* Style for buttons inside the toolbar */
+QToolBar QToolButton {
+    color: #f0f0f0;
+    background-color: transparent;
+    padding: 5px 10px;
+    border-radius: 4px;
+}
+
+QToolBar QToolButton:hover {
+    background-color: #555;
+}
+
+QToolBar QToolButton:checked { /* Style for the currently active/selected button */
+    background-color: #007bff;
+    color: white;
+}
