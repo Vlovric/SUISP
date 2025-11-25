@@ -1,0 +1,6 @@
+{
+    "kek_key_length_bytes": 32,
+    "scrypt_cost_param_n": 16384,
+    "scrypt_block_size_r": 8,
+    "scrypt_parallelization_param_p": 1
+}

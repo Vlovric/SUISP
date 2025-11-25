@@ -38,6 +38,9 @@ class AppController(QMainWindow):
         ctrl = self.controllers.get(name)
         if not ctrl:
             return
+        
+        ctrl.reset()
+
         index = self.stack.indexOf(ctrl.root_widget)
         if index != -1:
             self.stack.setCurrentIndex(index)

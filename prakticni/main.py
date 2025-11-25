@@ -4,6 +4,7 @@ from pathlib import Path
 from src.controllers.app_controller import AppController
 from src.controllers.login_controller import LoginController
 from src.models.db import db
+from src.utils.key_manager import key_manager
 
 class App:
     def __init__(self):
@@ -27,7 +28,9 @@ class App:
         self.main_window.show()
 
     def run(self):
-        sys.exit(self.app.exec())
+        exit_code = self.app.exec()
+        key_manager.clear_kek()
+        sys.exit(exit_code)
 
 if __name__ == "__main__":
     app = App()

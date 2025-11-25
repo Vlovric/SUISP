@@ -6,5 +6,9 @@ class BaseController(QObject):
 
     @property
     def root_widget(self):
-        """Return the QWidget that represents this controller's UI."""
+        """Vraća QWidget tj content ekrana koji se loada u glavni ekran, treba overrideat"""
+        raise NotImplementedError
+    
+    def reset(self):
+        """ Resetira kontroler na početno stanje, mora se overrideat """
         raise NotImplementedError

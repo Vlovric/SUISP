@@ -30,6 +30,10 @@ class PrimjerController(BaseController):
     def root_widget(self) -> QWidget:
         return self._stack # Svaki controller exposea svoj stack ekrana da bi glavni kontroler mogao loadat
 
+    def reset(self): # Resetira view na prvi ekran i cleara sve, kad se stisne na navigaciji da sve bude clear
+        self.input_view.input_field.clear()
+        self._stack.setCurrentIndex(0)
+
     def handle_submit(self):
         text = self.input_view.input_field.text() # Dohvacamo uneseni tekst
         if not text:
