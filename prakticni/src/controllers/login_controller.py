@@ -3,6 +3,7 @@ from PySide6.QtWidgets import QWidget
 
 from src.controllers.base_controller import BaseController
 from src.views.prijava_registracija.login_view import LoginView
+from src.utils.log_manager import log
 
 class LoginController(BaseController):
     # Signal koji se emitta kad je login successful
@@ -10,6 +11,9 @@ class LoginController(BaseController):
 
     def __init__(self):
         super().__init__()
+
+        # TODO maknuti po potrebi jer je za primjer
+        log("Aplikacija je pokrenuta.")
 
         self._view = LoginView()
         self._view.setWindowTitle("Login")
