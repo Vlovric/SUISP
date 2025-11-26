@@ -2,6 +2,7 @@ from PySide6.QtWidgets import QMainWindow, QStackedWidget, QToolBar
 from PySide6.QtGui import QAction
 
 from functools import partial
+from src.controllers.izvoz_loga.izvoz_loga_controller import AuditLogExportController
 from src.controllers.primjer.primjer_controller import PrimjerController
 
 class AppController(QMainWindow):
@@ -26,6 +27,12 @@ class AppController(QMainWindow):
         primjer_action = QAction("Primjer", self)
         primjer_action.triggered.connect(partial(self._show_controller, "primjer"))
         nav_bar.addAction(primjer_action)
+
+        # Ostavi ovo zadnje na navbaru (iznad ovog dodaj druge feature) i TODO David makni ovaj komentar
+        self._register_controller("audit_log_export", AuditLogExportController())
+        audit_log_export_action = QAction("AuditLogExport", self)
+        audit_log_export_action.triggered.connect(partial(self._show_controller, "audit_log_export"))
+        nav_bar.addAction(audit_log_export_action)
 
         # Palimo prvi controller tj. inicijalni ekran
         self._show_controller("primjer")
