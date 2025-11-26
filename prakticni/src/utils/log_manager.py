@@ -1,7 +1,7 @@
+from typing import Literal
 from src.models.log_model import LogModel
-from cryptography.hazmat.primitives import hashes
-import string
-import random
+from datetime import datetime
+import hashlib
 
 class LogManager:
     _instance = None
@@ -12,28 +12,21 @@ class LogManager:
         return cls._instance
     
     def log(self, message):
-        digest = hashes.Hash(hashes.SHA512())
-
         last_entry = LogModel.get_last_entry()
         last_hash = ''
 
         if (last_entry is None):
-            last_hash = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(128))
+            last_hash = "0" * 128
         else:
-            row = last_entry["time"] + last_entry["message"] + last_entry["hash_prev"]
-            digest.update(row.encode())
-            bytes = digest.finalize()
-            last_hash = bytes.hex()
+            row = f"{last_entry['timestamp']}|{last_entry['message']}|{last_entry['hash_prev']}"
+            last_hash = hashlib.sha512(row.encode()).hexdigest()
 
-        LogModel.insert_log_entry(message, "", last_hash)
-        new_entry = LogModel.get_last_entry()
+        current_time = str(datetime.now().isoformat())
 
-        digest = hashes.Hash(hashes.SHA512())
-        row = new_entry["time"] + new_entry["message"] + new_entry["hash_prev"]
-        digest.update(row.encode())
-        bytes = digest.finalize()
+        new_row = f"{current_time}|{message}|{last_hash}"
+        curr_hash = hashlib.sha512(new_row.encode()).hexdigest()
 
-        LogModel.update_log_entry(new_entry["id"], bytes.hex())
+        LogModel.insert_log_entry(current_time, message, curr_hash, last_hash)
 
 log_manager = LogManager()
 log = log_manager.log
