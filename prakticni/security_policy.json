@@ -2,5 +2,10 @@
     "kek_key_length_bytes": 32,
     "scrypt_cost_param_n": 16384,
     "scrypt_block_size_r": 8,
-    "scrypt_parallelization_param_p": 1
+    "scrypt_parallelization_param_p": 1,
+    "password_length_min": 12,
+    "password_entropy_min_bits": 60,
+    "pbkdf2_iterations": 300000,
+    "pbkdf2_hash_name": "sha512",
+    "pbkdf2_salt_length": 16
 }
