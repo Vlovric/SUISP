@@ -30,7 +30,7 @@ class AppController(QMainWindow):
 
         # Ostavi ovo zadnje na navbaru (iznad ovog dodaj druge feature) i TODO David makni ovaj komentar
         self._register_controller("audit_log_export", AuditLogExportController())
-        audit_log_export_action = QAction("AuditLogExport", self)
+        audit_log_export_action = QAction("Izvoz audit loga", self)
         audit_log_export_action.triggered.connect(partial(self._show_controller, "audit_log_export"))
         nav_bar.addAction(audit_log_export_action)
 
