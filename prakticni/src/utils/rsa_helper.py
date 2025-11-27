@@ -4,7 +4,7 @@ from cryptography.hazmat.primitives import hashes
 
 class RsaHelper:
     @staticmethod
-    def encrypt(plaintext: str, public_key_str: str) -> tuple[bytes, str]:
+    def encrypt(plaintext: str, public_key_str: str) -> tuple[bytes | None, str | None]:
         public_key = None
         
         try:
@@ -26,13 +26,13 @@ class RsaHelper:
             return None, "Došlo je do greške u enkripciji."
         
     @staticmethod
-    def decrypt(ciphertext: bytes, private_key_str: str) -> tuple[str, str]:
+    def decrypt(ciphertext: bytes, private_key_str: str) -> tuple[str | None, str | None]:
         private_key = None
 
         try:
             private_key = serialization.load_pem_private_key(private_key_str.encode(), password = None)
-        except:
-            return None, "Privatni ključ nije u ispravnom formatu."
+        except Exception as e:
+            return None, f"Privatni ključ nije u ispravnom formatu: {str(e)}"
         
         try:
             plaintext_bytes = private_key.decrypt(
