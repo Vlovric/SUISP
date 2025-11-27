@@ -6,8 +6,11 @@ CREATE TABLE IF NOT EXISTS test (
 CREATE TABLE IF NOT EXISTS user (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username VARCHAR(255) NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-    salt VARCHAR(255) NOT NULL
+    master_password_hash VARCHAR(255) NOT NULL,
+    mk_salt VARCHAR(255) NOT NULL,
+    pdk_salt VARCHAR(255) NOT NULL,
+    public_key VARCHAR(255) NOT NULL,
+    private_key_encrypted VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS file (

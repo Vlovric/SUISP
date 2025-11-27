@@ -1,6 +1,7 @@
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget
 
+from src.utils.key_manager import key_manager
 from src.controllers.base_controller import BaseController
 from src.views.prijava_registracija.registration_view import RegistrationView
 from src.utils.password_manager import PasswordManager
@@ -26,6 +27,8 @@ class RegistrationController(BaseController):
     
     def _handle_registration(self):
             username, password = self._view.get_credentials()
+            mk_salt = PasswordManager.generate_salt()
+            pdk_salt = PasswordManager.generate_salt()
             self._view.set_error_message("")
 
             if not username or not password:
@@ -38,9 +41,14 @@ class RegistrationController(BaseController):
                 return
 
             try:
-                salt = PasswordManager.generate_salt()
-                password_hash = PasswordManager.hash_password(password, salt)
-                success = self.user_model.register_user(username, password_hash, salt)
+                master_password_hash = PasswordManager.hash_password(password, mk_salt, pdk_salt)
+                
+                master_key = key_manager.get_master_key()
+                pdk = key_manager.derive_pdk(master_key, pdk_salt)
+                
+                public_key, private_key = key_manager.generate_ecc_keypair()
+                private_key_encrypted = key_manager.encrypt_private_key(private_key, pdk)
+                success = self.user_model.register_user(username, master_password_hash, mk_salt, pdk_salt, public_key, private_key_encrypted)
                 
                 if success:
                     self._view.set_error_message("")
@@ -49,3 +57,5 @@ class RegistrationController(BaseController):
                     self._view.set_error_message("Registration failed!")
             except Exception as e:
                 self._view.set_error_message(str(e))
+
+    
