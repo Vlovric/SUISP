@@ -7,6 +7,12 @@ class LogModel:
         return db.fetch_one(query)
 
     @staticmethod
+    def get_all_entries():
+        query = "SELECT * FROM log"
+        return db.fetch_all(query)
+
+    @staticmethod
     def insert_log_entry(timestamp, message, hash_curr, hash_prev):
         query = "INSERT INTO log (timestamp, message, hash_curr, hash_prev) VALUES (?, ?, ?, ?)"
         return db.execute_query(query, (timestamp, message, hash_curr, hash_prev))
+    

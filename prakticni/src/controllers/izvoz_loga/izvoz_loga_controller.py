@@ -1,6 +1,7 @@
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget, QStackedWidget
 from src.controllers.base_controller import BaseController
+from src.utils.log_manager import log_manager
 
 from src.views.izvoz_loga.audit_log_export_view import AuditLogExportView
 
@@ -24,5 +25,16 @@ class AuditLogExportController(BaseController):
         self._stack.setCurrentIndex(0)
 
     def handle_submit(self):
-        print("Gumb stisnut!")
+        if (len(self.input_view.input_field.text()) == 0):
+            self.input_view.error_label.setText("Ključ nije unesen!")
+            return
+        
+        self.input_view.error_label.setText("")
+        
+        log_text, error = log_manager.get_logs()
+        if len(error) > 0:
+            self.input_view.error_label.setText(error)
+
+        print(log_text)
+        
 

@@ -11,6 +11,9 @@ class App:
         self.app = QApplication(sys.argv)
         db.init_db()
 
+        query = "UPDATE log SET message = 'Aplikacija je pokrenuta.' WHERE id = 4"
+        db.execute_query(query)
+
         try:
             theme_path = Path(__file__).parent / "src" / "views" / "themes" / "dark_theme.qss"
             with open(theme_path, "r") as f:
