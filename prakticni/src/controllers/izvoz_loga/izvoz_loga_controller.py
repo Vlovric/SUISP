@@ -1,7 +1,9 @@
+from datetime import datetime
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget, QStackedWidget
 from src.controllers.base_controller import BaseController
 from src.utils.log_manager import log_manager
+from src.utils.file_manager import file_manager
 
 from src.views.izvoz_loga.audit_log_export_view import AuditLogExportView
 
@@ -25,16 +27,20 @@ class AuditLogExportController(BaseController):
         self._stack.setCurrentIndex(0)
 
     def handle_submit(self):
+        self.input_view.error_label.setText("")
+
         if (len(self.input_view.input_field.text()) == 0):
             self.input_view.error_label.setText("Ključ nije unesen!")
             return
-        
-        self.input_view.error_label.setText("")
         
         log_text, error = log_manager.get_logs()
         if len(error) > 0:
             self.input_view.error_label.setText(error)
 
-        print(log_text)
+        now = datetime.now().isoformat()
+        filename = f"audit_log_{datetime.fromisoformat(now).strftime('%Y-%m-%d_%H-%M-%S')}.txt"
+
+        if not file_manager.open_file_download_dialog(self, "Izvezi", filename, log_text):
+            self.input_view.error_label.setText("Nije moguće spremiti datoteku s izvozom.")
         
 
