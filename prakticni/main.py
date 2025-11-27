@@ -27,8 +27,8 @@ class App:
             self.current_controller.root_widget.show()
         else:
             self.current_controller = RegistrationController()
-        self.current_controller.proceed.connect(self._show_main_app)
-        self.current_controller.root_widget.show()
+            self.current_controller.proceed.connect(self._show_main_app)
+            self.current_controller.root_widget.show()
 
     def _show_main_app(self):
         self.current_controller.root_widget.close()
