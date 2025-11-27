@@ -18,10 +18,16 @@ class FileManager:
             save_options
         )
 
+        is_binary_file = isinstance(data, (bytes, bytearray))
+
         if path:
             try:
-                with open(path, "w", encoding=encoding) as f:
-                    f.write(data)
+                if is_binary_file:
+                    with open(path, "wb") as f:
+                        f.write(data)
+                else:
+                    with open(path, "w", encoding=encoding) as f:
+                        f.write(data)
             except OSError:
                 return False
             

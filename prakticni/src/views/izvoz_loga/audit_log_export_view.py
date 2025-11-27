@@ -1,5 +1,5 @@
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QLineEdit, QPushButton
+from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QTextEdit, QPushButton
 
 class AuditLogExportView(QWidget):
     
@@ -7,8 +7,9 @@ class AuditLogExportView(QWidget):
         super().__init__()
 
         label = QLabel("Izvoz audit loga")
-        self.input_field = QLineEdit()
+        self.input_field = QTextEdit()
         self.input_field.setPlaceholderText("Unesite javni ključ auditora")
+        self.input_field.setFixedHeight(200)
         
         self.submit_btn = QPushButton("Izvezi")
 
