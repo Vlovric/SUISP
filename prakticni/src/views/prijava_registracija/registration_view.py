@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLineEdit, QLabel
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QAction, QIcon
 
 class RegistrationView(QWidget):
     def __init__(self): 
@@ -11,6 +12,11 @@ class RegistrationView(QWidget):
         self.password_input = QLineEdit()
         self.password_input.setPlaceholderText("Password")
         self.password_input.setEchoMode(QLineEdit.EchoMode.Password)
+
+        self.toggle_password_action = QAction(self)
+        self.toggle_password_action.setIcon(QIcon("src/pic/view_dark.svg"))
+        self.toggle_password_action.triggered.connect(self.toggle_password_visibility)
+        self.password_input.addAction(self.toggle_password_action, QLineEdit.ActionPosition.TrailingPosition)
 
         self.register_button = QPushButton("Register")
 
@@ -30,3 +36,11 @@ class RegistrationView(QWidget):
 
     def set_error_message(self, message: str):
         self.error_label.setText(message)
+
+    def toggle_password_visibility(self):
+        if self.password_input.echoMode() == QLineEdit.EchoMode.Password:
+            self.password_input.setEchoMode(QLineEdit.EchoMode.Normal)
+            self.toggle_password_action.setIcon(QIcon("src/pic/hide_dark.svg"))
+        else:
+            self.password_input.setEchoMode(QLineEdit.EchoMode.Password)
+            self.toggle_password_action.setIcon(QIcon("src/pic/view_dark.svg"))
