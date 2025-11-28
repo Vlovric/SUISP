@@ -31,8 +31,8 @@ class RsaHelper:
 
         try:
             private_key = serialization.load_pem_private_key(private_key_str.encode(), password = None)
-        except Exception as e:
-            return None, f"Privatni ključ nije u ispravnom formatu: {str(e)}"
+        except:
+            return None, f"Privatni ključ nije u ispravnom formatu."
         
         try:
             plaintext_bytes = private_key.decrypt(
