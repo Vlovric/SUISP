@@ -2,6 +2,7 @@ from PySide6.QtWidgets import QMainWindow, QStackedWidget, QToolBar
 from PySide6.QtGui import QAction
 
 from functools import partial
+from src.controllers.pregled_datoteka.pregled_datoteka_controller import PregledDatotekaController
 from src.controllers.izvoz_loga.izvoz_loga_controller import AuditLogExportController
 from src.controllers.primjer.primjer_controller import PrimjerController
 
@@ -28,6 +29,12 @@ class AppController(QMainWindow):
         primjer_action.triggered.connect(partial(self._show_controller, "primjer"))
         nav_bar.addAction(primjer_action)
 
+        # Pregled svih datoteka
+        self._register_controller("pregled_datoteka", PregledDatotekaController())
+        pregled_datoteka_action = QAction("Pregled datoteka", self)
+        pregled_datoteka_action.triggered.connect(partial(self._show_controller, "pregled_datoteka"))
+        nav_bar.addAction(pregled_datoteka_action)
+        
         # Ostavi ovo zadnje na navbaru (iznad ovog dodaj druge feature) i TODO David makni ovaj komentar
         self._register_controller("audit_log_export", AuditLogExportController())
         audit_log_export_action = QAction("Izvoz audit loga", self)
