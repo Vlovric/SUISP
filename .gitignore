@@ -19,3 +19,12 @@
 *.minted
 *.lol
 _minted
+
+# Virtual environment
+venv/
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
