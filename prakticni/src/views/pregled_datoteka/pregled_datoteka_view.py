@@ -9,6 +9,10 @@ class PregledDatotekaView(QWidget):
     def __init__(self):
         super().__init__()
 
+        self.export_buttons = []
+        self.delete_buttons = []
+        self.share_buttons = []
+
         self.title = QLabel("Moje datoteke")
 
         self.scroll_area = QScrollArea()
@@ -39,6 +43,10 @@ class PregledDatotekaView(QWidget):
         self.setLayout(main_layout)
 
     def set_files(self, file_records):
+        self.export_buttons = []
+        self.delete_buttons = []
+        self.share_buttons = []
+
         while self.list_layout.count():
             item = self.list_layout.takeAt(0)
             if item.widget():
@@ -46,6 +54,9 @@ class PregledDatotekaView(QWidget):
 
         for rec in file_records:
             w = FileItemWidget(rec)
+            self.export_buttons.append((w.btn_export, rec["id"]))
+            self.delete_buttons.append((w.btn_delete, rec["id"]))
+            self.share_buttons.append((w.btn_share, rec["id"]))
             self.list_layout.addWidget(w)
 
         self.list_layout.addStretch()

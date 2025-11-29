@@ -31,7 +31,6 @@ class FileItemWidget(QWidget):
         self.btn_export.setFixedSize(40, 40)
         self.btn_export.setStyleSheet(button_style)
         self.btn_export.setProperty("class", "success")
-        self.btn_export.clicked.connect(self.handle_export)
         
         self.btn_delete = QPushButton()
         self.btn_delete.setIcon(QIcon("src/pic/delete.svg"))
@@ -39,7 +38,6 @@ class FileItemWidget(QWidget):
         self.btn_delete.setFixedSize(40, 40)
         self.btn_delete.setStyleSheet(button_style)
         self.btn_delete.setProperty("class", "danger")
-        self.btn_delete.clicked.connect(self.handle_delete)
 
         self.btn_share = QPushButton()
         self.btn_share.setIcon(QIcon("src/pic/share.svg"))
@@ -47,7 +45,6 @@ class FileItemWidget(QWidget):
         self.btn_share.setFixedSize(40, 40)
         self.btn_share.setStyleSheet(button_style)
         self.btn_share.setProperty("class", "info")
-        self.btn_share.clicked.connect(self.handle_share)
 
         right = QHBoxLayout()
         right.addWidget(self.btn_export)
@@ -66,15 +63,3 @@ class FileItemWidget(QWidget):
 
     def format_date(self, date_text):
         return datetime.fromisoformat(date_text).strftime('%d.%m.%Y. %H:%M:%S')
-
-    def handle_export(self):
-        # TODO implementirati
-        print("Export se handlea!")
-
-    def handle_delete(self):
-        # TODO implementirati
-        print("Brisanje se handlea!")
-
-    def handle_share(self):
-        # TODO implementirati
-        print("Dijeljenje se handlea!")
