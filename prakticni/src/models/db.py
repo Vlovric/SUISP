@@ -53,6 +53,12 @@ class Database:
             print(f"Greška u fetch_all: {e}")
             return None
 
+    def has_any(self, table_name):
+        """ Provjerava postoji li barem jedan red u tablici """
+        query = f"SELECT COUNT(*) as count FROM {table_name}"
+        result = self.fetch_one(query)
+        return result['count'] > 0 if result else False
+
     def init_db(self, schema_path="data/schema.sql"):
         """ Čita schemu i stvara tablice ako ne postoje"""
         if not os.path.exists(schema_path):
