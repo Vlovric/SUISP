@@ -1,5 +1,4 @@
 import sys
-from PySide6.QtWidgets import QApplication
 from pathlib import Path
 from src.controllers.app_controller import AppController
 from src.controllers.login_controller import LoginController
@@ -7,10 +6,17 @@ from src.controllers.registration_controller import RegistrationController
 from src.models.user_model import UserModel
 from src.models.db import db
 from src.utils.key_manager import key_manager
+from src.utils.single_application import SingleApplication
+
+APP_ID = "secure.file.vault.app.suisp"
 
 class App:
     def __init__(self):
-        self.app = QApplication(sys.argv)
+        self.app = SingleApplication(sys.argv, APP_ID)
+        if getattr(self.app, "is_running", False):
+            print("Application is already running.")
+            sys.exit(0)
+
         db.init_db()
         user_model = UserModel()
 
