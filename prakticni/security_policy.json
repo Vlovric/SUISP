@@ -5,7 +5,18 @@
     "scrypt_parallelization_param_p": 1,
     "password_length_min": 12,
     "password_entropy_min_bits": 80,
-    "pbkdf2_iterations": 300000,
+    "pasword_require_digits": true,
+    "password_require_uppercase": true,
+    "password_require_lowercase": true,
+    "password_require_special_char": true,
+    "password_specilal_characters": "!@#$%^&*()-_=+[]{}|.<>?/",
+    "password_char_pools": {
+        "digits": 10,
+        "uppercase": 26,
+        "lowercase": 26,
+        "special": 32
+    },
+    "pbkdf2_iterations": 600000,
     "pbkdf2_hash_name": "sha256",
     "pbkdf2_salt_length": 16
 }

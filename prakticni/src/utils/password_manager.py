@@ -18,19 +18,20 @@ class PasswordManager:
         
         Entropija = log₂(pool_size^password_length) = password_length * log₂(pool_size)
         """
+
         if not password:
             return 0.0
         
         pool_size = 0
-        
+        # brojevi poola se izvlače iz security policy-a
         if any(char.islower() for char in password):
-            pool_size += 26
+            pool_size += security_policy_manager.get_policy_param("password_char_pools")["lowercase"]
         if any(char.isupper() for char in password):
-            pool_size += 26
+            pool_size += security_policy_manager.get_policy_param("password_char_pools")["uppercase"]
         if any(char.isdigit() for char in password):
-            pool_size += 10
-        if any(char in "!@#$%^&*()-_=+[{]}\\|;:'\",<.>/?`~" for char in password):
-            pool_size += 32
+            pool_size += security_policy_manager.get_policy_param("password_char_pools")["digits"]
+        if any(char in security_policy_manager.get_policy_param("password_specilal_characters") for char in password):
+            pool_size += security_policy_manager.get_policy_param("password_char_pools")["special"]
         
         if pool_size == 0:
             return 0.0
@@ -39,22 +40,32 @@ class PasswordManager:
         return entropy
 
     @staticmethod
-    ## Mora biti minimalno jedan broj, jedno veliko slovo, jedno malo slovo i posedni znak
     def validate_password_strength(password: str) -> str:
-        if len(password) < security_policy_manager.get_policy_param("password_length_min"):
-            return "Lozinka mora imati najmanje {} znakova.".format(
-                security_policy_manager.get_policy_param("password_length_min")
-            )
-        if not any(char.isdigit() for char in password):
-            return "Lozinka mora sadržavati barem jedan broj."
-        if not any(char.isupper() for char in password):
-            return "Lozinka mora sadržavati barem jedno veliko slovo."
-        if not any(char.islower() for char in password):
-            return "Lozinka mora sadržavati barem jedno malo slovo."
-        if not any(char in "!@#$%^&*()-_=+[{]}\\|;:'\",<.>/?`~" for char in password):
-            return "Lozinka mora sadržavati barem jedan poseban znak."
+        """
+        Validira jačinu lozinke prema pravilima iz security policy-a.
+        Vraća poruku o greški ili 'sucessful_validation' ako je lozinka valjana.
+        """
+        min_length = security_policy_manager.get_policy_param("password_length_min")
+        if len(password) < min_length:
+            return "Lozinka mora imati najmanje {} znakova.".format(min_length)
+        # Kako sam dodala nove parametre u policy, određene provjere se mogu "izgasiti" ako se stavi false u policy-u
+        if security_policy_manager.get_policy_param("pasword_require_digits"):
+            if not any(char.isdigit() for char in password):
+                return "Lozinka mora sadržavati barem jedan broj."
         
-        # Provjera entropije (trebam li ovo eksli????)
+        if security_policy_manager.get_policy_param("password_require_uppercase"):
+            if not any(char.isupper() for char in password):
+                return "Lozinka mora sadržavati barem jedno veliko slovo."
+        
+        if security_policy_manager.get_policy_param("password_require_lowercase"):
+            if not any(char.islower() for char in password):
+                return "Lozinka mora sadržavati barem jedno malo slovo."
+        
+        if security_policy_manager.get_policy_param("password_require_special_char"):
+            special_chars = security_policy_manager.get_policy_param("password_specilal_characters")
+            if not any(char in special_chars for char in password):
+                return "Lozinka mora sadržavati barem jedan poseban znak ({}).".format(special_chars)
+        
         entropy = PasswordManager.calculate_password_entropy(password)
         min_entropy = security_policy_manager.get_policy_param("password_entropy_min_bits")
         if entropy < min_entropy:
@@ -67,6 +78,7 @@ class PasswordManager:
 
     @staticmethod
     def hash_password(mk: bytes, password_salt: str) -> str:
+        iterations = security_policy_manager.get_policy_param("pbkdf2_iterations")
         hash_name = security_policy_manager.get_policy_param("pbkdf2_hash_name")
 
         # Hash lozinke za autentifikaciju, hashiramo sa saltom od MK-a
@@ -74,7 +86,7 @@ class PasswordManager:
             hash_name,
             mk.encode('utf-8'),
             password_salt.encode('utf-8'),
-            1
+            iterations
         )
 
         return password_hash.hex()
