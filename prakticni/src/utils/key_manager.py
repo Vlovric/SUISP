@@ -3,7 +3,7 @@ from cryptography.hazmat.backends import default_backend
 import os
 import hashlib
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-from cryptography.hazmat.primitives.asymmetric import x25519
+from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 
 from src.utils.security_policy_manager import security_policy_manager
@@ -101,22 +101,26 @@ class KeyManager:
         self.clear_kek()
         self.clear_pdk()
 
-    def generate_ecc_keypair(self) -> tuple[str, bytes]:
-        """Generira ECC X25519 par ključeva"""
-        from cryptography.hazmat.primitives.asymmetric import x25519
-        
-        private_key = x25519.X25519PrivateKey.generate()
+    def generate_rsa_keypair(self) -> tuple[bytes, bytes]:
+        """Generira RSA par ključeva (4096-bit)"""
+        # Generiraj RSA privatni ključ
+        private_key = rsa.generate_private_key(
+            public_exponent=security_policy_manager.get_policy_param("rsa_public_exponent"),  # Standardna vrijednost
+            key_size=security_policy_manager.get_policy_param("rsa_key_size_bits"),  # Ili 3072/4096 za veću sigurnost
+        )
         public_key = private_key.public_key()
         
-        # Serialize za spremanje da ne vraćamo objekt od X25519PrivateKey klase
+        # Serializiraj privatni ključ (PEM format)
         private_key_bytes = private_key.private_bytes(
-        encoding=serialization.Encoding.Raw,
-        format=serialization.PrivateFormat.Raw,
-        encryption_algorithm=serialization.NoEncryption()
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.PKCS8,
+            encryption_algorithm=serialization.NoEncryption()
         )
+        
+        # Serializiraj javni ključ (PEM format)
         public_key_bytes = public_key.public_bytes(
-        encoding=serialization.Encoding.Raw,
-        format=serialization.PublicFormat.Raw
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo
         )
         
         return (public_key_bytes, private_key_bytes)

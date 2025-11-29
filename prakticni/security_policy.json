@@ -3,6 +3,8 @@
     "scrypt_cost_param_n": 16384,
     "scrypt_block_size_r": 8,
     "scrypt_parallelization_param_p": 1,
+    "rsa_key_size_bits": 4096,
+    "rsa_public_exponent": 65537,
     "password_length_min": 12,
     "password_entropy_min_bits": 80,
     "pasword_require_digits": true,

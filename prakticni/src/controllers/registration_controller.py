@@ -46,7 +46,7 @@ class RegistrationController(BaseController):
                 pdk = key_manager.get_pdk()
                 master_password_hash = PasswordManager.hash_password(master_key, password)
                 
-                public_key, private_key = key_manager.generate_ecc_keypair()
+                public_key, private_key = key_manager.generate_rsa_keypair()
                 private_key_encrypted = key_manager.encrypt_private_key(private_key, pdk)
                 success = self.user_model.register_user(username, master_password_hash, mk_salt, pdk_salt, public_key, private_key_encrypted)
                 
