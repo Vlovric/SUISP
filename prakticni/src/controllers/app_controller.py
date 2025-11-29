@@ -2,6 +2,7 @@ from PySide6.QtWidgets import QMainWindow, QStackedWidget, QToolBar
 from PySide6.QtGui import QAction
 
 from functools import partial
+from src.controllers.pregled_datoteka.pregled_datoteka_controller import PregledDatotekaController
 from src.controllers.primjer.primjer_controller import PrimjerController
 
 class AppController(QMainWindow):
@@ -26,6 +27,12 @@ class AppController(QMainWindow):
         primjer_action = QAction("Primjer", self)
         primjer_action.triggered.connect(partial(self._show_controller, "primjer"))
         nav_bar.addAction(primjer_action)
+
+        # Pregled svih datoteka
+        self._register_controller("pregled_datoteka", PregledDatotekaController())
+        pregled_datoteka_action = QAction("Pregled datoteka", self)
+        pregled_datoteka_action.triggered.connect(partial(self._show_controller, "pregled_datoteka"))
+        nav_bar.addAction(pregled_datoteka_action)
 
         # Palimo prvi controller tj. inicijalni ekran
         self._show_controller("primjer")
