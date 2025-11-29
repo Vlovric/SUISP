@@ -60,6 +60,42 @@ QPushButton:pressed {
     background-color: #004494;
 }
 
+QPushButton[class="success"] {
+    background-color: #3e9108;
+}
+
+QPushButton[class="success"]:hover {
+    background-color: #2b5507;
+}
+
+QPushButton[class="success"]:pressed {
+    background-color: #1e4100;
+}
+
+QPushButton[class="danger"] {
+    background-color: #d35153;
+}
+
+QPushButton[class="danger"]:hover {
+    background-color: #bf1a28;
+}
+
+QPushButton[class="danger"]:pressed {
+    background-color: #910813;
+}
+
+QPushButton[class="info"] {
+    background-color: #b8843d;
+}
+
+QPushButton[class="info"]:hover {
+    background-color: #72552c;
+}
+
+QPushButton[class="info"]:pressed {
+    background-color: #594323;
+}
+
 /* --- Toolbar --- */
 QToolBar {
     background-color: #3c3f41;
