@@ -41,10 +41,10 @@ class RegistrationController(BaseController):
                 return
 
             try:
-                master_password_hash = PasswordManager.hash_password(password, mk_salt, pdk_salt)
-                
-                master_key = key_manager.get_master_key()
-                pdk = key_manager.derive_pdk(master_key, pdk_salt)
+                master_key = key_manager.generate_master_key(password, mk_salt)
+                key_manager.set_pdk(master_key, pdk_salt)
+                pdk = key_manager.get_pdk()
+                master_password_hash = PasswordManager.hash_password(master_key, password)
                 
                 public_key, private_key = key_manager.generate_ecc_keypair()
                 private_key_encrypted = key_manager.encrypt_private_key(private_key, pdk)

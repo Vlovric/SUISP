@@ -1,5 +1,6 @@
 import os
 import binascii
+import hashlib
 from src.utils.key_manager import key_manager
 from src.utils.security_policy_manager import security_policy_manager
 import math
@@ -65,16 +66,18 @@ class PasswordManager:
 
 
     @staticmethod
-    def hash_password(password: str, mk_salt: str, pdk_salt: str) -> str:
-        iterations = security_policy_manager.get_policy_param("pbkdf2_iterations")
+    def hash_password(mk: bytes, password_salt: str) -> str:
         hash_name = security_policy_manager.get_policy_param("pbkdf2_hash_name")
 
-        key_manager.set_master_key(password, mk_salt)
-        master_key = key_manager.get_master_key()
-        password_derived_key = key_manager.derive_pdk(master_key, pdk_salt)
+        # Hash lozinke za autentifikaciju, hashiramo sa saltom od MK-a
+        password_hash = hashlib.pbkdf2_hmac(
+            hash_name,
+            mk.encode('utf-8'),
+            password_salt.encode('utf-8'),
+            1
+        )
 
-        return f"{mk_salt}${pdk_salt}${iterations}${hash_name}${password_derived_key.hex()}"
-
+        return password_hash.hex()
     @staticmethod
     def verify_password(stored_password_hash: str, provided_password: str) -> bool:
         # implemetacija za login funkcionalnost

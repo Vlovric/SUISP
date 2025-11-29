@@ -12,7 +12,7 @@ class KeyManager:
     """ Singleton za generiranje i dohvacanje kljuceva"""
     _instance = None
     _kek = None
-    _master_key = None
+    _pdk = None
 
     def __new__(cls):
         if cls._instance is None:
@@ -53,6 +53,54 @@ class KeyManager:
             self._kek = b'\x00' * len(self._kek) # overwritea kljuc u memoriji, temp solution
         self._kek = None
 
+# Dio sa MK i PDK
+    
+    def derive_pdk(self, master_key: bytes, pdk_salt: str) -> bytes:
+        """Derivira PDK iz MK-a za enkripciju privatnog ključa"""
+        hash_name = security_policy_manager.get_policy_param("pbkdf2_hash_name")
+    
+        return hashlib.pbkdf2_hmac(
+            hash_name,
+            master_key,
+            pdk_salt.encode(),
+            1
+        )
+
+    def generate_master_key(self, password: str, mk_salt: str) -> bytes:
+        """Derivira Master Key iz lozinke"""
+        iterations = security_policy_manager.get_policy_param("pbkdf2_iterations")
+        hash_name = security_policy_manager.get_policy_param("pbkdf2_hash_name")
+
+        return hashlib.pbkdf2_hmac(
+            hash_name,
+            password.encode(),
+            mk_salt.encode(),
+            iterations # MK ima velik broj iteracija, a PDK će imati malu, jer nije potrebno više
+        )
+
+    def set_pdk(self, master_key: bytes, pdk_salt: str):
+        """Postavlja PDK nakon derivacije iz MK-a"""
+        if self._pdk is not None:
+            raise Exception("PDK is already set.")
+        
+        self._pdk = self.derive_pdk(master_key, pdk_salt)
+    
+    def get_pdk(self) -> bytes:
+        """Dohvaća PDK za enkripciju/dekripciju privatnog ključa"""
+        if self._pdk is None:
+            raise Exception("PDK is not set.")
+        return self._pdk
+
+    def clear_pdk(self):
+        if self._pdk is not None:
+            self._pdk = b'\x00' * len(self._pdk)
+        self._pdk = None
+    
+    def clear_session(self):
+        """Briše sve session ključeve"""
+        self.clear_kek()
+        self.clear_pdk()
+
     def generate_ecc_keypair(self) -> tuple[str, bytes]:
         """Generira ECC X25519 par ključeva"""
         from cryptography.hazmat.primitives.asymmetric import x25519
@@ -72,8 +120,7 @@ class KeyManager:
         )
         
         return (public_key_bytes, private_key_bytes)
-
-# Dio sa MK,PDK i enkripcijom/dekripcijom privatnog ključa
+    
     def encrypt_private_key(self, private_key: bytes, pdk: bytes) -> str:
         """Enkriptira privatni ključ s PDK-om (AES-256-GCM)"""
         aesgcm = AESGCM(pdk)
@@ -97,50 +144,5 @@ class KeyManager:
         except Exception as e:
             raise ValueError("Neuspješna dekripcija privatnog ključa.") from e
 
-    def derive_pdk(self, master_key: bytes, pdk_salt: str) -> bytes:
-        """Derivira PDK iz MK-a za enkripciju privatnog ključa"""
-        hash_name = security_policy_manager.get_policy_param("pbkdf2_hash_name")
-    
-        return hashlib.pbkdf2_hmac(
-            hash_name,
-            master_key,
-            pdk_salt.encode(),
-            1
-        )
-
-    def derive_master_key(self, password: str, mk_salt: str) -> bytes:
-        """Derivira Master Key iz lozinke"""
-        iterations = security_policy_manager.get_policy_param("pbkdf2_iterations")
-        hash_name = security_policy_manager.get_policy_param("pbkdf2_hash_name")
-
-        return hashlib.pbkdf2_hmac(
-            hash_name,
-            password.encode(),
-            mk_salt.encode(),
-            iterations
-        )
-    def set_master_key(self, password: str, mk_salt: str):
-        """Postavlja Master Key nakon uspješne prijave korisnika"""
-        if self._master_key is not None:
-            raise Exception("Master Key is already set.")
-        
-        self._master_key = self.derive_master_key(password, mk_salt)
-    
-    def get_master_key(self) -> bytes:
-        """Dohvaća Master Key za deriviranje PDK-a"""
-        if self._master_key is None:
-            raise Exception("Master Key is not set.")
-        return self._master_key
-    
-    def clear_master_key(self):
-        """Briše Master Key pri odjavi korisnika"""
-        if self._master_key is not None:
-            self._master_key = b'\x00' * len(self._master_key)
-        self._master_key = None
-    
-    def clear_session(self):
-        """Briše sve session ključeve"""
-        self.clear_kek()
-        self.clear_master_key()
 
 key_manager = KeyManager()
