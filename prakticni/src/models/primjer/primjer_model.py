@@ -2,9 +2,9 @@ from src.models.db import db
 
 class PrimjerModel:
     @staticmethod
-    def insert_text(tekst):
+    def insert_text(text):
         query = "INSERT INTO test (text) VALUES (?)"
-        return db.execute_query(query, (tekst,))
+        return db.execute_query(query, (text,))
 
     @staticmethod
     def fetch_text_by_id(id):

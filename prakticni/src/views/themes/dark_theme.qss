@@ -30,6 +30,18 @@ QLineEdit:focus {
     border: 1px solid #007bff; /* Highlight on focus */
 }
 
+QTextEdit {
+    background-color: #3c3f41;
+    color: #f0f0f0;
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 5px;
+}
+
+QTextEdit:focus {
+    border: 1px solid #007bff; /* Highlight on focus */
+}
+
 /* --- Buttons --- */
 QPushButton {
     background-color: #007bff;
