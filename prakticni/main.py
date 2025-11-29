@@ -10,7 +10,7 @@ class App:
     def __init__(self):
         self.app = QApplication(sys.argv)
         db.init_db()
-
+        
         try:
             theme_path = Path(__file__).parent / "src" / "views" / "themes" / "dark_theme.qss"
             with open(theme_path, "r") as f:

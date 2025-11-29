@@ -1,4 +1,5 @@
 from PySide6.QtWidgets import QWidget, QLabel, QScrollArea, QFrame, QVBoxLayout, QPushButton
+from PySide6.QtCore import Qt
 
 from src.views.components.file_item_widget import FileItemWidget
 
@@ -10,10 +11,13 @@ class PregledDatotekaView(QWidget):
         self.title = QLabel("Moje datoteke")
 
         self.scroll_area = QScrollArea()
+        self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.scroll_area.setWidgetResizable(True)
 
         self.list_container = QFrame()
         self.list_layout = QVBoxLayout()
+        self.list_layout.setSpacing(24)
+        self.list_layout.setContentsMargins(8, 8, 8, 8)
         self.list_container.setLayout(self.list_layout)
 
         self.scroll_area.setWidget(self.list_container)

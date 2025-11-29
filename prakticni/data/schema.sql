@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS file (
     name VARCHAR(255) NOT NULL,
     path VARCHAR(255) NOT NULL,
     date_uploaded DATETIME NOT NULL,
-    date_modified DATETIME NOT NULL,
+    date_modified DATETIME,
     dek VARCHAR(255) NOT NULL,
     hash VARCHAR(255) NOT NULL
 );

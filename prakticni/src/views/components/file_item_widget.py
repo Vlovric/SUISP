@@ -1,4 +1,5 @@
 from PySide6.QtWidgets import QWidget, QLabel, QPushButton, QHBoxLayout, QVBoxLayout
+from PySide6.QtGui import QIcon
 
 class FileItemWidget(QWidget):
     def __init__(self, file_record):
@@ -8,10 +9,12 @@ class FileItemWidget(QWidget):
 
         self.name_label = QLabel(file_record["name"])
 
-        date_text = f"Prenesena: {file_record['date_uploaded']}"
+        date_text = ""
         date_modified = file_record["date_modified"]
         if date_modified:
-            date_text += f" Ažurirana: {date_modified}"
+            date_text = f"Ažurirana: {date_modified}"
+        else:
+            date_text = f"Prenesena: {file_record['date_uploaded']}"
 
         self.date_label = QLabel(date_text)
 
@@ -19,12 +22,19 @@ class FileItemWidget(QWidget):
         left.addWidget(self.name_label)
         left.addWidget(self.date_label)
 
-        self.btn_export = QPushButton("Izvezi")
-        self.btn_delete = QPushButton("Obriši")
-        self.btn_share = QPushButton("Dijeli")
-
+        self.btn_export = QPushButton()
+        self.btn_export.setIcon(QIcon("src/pic/download.svg"))
+        self.btn_export.setToolTip("Izvezi datoteku")
         self.btn_export.clicked.connect(self.handle_export)
+        
+        self.btn_delete = QPushButton()
+        self.btn_delete.setIcon(QIcon("src/pic/delete.svg"))
+        self.btn_delete.setToolTip("Sigurnosno obriši datoteku")
         self.btn_delete.clicked.connect(self.handle_delete)
+
+        self.btn_share = QPushButton()
+        self.btn_share.setIcon(QIcon("src/pic/share.svg"))
+        self.btn_share.setToolTip("Dijeli datoteku")
         self.btn_share.clicked.connect(self.handle_share)
 
         right = QHBoxLayout()
@@ -33,6 +43,9 @@ class FileItemWidget(QWidget):
         right.addWidget(self.btn_share)
 
         layout = QHBoxLayout()
+
+        layout.setContentsMargins(0, 0, 0, 0)
+
         layout.addLayout(left)
         layout.addStretch()
         layout.addLayout(right)
