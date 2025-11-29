@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QWidget
 from src.utils.key_manager import key_manager
 from src.controllers.base_controller import BaseController
 from src.views.prijava_registracija.registration_view import RegistrationView
+from src.utils.log_manager import log
 from src.utils.password_manager import PasswordManager
 from src.models.user_model import UserModel
 
@@ -16,7 +17,7 @@ class RegistrationController(BaseController):
         self.user_model = UserModel()
 
         self._view = RegistrationView()
-        self._view.setWindowTitle("Registration")
+        self._view.setWindowTitle("Registracija korisnika")
         self._view.resize(400, 200)
 
         self._view.register_button.clicked.connect(self._handle_registration)
@@ -51,10 +52,12 @@ class RegistrationController(BaseController):
                 success = self.user_model.register_user(username, master_password_hash, mk_salt, pdk_salt, public_key, private_key_encrypted)
                 
                 if success:
+                    log("Korisnik uspješno registriran!.")
                     self._view.set_error_message("")
                     self.proceed.emit()
                 else:
-                    self._view.set_error_message("Registration failed!")
+                    log("Registracija korisnika nije uspjela.")
+                    self._view.set_error_message("Registracija korisnika nije uspjela.")
             except Exception as e:
                 self._view.set_error_message(str(e))
 
