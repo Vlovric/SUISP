@@ -84,7 +84,7 @@ class PasswordManager:
         # Hash lozinke za autentifikaciju, hashiramo sa saltom od MK-a
         password_hash = hashlib.pbkdf2_hmac(
             hash_name,
-            mk.encode('utf-8'),
+            mk,
             password_salt.encode('utf-8'),
             iterations
         )
