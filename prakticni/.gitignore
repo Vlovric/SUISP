@@ -18,5 +18,7 @@ env/
 .idea/
 .vscode/
 
-# Baza
+# Baza i kriptirane datoteke
 *.db
+vault_storage/
+*.bin

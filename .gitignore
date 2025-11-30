@@ -28,6 +28,3 @@ venv/
 __pycache__/
 *.pyc
 *.pyo
-
-# Other
-*.bin

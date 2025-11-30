@@ -61,16 +61,16 @@ class PregledDatotekaController(BaseController):
         kek = key_manager.get_public_key()
         dek = AesHelper.generate_key()
 
-        dek_encrypted, err = RsaHelper.encrypt(dek, kek)
-        if err:
-            # TODO ispiši grešku negdje na formi da nije moguće kriptirati DEK
+        dek_encrypted, error = RsaHelper.encrypt(dek, kek)
+        if error:
+            self.view.error_label.setText(error)
             return
 
         encrypted_file_name = f"{str(uuid.uuid4())}.bin"
 
-        encrypted_content, err = AesHelper.encrypt(file.content, dek)
-        if err:
-            # TODO ispiši grešku negdje na formi da nije moguće kriptirati datoteku
+        encrypted_content, error = AesHelper.encrypt(file.content, dek)
+        if error:
+            self.view.error_label.setText(error)
             return
 
         vault_storage_path = security_policy_manager.get_policy_param("valut_storage_path")
@@ -78,7 +78,7 @@ class PregledDatotekaController(BaseController):
         path = os.path.join(vault_storage_path, encrypted_file_name)
         successful = file_manager.save_file(path, encrypted_content)
         if not successful:
-            # TODO ispiši grešku negdje na formi da nije moguće spremiti datoteku
+            self.view.error_label.setText("Nije moguće spremiti datoteku.")
             return
         
         # Hashiram NE-kriptiran sadržaj (provjeriti je li ispravno),

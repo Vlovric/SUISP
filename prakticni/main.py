@@ -7,17 +7,9 @@ from src.controllers.registration_controller import RegistrationController
 from src.models.user_model import UserModel
 from src.models.db import db
 from src.utils.key_manager import key_manager
-import os # TODO MAKNI
 
 class App:
     def __init__(self):
-        # TODO MAKNI
-        try:
-            os.remove("data/baza.db")
-        except:
-            print("")
-        # KRAJ MAKNI
-
         self.app = QApplication(sys.argv)
         db.init_db()
 
