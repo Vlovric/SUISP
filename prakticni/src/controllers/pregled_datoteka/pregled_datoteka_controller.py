@@ -3,6 +3,8 @@ from src.models.datoteka.datoteka_model import DatotekaModel
 from src.controllers.base_controller import BaseController
 from src.views.pregled_datoteka.pregled_datoteka_view import PregledDatotekaView
 from functools import partial
+from src.utils.file_manager import file_manager
+from src.utils.key_manager import key_manager
 
 class PregledDatotekaController(BaseController):
     def __init__(self):
@@ -45,8 +47,22 @@ class PregledDatotekaController(BaseController):
             btn.clicked.connect(partial(self.handle_share, file_id))
     
     def handle_new_file(self):
-        # TODO implementirati
-        print("Novi file se handlea!")
+        file = file_manager.select_file_dialog(self)
+        if file == None:
+            return
+        
+        kek = key_manager.get_private_key()
+
+        # TODO generiraj DEK
+
+        # TODO generiraj random naziv za datoteku
+
+        # TODO kriptiraj datoteku
+
+        # TODO spremi datoteku
+
+        # TODO dodaj zapis u bazu
+
         self.reset()
 
     def handle_export(self, id):

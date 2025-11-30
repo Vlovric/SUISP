@@ -14,7 +14,6 @@ class RegistrationController(BaseController):
 
     def __init__(self):
         super().__init__()
-        self.user_model = UserModel()
 
         self._view = RegistrationView()
         self._view.setWindowTitle("Registracija korisnika")
@@ -49,7 +48,7 @@ class RegistrationController(BaseController):
                 
                 public_key, private_key = key_manager.generate_rsa_keypair()
                 private_key_encrypted = key_manager.encrypt_private_key(private_key, pdk)
-                success = self.user_model.register_user(username, master_password_hash, mk_salt, pdk_salt, public_key, private_key_encrypted)
+                success = UserModel.register_user(username, master_password_hash, mk_salt, pdk_salt, public_key, private_key_encrypted)
                 
                 if success:
                     log("Korisnik uspješno registriran!.")
