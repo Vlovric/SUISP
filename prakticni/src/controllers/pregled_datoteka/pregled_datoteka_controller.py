@@ -1,4 +1,5 @@
 from PySide6.QtWidgets import QWidget, QStackedWidget
+from src.utils.aes_helper import AesHelper
 from src.models.datoteka.datoteka_model import DatotekaModel
 from src.controllers.base_controller import BaseController
 from src.views.pregled_datoteka.pregled_datoteka_view import PregledDatotekaView
@@ -52,8 +53,10 @@ class PregledDatotekaController(BaseController):
             return
         
         kek = key_manager.get_private_key()
+        dek = AesHelper.generate_key()
 
-        # TODO generiraj DEK
+        print("KEK: " + str(kek))
+        print("DEK: " + dek)
 
         # TODO generiraj random naziv za datoteku
 

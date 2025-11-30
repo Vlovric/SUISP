@@ -4,6 +4,10 @@ import os
 
 class AesHelper:
     @staticmethod
+    def generate_key() -> str:
+        return os.urandom(32).hex()
+
+    @staticmethod
     def encrypt(plaintext: str, key_hex: str) -> tuple[bytes | None, str | None]:
         try:
             iv = os.urandom(12) # 96-bit za GCM
