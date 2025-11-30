@@ -58,15 +58,10 @@ class PregledDatotekaController(BaseController):
 
         dek_encrypted, err = RsaHelper.encrypt(dek, kek)
         if err:
-            print(err)
+            # TODO ispiši grešku negdje na formi
             return
 
-        print("DEK: " + dek)
-        print("DEK encrypted: ")
-        print(dek_encrypted)
-
-        kek_private = key_manager.get_private_key()
-
+        
 
         # TODO generiraj random naziv za datoteku
 

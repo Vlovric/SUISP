@@ -26,8 +26,7 @@ class RsaHelper:
                 )
             )
             return ciphertext, None
-        except Exception as e:
-            print(e)
+        except:
             return None, "Došlo je do greške u enkripciji. "
         
     @staticmethod
