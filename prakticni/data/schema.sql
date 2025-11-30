@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS file (
     binary TINYINT NOT NULL,
     date_uploaded DATETIME NOT NULL,
     date_modified DATETIME,
-    dek VARCHAR(255) NOT NULL,
+    dek_encrypted VARCHAR(255) NOT NULL,
     hash VARCHAR(255) NOT NULL
 );
 

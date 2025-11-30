@@ -7,7 +7,11 @@ from src.views.pregled_datoteka.pregled_datoteka_view import PregledDatotekaView
 from functools import partial
 from src.utils.file_manager import file_manager
 from src.utils.key_manager import key_manager
+from src.utils.security_policy_manager import security_policy_manager
+from datetime import datetime
+import hashlib
 import uuid
+import os
 
 class PregledDatotekaController(BaseController):
     def __init__(self):
@@ -69,19 +73,23 @@ class PregledDatotekaController(BaseController):
             # TODO ispiši grešku negdje na formi da nije moguće kriptirati datoteku
             return
 
-        file_manager.save_file(f"data/vault_storage/{encrypted_file_name}", encrypted_content)
+        vault_storage_path = security_policy_manager.get_policy_param("valut_storage_path")
 
-        # TODO makni (samo za probu)
-        test_file = file_manager.select_file_dialog(self)
-        decrypted_content, err = AesHelper.decrypt(test_file.content, dek)
+        path = os.path.join(vault_storage_path, encrypted_file_name)
+        successful = file_manager.save_file(path, encrypted_content)
+        if not successful:
+            # TODO ispiši grešku negdje na formi da nije moguće spremiti datoteku
+            return
+        
+        # Hashiram NE-kriptiran sadržaj (provjeriti je li ispravno),
+        # pa se može provjeriti nakon dekriptiranja kod izvoza datoteke iz trezora je li enkriptirana datoteka mijenjana
+        if file.is_binary:
+            hash = hashlib.sha512(file.content)
+        else:
+            hash = hashlib.sha512(file.content.encode())
+        current_time = str(datetime.now().isoformat())
 
-        print("CONTENT: ")
-        print(file.content)
-
-        print("DECRYPTED CONTENT: ")
-        print(decrypted_content)
-
-        # TODO dodaj zapis u bazu
+        DatotekaModel.insert_file_entry(file.filename, path, file.is_binary, current_time, dek_encrypted.hex(), hash.hexdigest())
 
         self.reset()
 
