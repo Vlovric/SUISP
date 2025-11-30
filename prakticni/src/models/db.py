@@ -1,11 +1,11 @@
+from src.utils.paths import DB_FILE, ensure_dirs
 import os
 import sqlite3
 from contextlib import contextmanager
 
-DB_PATH = os.path.join("data", "baza.db")
-
 class Database:
-    def __init__(self, db_path=DB_PATH):
+    def __init__(self, db_path=DB_FILE):
+        ensure_dirs()
         self.db_path = db_path
         os.makedirs(os.path.dirname(db_path), exist_ok=True)
 
