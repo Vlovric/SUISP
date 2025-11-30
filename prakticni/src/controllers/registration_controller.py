@@ -51,7 +51,7 @@ class RegistrationController(BaseController):
                 success = UserModel.register_user(username, master_password_hash, mk_salt, pdk_salt, public_key, private_key_encrypted)
                 
                 if success:
-                    log("Korisnik uspješno registriran!.")
+                    log("Korisnik uspješno registriran.")
                     self._view.set_error_message("")
                     self.proceed.emit()
                 else:

@@ -9,6 +9,7 @@ from src.utils.file_manager import file_manager
 from src.utils.key_manager import key_manager
 from src.utils.security_policy_manager import security_policy_manager
 from datetime import datetime
+from src.utils.log_manager import log
 import hashlib
 import uuid
 import os
@@ -78,6 +79,7 @@ class PregledDatotekaController(BaseController):
         path = os.path.join(vault_storage_path, encrypted_file_name)
         successful = file_manager.save_file(path, encrypted_content)
         if not successful:
+            log(f"Nije moguće spremiti kriptiranu datoteku nastalu kriptiranjem datoteke {file.filename}")
             self.view.error_label.setText("Nije moguće spremiti datoteku.")
             return
         
@@ -90,6 +92,7 @@ class PregledDatotekaController(BaseController):
         current_time = str(datetime.now().isoformat())
 
         DatotekaModel.insert_file_entry(file.filename, path, file.is_binary, current_time, dek_encrypted.hex(), hash.hexdigest())
+        log(f"U sustav je prenesena datoteka {file.filename}")
 
         self.reset()
 
