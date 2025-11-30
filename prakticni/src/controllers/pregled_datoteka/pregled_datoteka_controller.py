@@ -7,6 +7,7 @@ from src.views.pregled_datoteka.pregled_datoteka_view import PregledDatotekaView
 from functools import partial
 from src.utils.file_manager import file_manager
 from src.utils.key_manager import key_manager
+import uuid
 
 class PregledDatotekaController(BaseController):
     def __init__(self):
@@ -58,14 +59,17 @@ class PregledDatotekaController(BaseController):
 
         dek_encrypted, err = RsaHelper.encrypt(dek, kek)
         if err:
-            # TODO ispiši grešku negdje na formi
+            # TODO ispiši grešku negdje na formi da nije moguće kriptirati DEK
             return
 
+        encrypted_file_name = f"{str(uuid.uuid4())}.bin"
+
+        file_encrypted, err = AesHelper.encrypt(file.content, dek)
+        if err:
+            # TODO ispiši grešku negdje na formi da nije moguće kriptirati datoteku
+            return
         
-
-        # TODO generiraj random naziv za datoteku
-
-        # TODO kriptiraj datoteku
+        
 
         # TODO spremi datoteku
 

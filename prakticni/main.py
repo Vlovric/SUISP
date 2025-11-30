@@ -7,12 +7,19 @@ from src.controllers.registration_controller import RegistrationController
 from src.models.user_model import UserModel
 from src.models.db import db
 from src.utils.key_manager import key_manager
+import os # TODO MAKNI
 
 class App:
     def __init__(self):
+        # TODO MAKNI
+        try:
+            os.remove("data/baza.db")
+        except:
+            print("")
+        # KRAJ MAKNI
+
         self.app = QApplication(sys.argv)
         db.init_db()
-        user_model = UserModel()
 
         try:
             theme_path = Path(__file__).parent / "src" / "views" / "themes" / "dark_theme.qss"
@@ -21,7 +28,7 @@ class App:
         except FileNotFoundError:
             print("Nema filea teme")
         ## provjera jesmo li se registirali prvi put
-        if user_model.has_user("user"):
+        if UserModel.has_user("user"):
             self.current_controller = LoginController()
             self.current_controller.proceed.connect(self._show_main_app)
             self.current_controller.root_widget.show()
