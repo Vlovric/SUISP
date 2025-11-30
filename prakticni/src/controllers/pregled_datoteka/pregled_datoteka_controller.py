@@ -1,4 +1,5 @@
 from PySide6.QtWidgets import QWidget, QStackedWidget
+from src.utils.rsa_helper import RsaHelper
 from src.utils.aes_helper import AesHelper
 from src.models.datoteka.datoteka_model import DatotekaModel
 from src.controllers.base_controller import BaseController
@@ -52,11 +53,20 @@ class PregledDatotekaController(BaseController):
         if file == None:
             return
         
-        kek = key_manager.get_private_key()
+        kek = key_manager.get_public_key()
         dek = AesHelper.generate_key()
 
-        print("KEK: " + str(kek))
+        dek_encrypted, err = RsaHelper.encrypt(dek, kek)
+        if err:
+            print(err)
+            return
+
         print("DEK: " + dek)
+        print("DEK encrypted: ")
+        print(dek_encrypted)
+
+        kek_private = key_manager.get_private_key()
+
 
         # TODO generiraj random naziv za datoteku
 

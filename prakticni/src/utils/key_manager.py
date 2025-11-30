@@ -5,6 +5,7 @@ import hashlib
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey, RSAPrivateKey
 
 from src.utils.security_policy_manager import security_policy_manager
 from src.models.user_model import UserModel
@@ -49,7 +50,7 @@ class KeyManager:
             raise Exception("KEK is not set.")
         return self._kek
     
-    def get_private_key(self):
+    def get_private_key(self) -> RSAPrivateKey:
         user = UserModel.get_user()
         if user is None:
             raise Exception("User is not set.")
@@ -68,6 +69,13 @@ class KeyManager:
             )
         except Exception as e:
             raise Exception(f"Privatni ključ nije u ispravnom formatu: {e}")
+
+    def get_public_key(self) -> str:
+        user = UserModel.get_user()
+        if user is None:
+            raise Exception("User is not set.")
+        
+        return user["public_key"].decode("utf-8")
 
     def clear_kek(self):
         if self._kek is not None:

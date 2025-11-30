@@ -7,7 +7,7 @@ class RsaHelper:
     @staticmethod
     def encrypt(plaintext: str, key: str | RSAPublicKey) -> tuple[bytes | None, str | None]:
         public_key = None
-        
+
         if isinstance(key, str):
             try:
                 public_key = serialization.load_pem_public_key(key.encode())
@@ -26,8 +26,9 @@ class RsaHelper:
                 )
             )
             return ciphertext, None
-        except:
-            return None, "Došlo je do greške u enkripciji."
+        except Exception as e:
+            print(e)
+            return None, "Došlo je do greške u enkripciji. "
         
     @staticmethod
     def decrypt(ciphertext: bytes, key: str | RSAPrivateKey) -> tuple[str | None, str | None]:
