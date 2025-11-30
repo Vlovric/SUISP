@@ -21,7 +21,7 @@ class FileManager:
 
         return self.save_file(path, data, encoding)
 
-    def save_file(self, path, data, encoding) -> bool:
+    def save_file(self, path, data, encoding = None) -> bool:
         is_binary_file = isinstance(data, (bytes, bytearray))
         
         if path:

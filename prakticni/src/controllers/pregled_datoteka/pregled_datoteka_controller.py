@@ -64,14 +64,22 @@ class PregledDatotekaController(BaseController):
 
         encrypted_file_name = f"{str(uuid.uuid4())}.bin"
 
-        file_encrypted, err = AesHelper.encrypt(file.content, dek)
+        encrypted_content, err = AesHelper.encrypt(file.content, dek)
         if err:
             # TODO ispiši grešku negdje na formi da nije moguće kriptirati datoteku
             return
-        
-        
 
-        # TODO spremi datoteku
+        file_manager.save_file(f"data/vault_storage/{encrypted_file_name}", encrypted_content)
+
+        # TODO makni (samo za probu)
+        test_file = file_manager.select_file_dialog(self)
+        decrypted_content, err = AesHelper.decrypt(test_file.content, dek)
+
+        print("CONTENT: ")
+        print(file.content)
+
+        print("DECRYPTED CONTENT: ")
+        print(decrypted_content)
 
         # TODO dodaj zapis u bazu
 
