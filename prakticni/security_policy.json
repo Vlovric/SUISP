@@ -5,6 +5,9 @@
     "scrypt_parallelization_param_p": 1,
     "rsa_key_size_bits": 4096,
     "rsa_public_exponent": 65537,
+    "aes_gcm_iv_length_bytes": 12,
+    "aes_gcm_key_length_bytes": 32,
+    "aes_gcm_tag_length_bytes": 16,
     "password_length_min": 12,
     "password_entropy_min_bits": 80,
     "pasword_require_digits": true,
@@ -20,5 +23,6 @@
     },
     "pbkdf2_iterations": 600000,
     "pbkdf2_hash_name": "sha256",
-    "pbkdf2_salt_length": 16
+    "pbkdf2_salt_length": 16,
+    "vault_storage_path": "./data/vault_storage"
 }

@@ -12,7 +12,6 @@ class LoginController(BaseController):
     def __init__(self):
         super().__init__()
 
-        # TODO maknuti po potrebi jer je za primjer
         log("Aplikacija je pokrenuta.")
 
         self._view = LoginView()

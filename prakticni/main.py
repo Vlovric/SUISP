@@ -19,7 +19,6 @@ class App:
             sys.exit(0)
 
         db.init_db()
-        user_model = UserModel()
 
         try:
             theme_path = Path(__file__).parent / "src" / "views" / "themes" / "dark_theme.qss"
@@ -30,7 +29,7 @@ class App:
 
         self.app.activateRequested.connect(self._activate_top_window)    
         ## provjera jesmo li se registirali prvi put
-        if user_model.has_user("user"):
+        if UserModel.has_user("user"):
             self.current_controller = LoginController()
             self.current_controller.proceed.connect(self._show_main_app)
             self.current_controller.root_widget.show()

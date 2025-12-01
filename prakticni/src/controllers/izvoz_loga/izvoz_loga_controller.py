@@ -5,7 +5,6 @@ from src.utils.log_manager import log_manager
 from src.utils.file_manager import file_manager
 from src.utils.rsa_helper import RsaHelper
 from src.utils.aes_helper import AesHelper
-import os
 
 from src.views.izvoz_loga.audit_log_export_view import AuditLogExportView
 
@@ -44,7 +43,7 @@ class AuditLogExportController(BaseController):
         now = datetime.now().isoformat()
         filename = f"audit_log_{datetime.fromisoformat(now).strftime('%Y-%m-%d_%H-%M-%S')}.bin"
 
-        aes_key = os.urandom(32).hex()
+        aes_key = AesHelper.generate_key()
 
         aes_error = self.encrypt_and_save(log_text, aes_key, filename)
 
