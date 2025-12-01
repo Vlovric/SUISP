@@ -38,21 +38,37 @@ class LoginController(BaseController):
         if not fetched_user:
             self._view.set_error_message("Korisničko ime ne postoji!")
             return
-        self._view.set_error_message("")
+        is_locked, remaining = self.user_model.is_locked_out(username)
+        if is_locked:
+            self.remaining_seconds = remaining
+            self.lockout_counter = fetched_user.get('lockout_count', 0)
+            self._view.login_button.setEnabled(False)
+            self.countdown_timer.start(1000)
+            self._update_countdown()
+            return
         try:
-            if(self.failed_attempts >= 3):
-                self.start_counter()
+            if PasswordManager.verify_user_credentials(fetched_user, password):
+                self.user_model.update_login_attempt(username, success=True)
+                log("Korisnik uspješno prijavljen!")
+                self._view.set_error_message("")
+                self.proceed.emit()
             else:
-                if(PasswordManager.verify_user_credentials(fetched_user, password) == False):
-                    self.failed_attempts += 1
-                    log("Neuspješna prijava radi neispravne lozinke ili korisničkog imena.")
-                    self._view.set_error_message("Neispravno korisničko ime ili lozinka.\n Broj preostalih pokušaja: {}.".format(4 - self.failed_attempts))
-                    return
+                self.user_model.update_login_attempt(username, success=False)
+                log("Neuspješna prijava radi neispravne lozinke ili korisničkog imena.")
+                # Ponovo dohvaćamo korisnika da bi dobili ažurirani broj neuspjelih pokušaja
+                fetched_user = self.user_model.get_user_by_username(username)
+                failed = fetched_user.get('failed_attempts', 0)
+                
+                if failed >= 3:
+                    lockout_count = fetched_user.get('lockout_count', 0) + 1
+                    wait_seconds = 60 * lockout_count
+                    self.user_model.set_lockout(username, wait_seconds)
+                    self.lockout_counter = lockout_count
+                    self.start_counter()
                 else:
-                    log("Korisnik uspješno prijavljen!")
-                    self._view.set_error_message("")
-                    self.proceed.emit()
-                    return
+                    self._view.set_error_message(
+                        f"Neispravno korisničko ime ili lozinka. Broj preostalih pokušaja: {3 - failed}."
+                    )
         except Exception as e:
             log(f"Neuspješna prijava: {e}")
             self._view.set_error_message(f"Neuspješna prijava: {e}.")

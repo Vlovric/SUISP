@@ -10,7 +10,10 @@ CREATE TABLE IF NOT EXISTS user (
     mk_salt VARCHAR(255) NOT NULL,
     pdk_salt VARCHAR(255) NOT NULL,
     public_key VARCHAR(255) NOT NULL,
-    private_key_encrypted VARCHAR(255) NOT NULL
+    private_key_encrypted VARCHAR(255) NOT NULL,
+    failed_attempts INTEGER DEFAULT 0,
+    lockout_count INTEGER DEFAULT 0,
+    lockout_until DATETIME NULL
 );
 
 CREATE TABLE IF NOT EXISTS file (
