@@ -33,3 +33,7 @@ class UserModel:
         except Exception as e:
             print(f"Greška pri registraciji korisnika: {e}")
             return False
+        
+    def get_user_by_username(self, username: str) -> dict | None:
+        query = "SELECT * FROM user WHERE username = ?"
+        return db.fetch_one(query, (username,))
