@@ -1,16 +1,23 @@
 import sys
-from PySide6.QtWidgets import QApplication
 from pathlib import Path
+from PySide6.QtCore import Qt
 from src.controllers.app_controller import AppController
 from src.controllers.login_controller import LoginController
 from src.controllers.registration_controller import RegistrationController
 from src.models.user_model import UserModel
 from src.models.db import db
 from src.utils.key_manager import key_manager
+from src.utils.single_application import SingleApplication
+
+APP_ID = "secure.file.vault.app.suisp"
 
 class App:
     def __init__(self):
-        self.app = QApplication(sys.argv)
+        self.app = SingleApplication(sys.argv, APP_ID)
+        if getattr(self.app, "is_running", False):
+            print("Application is already running.")
+            sys.exit(0)
+
         db.init_db()
         user_model = UserModel()
 
@@ -20,6 +27,8 @@ class App:
                 self.app.setStyleSheet(f.read())
         except FileNotFoundError:
             print("Nema filea teme")
+
+        self.app.activateRequested.connect(self._activate_top_window)    
         ## provjera jesmo li se registirali prvi put
         if user_model.has_user("user"):
             self.current_controller = LoginController()
@@ -39,6 +48,19 @@ class App:
         exit_code = self.app.exec()
         key_manager.clear_kek()
         sys.exit(exit_code)
+
+    def _activate_top_window(self):
+        win = getattr(self, "main_window", None)
+        if win is None and hasattr(self, "current_controller"):
+            win = self.current_controller.root_widget
+        if not win:
+            return
+        if win.isMinimized():
+            win.setWindowState(win.windowState() & ~Qt.WindowMinimized)
+            win.showNormal()
+        win.show()
+        win.raise_()
+        win.activateWindow()
 
 if __name__ == "__main__":
     app = App()
