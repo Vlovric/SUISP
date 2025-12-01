@@ -36,7 +36,7 @@ class LoginController(BaseController):
 
         fetched_user = self.user_model.get_user_by_username(username)
         if not fetched_user:
-            self._view.set_error_message("Korisničko ime ne postoji!")
+            self._view.set_error_message("Neispravno korisničko ime ili lozinka!")
             return
         is_locked, remaining = self.user_model.is_locked_out(username)
         if is_locked:
@@ -54,7 +54,7 @@ class LoginController(BaseController):
                 self.proceed.emit()
             else:
                 self.user_model.update_login_attempt(username, success=False)
-                log("Neuspješna prijava radi neispravne lozinke ili korisničkog imena.")
+                log("Neispravno korisničko ime ili lozinka.")
                 # Ponovo dohvaćamo korisnika da bi dobili ažurirani broj neuspjelih pokušaja
                 fetched_user = self.user_model.get_user_by_username(username)
                 failed = fetched_user.get('failed_attempts', 0)

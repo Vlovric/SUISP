@@ -33,7 +33,17 @@ class App:
     def _show_main_app(self):
         self.current_controller.root_widget.close()
         self.main_window = AppController()
+        self.main_window.logout_requested.connect(self._show_login_after_logout)
         self.main_window.show()
+    
+    def _show_login_after_logout(self):
+        # Zatvori glavni prozor
+        if hasattr(self, 'main_window'):
+            self.main_window.close()
+        # Prikaži login
+        self.current_controller = LoginController()
+        self.current_controller.proceed.connect(self._show_main_app)
+        self.current_controller.root_widget.show()
 
     def run(self):
         exit_code = self.app.exec()

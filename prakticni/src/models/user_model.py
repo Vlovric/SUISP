@@ -20,7 +20,7 @@ class UserModel:
             INSERT INTO user 
             (username, master_password_hash, mk_salt, pdk_salt, public_key, private_key_encrypted) 
             VALUES (?, ?, ?, ?, ?, ?)
-        """
+            """
         try:
             db.execute_query(query, (
                 username, 

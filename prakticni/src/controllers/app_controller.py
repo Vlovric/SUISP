@@ -1,16 +1,44 @@
-from PySide6.QtWidgets import QMainWindow, QStackedWidget, QToolBar
+from PySide6.QtWidgets import QMainWindow, QStackedWidget, QToolBar, QMessageBox
 from PySide6.QtGui import QAction
+from PySide6.QtCore import QTimer, QCoreApplication, Signal
+from src.utils.activity_monitor import ActivityMonitor
+from datetime import datetime
 
 from functools import partial
 from src.controllers.pregled_datoteka.pregled_datoteka_controller import PregledDatotekaController
 from src.controllers.izvoz_loga.izvoz_loga_controller import AuditLogExportController
 from src.controllers.primjer.primjer_controller import PrimjerController
+from src.utils.key_manager import key_manager
+from src.utils.log_manager import log
 
 class AppController(QMainWindow):
+    logout_requested = Signal()  # Signal koji se emituje kad treba odjava
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Secure File Vault")
         self.resize(800, 600)
+        self.INACTIVITY_TIMEOUT = 15 * 60  # 15 minuta (za testiranje se može staviti kraći interval)
+        self.WARNING_TIME = 5 # (za testiranje se može staviti kraći interval)
+
+        # Timer za praćenje neaktivnosti
+        self.idle_timer = QTimer()
+        self.idle_timer.timeout.connect(self._check_idle)
+        self.idle_timer.start(1000)  # Provjera svake sekunde
+        
+        # Timer za countdown upozorenja
+        self.warning_timer = QTimer()
+        self.warning_timer.timeout.connect(self._update_warning)
+        self.warning_remaining = 0
+        
+        # Zadnja aktivnost
+        self.last_activity = datetime.now()
+        
+        # Activity monitor
+        self.activity_monitor = ActivityMonitor()
+        self.activity_monitor.activity_detected.connect(self._reset_idle)
+        
+        # Instaliraj event filter na cijelu aplikaciju
+        QCoreApplication.instance().installEventFilter(self.activity_monitor)
 
         # Kreiramo toolbar za navigaciju
         nav_bar = QToolBar("Navigation")
@@ -58,3 +86,52 @@ class AppController(QMainWindow):
         index = self.stack.indexOf(ctrl.root_widget)
         if index != -1:
             self.stack.setCurrentIndex(index)
+
+    def _check_idle(self):
+        elapsed = (datetime.now() - self.last_activity).total_seconds()
+        
+        if elapsed >= self.INACTIVITY_TIMEOUT:
+            # countdown upozorenje
+            if not self.warning_timer.isActive():
+                self.warning_remaining = self.WARNING_TIME
+                self.warning_timer.start(1000)
+                self._show_warning_dialog()
+
+    def _update_warning(self):
+        self.warning_remaining -= 1
+        
+        if self.warning_remaining > 0:
+            self.warning_dialog.setText(
+                f"Bit ćete odjavljeni za {self.warning_remaining} sekundi zbog neaktivnosti. \n Pomaknite se ili pritisnite tipku da ostanete prijavljeni."
+            )
+        else:
+            # automatska odjava nakon odbrojavanja
+            self.warning_timer.stop()
+            self._auto_logout()
+
+    def _show_warning_dialog(self):
+        # Modal dialog koji prikazuje countdown
+        self.warning_dialog = QMessageBox(self)
+        self.warning_dialog.setWindowTitle("Neaktivnost")
+        self.warning_dialog.setText(
+            f"Bit ćete odjavljeni za {self.WARNING_TIME} sekundi zbog neaktivnosti.\n Pomaknite se ili pritisnite tipku da ostanete prijavljeni."
+        )
+        # Ovdje nesta fali.....
+        self.warning_dialog.show()
+
+    def _reset_idle(self):
+        self.last_activity = datetime.now()
+        
+        if self.warning_timer.isActive():
+            self.warning_timer.stop()
+            if hasattr(self, 'warning_dialog'):
+                self.warning_dialog.close()
+    
+    def _auto_logout(self):
+        log("Automatska odjava zbog neaktivnosti")
+        key_manager.clear_kek()
+        key_manager.clear_pdk()
+        
+        if hasattr(self, 'warning_dialog'):
+            self.warning_dialog.close()
+        self.logout_requested.emit()
