@@ -1,10 +1,12 @@
 from datetime import datetime
-from PySide6.QtWidgets import QWidget, QStackedWidget
+from PySide6.QtWidgets import QWidget, QStackedWidget, QApplication
 from src.controllers.base_controller import BaseController
 from src.utils.log_manager import log_manager
 from src.utils.file_manager import file_manager
 from src.utils.rsa_helper import RsaHelper
 from src.utils.aes_helper import AesHelper
+from src.utils.key_manager import key_manager
+import hashlib
 
 from src.views.izvoz_loga.audit_log_export_view import AuditLogExportView
 
@@ -18,6 +20,8 @@ class AuditLogExportController(BaseController):
         self._stack.addWidget(self.input_view)
 
         self.input_view.submit_btn.clicked.connect(self.handle_submit)
+        self.input_view.copy_btn.clicked.connect(self.copy_public_key)
+        self.input_view.copy_btn.hide()
 
     @property
     def root_widget(self) -> QWidget:
@@ -29,6 +33,8 @@ class AuditLogExportController(BaseController):
 
     def handle_submit(self):
         self.input_view.error_label.setText("")
+        self.input_view.success_label.setText("")
+        self.input_view.copy_btn.hide()
 
         public_key = self.input_view.input_field.toPlainText()
 
@@ -39,6 +45,7 @@ class AuditLogExportController(BaseController):
         log_text, error = log_manager.get_logs()
         if error:
             self.input_view.error_label.setText(error)
+            return
 
         now = datetime.now().isoformat()
         filename = f"audit_log_{datetime.fromisoformat(now).strftime('%Y-%m-%d_%H-%M-%S')}.bin"
@@ -56,6 +63,17 @@ class AuditLogExportController(BaseController):
 
         if rsa_error:
             self.input_view.error_label.setText(rsa_error)
+            return
+
+        signature_filename = f"audit_log_signature_{datetime.fromisoformat(now).strftime('%Y-%m-%d_%H-%M-%S')}.sig"
+        digital_signature_error = self.digital_signature(log_text, signature_filename)
+
+        if digital_signature_error:
+            self.input_view.error_label.setText(digital_signature_error)
+            return
+        
+        self.input_view.success_label.setText("Audit log zapisi su uspješno izvezeni! Javni ključ za provjeru digitalnog potpisa možete kopirati klikom na gumb.")
+        self.input_view.copy_btn.show()
 
     def encrypt_and_save(self, log_text: str, key: str, filename: str) -> str | None:
         encrypted_bytes, encryption_error = AesHelper.encrypt(log_text, key)
@@ -78,6 +96,21 @@ class AuditLogExportController(BaseController):
             self.input_view.error_label.setText("Nije moguće spremiti kriptirani ključ.")
 
         return None
+    
+    def digital_signature(self, log_text: str, filename: str) -> str | None:
+        private_key = key_manager.get_private_key()
+
+        hash = hashlib.sha512(log_text.encode())
+        signature = RsaHelper.sign(hash.hexdigest(), private_key)
+
+        if not file_manager.open_file_download_dialog(self, "Spremi digitalni potpis", filename, signature):
+            self.input_view.error_label.setText("Nije moguće spremiti digitalni potpis.")
+
+        return None
+    
+    def copy_public_key(self):
+        public_key = key_manager.get_public_key()
+        QApplication.clipboard().setText(public_key)
 
     
         
