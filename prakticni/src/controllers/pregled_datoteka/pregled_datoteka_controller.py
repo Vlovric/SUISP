@@ -74,7 +74,7 @@ class PregledDatotekaController(BaseController):
             self.view.error_label.setText(error)
             return
 
-        vault_storage_path = security_policy_manager.get_policy_param("valut_storage_path")
+        vault_storage_path = security_policy_manager.get_policy_param("vault_storage_path")
 
         path = os.path.join(vault_storage_path, encrypted_file_name)
         successful = file_manager.save_file(path, encrypted_content)
@@ -93,6 +93,10 @@ class PregledDatotekaController(BaseController):
 
         DatotekaModel.insert_file_entry(file.filename, path, file.is_binary, current_time, dek_encrypted.hex(), hash.hexdigest())
         log(f"U sustav je prenesena datoteka {file.filename}")
+
+        # Overwritea datoteku s nulama i onda ju obriše
+        file.content = b'\x00' * len(file.content)
+        del file
 
         self.reset()
 
