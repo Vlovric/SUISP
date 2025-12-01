@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QMainWindow, QStackedWidget, QToolBar, QMessageBox
+from PySide6.QtWidgets import QMainWindow, QStackedWidget, QToolBar, QMessageBox, QPushButton, QWidget, QSizePolicy
 from PySide6.QtGui import QAction
 from PySide6.QtCore import QTimer, QCoreApplication, Signal
 from src.utils.activity_monitor import ActivityMonitor
@@ -12,7 +12,7 @@ from src.utils.key_manager import key_manager
 from src.utils.log_manager import log
 
 class AppController(QMainWindow):
-    logout_requested = Signal()  # Signal koji se emituje kad treba odjava
+    logout_requested = Signal()  # Signal koji se emitira kad treba odjava
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Secure File Vault")
@@ -68,6 +68,17 @@ class AppController(QMainWindow):
         audit_log_export_action = QAction("Izvoz audit loga", self)
         audit_log_export_action.triggered.connect(partial(self._show_controller, "audit_log_export"))
         nav_bar.addAction(audit_log_export_action)
+
+        # Spacer koji gura gumb za odjavu na desnu stranu
+        spacer = QWidget()
+        spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        nav_bar.addWidget(spacer)
+
+        # Crveni gumb za odjavu
+        logout_button = QPushButton("Odjava")
+        logout_button.setProperty("class", "danger")
+        logout_button.clicked.connect(self._handle_logout)
+        nav_bar.addWidget(logout_button)
 
         # Palimo prvi controller tj. inicijalni ekran
         self._show_controller("primjer")
@@ -134,4 +145,10 @@ class AppController(QMainWindow):
         
         if hasattr(self, 'warning_dialog'):
             self.warning_dialog.close()
+        self.logout_requested.emit()
+
+    def _handle_logout(self):
+        log("Korisnik se odjavio")
+        key_manager.clear_kek()
+        key_manager.clear_pdk()
         self.logout_requested.emit()
