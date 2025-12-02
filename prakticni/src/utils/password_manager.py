@@ -91,6 +91,11 @@ class PasswordManager:
 
         return password_hash.hex()
     @staticmethod
-    def verify_password(stored_password_hash: str, provided_password: str) -> bool:
-        # implemetacija za login funkcionalnost
-            return False
+    def verify_user_credentials(fetched_user: dict, provided_password: str) -> bool:
+        mk_generated = key_manager.generate_master_key(provided_password, fetched_user["mk_salt"])
+        hashed_provided_password = PasswordManager.hash_password(mk_generated, provided_password)
+        if hashed_provided_password == fetched_user["master_password_hash"]:
+            if key_manager._pdk is None:
+                key_manager.set_pdk(mk_generated, fetched_user["pdk_salt"])
+            return True
+        return False
