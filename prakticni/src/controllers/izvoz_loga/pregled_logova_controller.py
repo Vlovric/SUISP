@@ -1,4 +1,5 @@
 from PySide6.QtWidgets import QWidget, QStackedWidget, QApplication
+from src.views.izvoz_loga.audit_logs_result_view import AuditLogsResultView
 from src.utils.rsa_helper import RsaHelper
 from src.utils.aes_helper import AesHelper
 from src.views.izvoz_loga.audit_logs_view import AuditLogsView
@@ -12,8 +13,10 @@ class AuditLogsController(BaseController):
 
         self._stack = QStackedWidget()
         self.view = AuditLogsView()
+        self.result_view = AuditLogsResultView()
 
         self._stack.addWidget(self.view)
+        self._stack.addWidget(self.result_view)
 
         # Novi, auditorov par ključeva kojim se kriptiraju audit logovi
         public_key_bytes, private_key_bytes = key_manager.generate_rsa_keypair()
@@ -22,12 +25,14 @@ class AuditLogsController(BaseController):
 
         self.view.copy_public_key_btn.clicked.connect(self.copy_public_key)
         self.view.load_files_btn.clicked.connect(self.load_files)
+        self.result_view.back_btn.clicked.connect(self.go_back)
 
     @property
     def root_widget(self) -> QWidget:
         return self._stack
     
     def reset(self):
+        self.view.public_key_field.clear()
         self._stack.setCurrentIndex(0)
 
     def copy_public_key(self):
@@ -111,4 +116,8 @@ class AuditLogsController(BaseController):
             return
 
         # Otvori novi prozor s log zapisima koji se mogu skrolati
-        print(log_text)
+        self.result_view.text.setText(log_text)
+        self._stack.setCurrentIndex(1)
+
+    def go_back(self):
+        self.reset()
