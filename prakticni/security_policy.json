@@ -24,5 +24,7 @@
     "pbkdf2_iterations": 600000,
     "pbkdf2_hash_name": "sha256",
     "pbkdf2_salt_length": 16,
-    "vault_storage_path": "./data/vault_storage"
+    "vault_storage_path": "./data/vault_storage",
+    "inactivity_timeout_minutes": 15,
+    "wallet_session_timeout_minutes": 60
 }
