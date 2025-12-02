@@ -1,12 +1,11 @@
 from datetime import datetime
 from PySide6.QtWidgets import QWidget, QStackedWidget, QApplication
 from src.controllers.base_controller import BaseController
-from src.utils.log_manager import log_manager
+from src.utils.log_manager import log, log_manager
 from src.utils.file_manager import file_manager
 from src.utils.rsa_helper import RsaHelper
 from src.utils.aes_helper import AesHelper
 from src.utils.key_manager import key_manager
-import hashlib
 
 from src.views.izvoz_loga.audit_log_export_view import AuditLogExportView
 
@@ -41,6 +40,8 @@ class AuditLogExportController(BaseController):
         if (len(public_key) == 0):
             self.input_view.error_label.setText("Ključ nije unesen!")
             return
+        
+        log("Korisnik je pokrenuo izvoz audit log zapisa.")
         
         log_text, error = log_manager.get_logs()
         if error:

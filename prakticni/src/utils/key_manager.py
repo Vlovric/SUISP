@@ -130,7 +130,6 @@ class KeyManager:
         self.clear_kek()
         self.clear_pdk()
 
-    # TODO refaktorirati i ubaciti u RsaHelper - nakon što se login napravi
     def generate_rsa_keypair(self) -> tuple[bytes, bytes]:
         """Generira RSA par ključeva (4096-bit)"""
         # Generiraj RSA privatni ključ
