@@ -2,7 +2,7 @@ from src.controllers.base_controller import BaseController
 from src.views.zakljucavanje_datoteke.unlocked_files_view import UnlockedFilesView
 from src.models.datoteka.datoteka_model import DatotekaModel
 
-from PyQt5.QtWidgets import QStackedWidget, QWidget
+from PySide6.QtWidgets import QStackedWidget, QWidget
 from functools import partial
 
 class UnlockedFilesController(BaseController):

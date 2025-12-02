@@ -1,4 +1,5 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QScrollArea, QFrame
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QScrollArea, QFrame
+from PySide6.QtCore import Qt
 from src.views.components.unlock_file_item_widget import UnlockedFileItemWidget
 
 class UnlockedFilesView(QWidget):
