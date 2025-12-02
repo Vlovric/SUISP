@@ -1,3 +1,5 @@
+import io
+import zipfile
 from PySide6.QtWidgets import QWidget, QStackedWidget, QApplication
 from src.views.izvoz_loga.audit_logs_result_view import AuditLogsResultView
 from src.utils.rsa_helper import RsaHelper
@@ -32,11 +34,13 @@ class AuditLogsController(BaseController):
         return self._stack
     
     def reset(self):
+        self.view.error_label.setText("")
+        self.view.success_label.setText("")
         self.view.public_key_field.clear()
         self._stack.setCurrentIndex(0)
-
-    def copy_public_key(self):
-        QApplication.clipboard().setText(self.public_key)
+    
+    def go_back(self):
+        self.reset()
 
     def load_files(self):
         self.view.error_label.setText("")
@@ -48,68 +52,46 @@ class AuditLogsController(BaseController):
         if (len(user_private_key) == 0):
             self.view.error_label.setText("Javni ključ osobe nije unesen!")
             return
+        
+        # Učitava zip file i čita iz njega ostale datoteke
+        package_file = file_manager.select_file_dialog(self, "Otvori audit paket.", "Audit paket (*.alogpkg)")
 
-        # Učitaj datoteku ključa
-        key_file = file_manager.select_file_dialog(self, "Otvori datoteku ključa.")
-
-        if key_file is None:
+        if package_file is None:
             self.view.error_label.setText("Nije moguće otvoriti datoteku.")
             return
         
-        if not key_file.successful:
-            self.view.error_label.setText("Nije moguće otvoriti datoteku!")
+        if not package_file.successful:
+            self.view.error_label.setText("Nije moguće otvoriti datoteku.")
             return
         
-        if not key_file.filename.endswith(".bin") or not key_file.is_binary:
+        if not package_file.filename.endswith(".alogpkg") or not package_file.is_binary:
             self.view.error_label.setText("Odabrana je datoteka s krivom ekstenzijom.")
             return
+        
+        packaged_files, package_error = self.parse_import_package(package_file.content)
+
+        if package_error:
+            self.view.error_label.setText(package_error)
+            return
+
+        log_bytes, key_bytes, signature_bytes = packaged_files
 
         # Provjeri može li se dekriptirati i je li ispravna, ako ne, napiši grešku
-        aes_key, rsa_error = RsaHelper.decrypt(key_file.content, self.private_key)
+        aes_key, rsa_error = RsaHelper.decrypt(key_bytes, self.private_key)
 
         if rsa_error:
             self.view.error_label.setText("Nije moguće dekriptirati datoteku ključa: " + rsa_error)
             return
 
-        # Učitaj datoteku
-        file = file_manager.select_file_dialog(self, "Otvori datoteku potpisanih audit zapisa.")
-
-        if file is None:
-            self.view.error_label.setText("Nije moguće otvoriti datoteku.")
-            return
-        
-        if not file.successful:
-            self.view.error_label.setText("Nije moguće otvoriti datoteku!")
-            return
-        
-        if not file.filename.endswith(".bin") or not file.is_binary:
-            self.view.error_label.setText("Odabrana je datoteka s krivom ekstenzijom.")
-            return
-
         # Provjeri može li se dekriptirati dekriptiranim ključem i je li ispravna, ako ne napiši grešku
-        log_text, aes_error = AesHelper.decrypt(file.content, aes_key, False)
+        log_text, aes_error = AesHelper.decrypt(log_bytes, aes_key, False)
 
         if aes_error:
             self.view.error_label.setText("Nije moguće dekriptirati datoteku log zapisa: " + aes_error)
             return
 
-        # Učitaj datoteku digitalnog potpisa
-        signature_file = file_manager.select_file_dialog(self, "Otvori digitalni potpis.")
-
-        if signature_file is None:
-            self.view.error_label.setText("Nije moguće otvoriti datoteku.")
-            return
-        
-        if not signature_file.successful:
-            self.view.error_label.setText("Nije moguće otvoriti datoteku!")
-            return
-        
-        if not signature_file.filename.endswith(".sig") or not signature_file.is_binary:
-            self.view.error_label.setText("Odabrana je datoteka s krivom ekstenzijom.")
-            return
-
         # Provjeri je li digitalni potpis ispravan i ako nije, ispiši grešku
-        valid = RsaHelper.verify(log_text, signature_file.content, user_private_key)
+        valid = RsaHelper.verify(log_text, signature_bytes, user_private_key)
 
         if not valid:
             self.view.error_label.setText("Digitalni potpis nije validan!")
@@ -119,5 +101,20 @@ class AuditLogsController(BaseController):
         self.result_view.text.setText(log_text)
         self._stack.setCurrentIndex(1)
 
-    def go_back(self):
-        self.reset()
+    def parse_import_package(self, zip_bytes: bytes) -> tuple[tuple[bytes, bytes, bytes] | None, str | None]:
+        with zipfile.ZipFile(io.BytesIO(zip_bytes), "r") as zip_file:
+            files = zip_file.namelist()
+
+            if "encrypted_log.bin" not in files \
+            or "encrypted_key.bin" not in files \
+            or "signature.sig" not in files:
+                return None, "Paket nije valjan ili nedostaju datoteke."
+
+            log_bytes = zip_file.read("encrypted_log.bin")
+            key_bytes = zip_file.read("encrypted_key.bin")
+            sig_bytes = zip_file.read("signature.sig")
+
+            return (log_bytes, key_bytes, sig_bytes), None
+
+    def copy_public_key(self):
+        QApplication.clipboard().setText(self.public_key)

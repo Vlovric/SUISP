@@ -6,10 +6,10 @@ class AuditLogsView(QWidget):
         super().__init__()
 
         self.description_label = QLabel(
-            "Kako biste provjeriti audit log zapise nekog korisnika, potrebno je dati mu Vaš javni ključ. "
-            "Kako bi se mogao provjeriti digitalni potpis korisnika, potrebno je u donje tekstualno polje zalijepiti njegov javni ključ. "
-            "Zatim je potrebno učitati tri datoteke koje korisnik pošalje. Na vrhu piše koja se datoteka treba učitati. "
-            "Nakon što je to gotovo, kliknite na gumb 'Dalje'. "
+            "Kako biste provjeriti audit log zapise nekog korisnika, potrebno je dati mu Vaš javni ključ.\n"
+            "Kako bi se mogao provjeriti digitalni potpis korisnika, potrebno je u donje tekstualno polje zalijepiti njegov javni ključ.\n"
+            "Zatim je potrebno učitati datoteku (audit paket) kojeg korisnik pošalje.\n"
+            "Nakon što je to gotovo, kliknite na gumb 'Dalje'.\n"
             "NAPOMENA: Svaki put kad se odjavite i prijavite, Vaši ključevi se promijene!"
         )
         self.description_label.setWordWrap(True)
