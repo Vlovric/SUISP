@@ -124,11 +124,6 @@ class KeyManager:
         if self._pdk is not None:
             self._pdk = b'\x00' * len(self._pdk)
         self._pdk = None
-    
-    def clear_session(self):
-        """Briše sve session ključeve"""
-        self.clear_kek()
-        self.clear_pdk()
 
     def generate_rsa_keypair(self) -> tuple[bytes, bytes]:
         """Generira RSA par ključeva (4096-bit)"""
