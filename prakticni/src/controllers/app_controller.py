@@ -151,4 +151,12 @@ class AppController(QMainWindow):
         log("Korisnik se odjavio")
         key_manager.clear_kek()
         key_manager.clear_pdk()
+        
+        if self.idle_timer.isActive():
+            self.idle_timer.stop()
+        if self.warning_timer.isActive():
+            self.warning_timer.stop()
+        
+        if hasattr(self, 'warning_dialog'):
+            self.warning_dialog.close()
         self.logout_requested.emit()
