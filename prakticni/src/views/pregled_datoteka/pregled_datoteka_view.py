@@ -31,9 +31,14 @@ class PregledDatotekaView(QWidget):
         self.import_btn.setIcon(QIcon("src/pic/upload.svg"))
         self.import_btn.setToolTip("Prenesi datoteku")
 
+        self.error_label = QLabel("")
+        self.error_label.setStyleSheet("color: red;")
+        self.error_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
         bottom_layout = QVBoxLayout()
         bottom_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         bottom_layout.addWidget(self.import_btn, alignment=Qt.AlignHCenter)
+        bottom_layout.addWidget(self.error_label)
 
         main_layout = QVBoxLayout()
         main_layout.addWidget(self.title)

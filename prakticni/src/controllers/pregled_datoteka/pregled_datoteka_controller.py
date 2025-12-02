@@ -1,8 +1,18 @@
 from PySide6.QtWidgets import QWidget, QStackedWidget
+from src.utils.rsa_helper import RsaHelper
+from src.utils.aes_helper import AesHelper
 from src.models.datoteka.datoteka_model import DatotekaModel
 from src.controllers.base_controller import BaseController
 from src.views.pregled_datoteka.pregled_datoteka_view import PregledDatotekaView
 from functools import partial
+from src.utils.file_manager import file_manager
+from src.utils.key_manager import key_manager
+from src.utils.security_policy_manager import security_policy_manager
+from datetime import datetime
+from src.utils.log_manager import log
+import hashlib
+import uuid
+import os
 
 class PregledDatotekaController(BaseController):
     def __init__(self):
@@ -45,8 +55,49 @@ class PregledDatotekaController(BaseController):
             btn.clicked.connect(partial(self.handle_share, file_id))
     
     def handle_new_file(self):
-        # TODO implementirati
-        print("Novi file se handlea!")
+        file = file_manager.select_file_dialog(self)
+        if file == None:
+            return
+        
+        kek = key_manager.get_public_key()
+        dek = AesHelper.generate_key()
+
+        dek_encrypted, error = RsaHelper.encrypt(dek, kek)
+        if error:
+            self.view.error_label.setText(error)
+            return
+
+        encrypted_file_name = f"{str(uuid.uuid4())}.bin"
+
+        encrypted_content, error = AesHelper.encrypt(file.content, dek)
+        if error:
+            self.view.error_label.setText(error)
+            return
+
+        vault_storage_path = security_policy_manager.get_policy_param("vault_storage_path")
+
+        path = os.path.join(vault_storage_path, encrypted_file_name)
+        successful = file_manager.save_file(path, encrypted_content)
+        if not successful:
+            log(f"Nije moguće spremiti kriptiranu datoteku nastalu kriptiranjem datoteke {file.filename}")
+            self.view.error_label.setText("Nije moguće spremiti datoteku.")
+            return
+        
+        # Hashiram NE-kriptiran sadržaj (provjeriti je li ispravno),
+        # pa se može provjeriti nakon dekriptiranja kod izvoza datoteke iz trezora je li enkriptirana datoteka mijenjana
+        if file.is_binary:
+            hash = hashlib.sha512(file.content)
+        else:
+            hash = hashlib.sha512(file.content.encode())
+        current_time = str(datetime.now().isoformat())
+
+        DatotekaModel.insert_file_entry(file.filename, path, file.is_binary, current_time, dek_encrypted.hex(), hash.hexdigest())
+        log(f"U sustav je prenesena datoteka {file.filename}")
+
+        # Overwritea datoteku s nulama i onda ju obriše
+        file.content = b'\x00' * len(file.content)
+        del file
+
         self.reset()
 
     def handle_export(self, id):

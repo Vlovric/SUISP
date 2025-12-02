@@ -7,8 +7,8 @@ class UserModel:
         """Provjerava postoji li barem jedan korisnik u bazi"""
         return db.has_any(table_name)
 
+    @staticmethod
     def register_user(
-        self, 
         username: str, 
         master_password_hash: str, 
         mk_salt: str,
@@ -89,3 +89,8 @@ class UserModel:
             # Lockout je istekao, resetiraj
             self.update_login_attempt(username, success=True)
             return False, 0
+
+    @staticmethod
+    def get_user():
+        query = "SELECT * FROM user LIMIT 1"
+        return db.fetch_one(query)

@@ -5,8 +5,10 @@ import hashlib
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey, RSAPrivateKey
 
 from src.utils.security_policy_manager import security_policy_manager
+from src.models.user_model import UserModel
 
 class KeyManager:
     """ Singleton za generiranje i dohvacanje kljuceva"""
@@ -48,6 +50,33 @@ class KeyManager:
             raise Exception("KEK is not set.")
         return self._kek
     
+    def get_private_key(self) -> RSAPrivateKey:
+        user = UserModel.get_user()
+        if user is None:
+            raise Exception("User is not set.")
+
+        private_key_encrypted = user["private_key_encrypted"]
+        if private_key_encrypted is None:
+            raise Exception("Private key is not set.")
+
+        pdk = self.get_pdk()
+        private_key_bytes = self.decrypt_private_key(private_key_encrypted, pdk)
+        
+        try:
+            return serialization.load_pem_private_key(
+                private_key_bytes,
+                password=None,
+            )
+        except Exception as e:
+            raise Exception(f"Privatni ključ nije u ispravnom formatu: {e}")
+
+    def get_public_key(self) -> str:
+        user = UserModel.get_user()
+        if user is None:
+            raise Exception("User is not set.")
+        
+        return user["public_key"].decode("utf-8")
+
     def clear_kek(self):
         if self._kek is not None:
             self._kek = b'\x00' * len(self._kek) # overwritea kljuc u memoriji, temp solution
