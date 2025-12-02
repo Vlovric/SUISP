@@ -36,7 +36,7 @@ class PregledDatotekaController(BaseController):
 
     # Učitava datoteke iz baze (pozivati npr. kod dodavanja nove ili brisanja kako bi se osvježio popis)
     def load_files(self):
-        files = DatotekaModel.fetch_all()
+        files = DatotekaModel.fetch_all_locked()
         self.view.set_files(files)
         self.connect_buttons()
 

@@ -21,7 +21,8 @@ CREATE TABLE IF NOT EXISTS file (
     date_uploaded DATETIME NOT NULL,
     date_modified DATETIME,
     dek_encrypted VARCHAR(255) NOT NULL,
-    hash VARCHAR(255) NOT NULL
+    hash VARCHAR(255) NOT NULL,
+    locked TINYINT NOT NULL DEFAULT 1
 );
 
 CREATE TABLE IF NOT EXISTS log (

@@ -13,7 +13,7 @@ class PregledDatotekaView(QWidget):
         self.delete_buttons = []
         self.share_buttons = []
 
-        self.title = QLabel("Moje datoteke")
+        self.title = QLabel("Moje zaključane datoteke")
 
         self.scroll_area = QScrollArea()
         self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)

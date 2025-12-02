@@ -2,8 +2,13 @@ from src.models.db import db
 
 class DatotekaModel:
     @staticmethod
-    def fetch_all():
-        query = "SELECT * FROM file"
+    def fetch_all_locked():
+        query = "SELECT * FROM file WHERE locked = 1"
+        return db.fetch_all(query)
+    
+    @staticmethod
+    def fetch_all_unlocked():
+        query = "SELECT * FROM file WHERE locked = 0"
         return db.fetch_all(query)
     
     @staticmethod
