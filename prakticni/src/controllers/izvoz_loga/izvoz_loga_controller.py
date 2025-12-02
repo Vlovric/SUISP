@@ -100,9 +100,7 @@ class AuditLogExportController(BaseController):
     def digital_signature(self, log_text: str, filename: str) -> str | None:
         private_key = key_manager.get_private_key()
 
-        # TODO ne hashiram ja jer se to radi u metodi sign
-        hash = hashlib.sha512(log_text.encode())
-        signature = RsaHelper.sign(hash.hexdigest(), private_key)
+        signature = RsaHelper.sign(log_text, private_key)
 
         if not file_manager.open_file_download_dialog(self, "Spremi digitalni potpis", filename, signature):
             self.input_view.error_label.setText("Nije moguće spremiti digitalni potpis.")
