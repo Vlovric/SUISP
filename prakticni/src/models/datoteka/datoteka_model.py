@@ -22,6 +22,6 @@ class DatotekaModel:
         return db.fetch_one(query, (file_id,))
     
     @staticmethod
-    def unlock_file(file_id, new_path):
-        query = "UPDATE file SET locked = 0, path = ? WHERE id = ?"
-        return db.execute_query(query, (new_path, file_id))
+    def set_file_lock(file_id, locked, new_path):
+        query = "UPDATE file SET locked = ?, path = ? WHERE id = ?"
+        return db.execute_query(query, (locked, new_path, file_id))

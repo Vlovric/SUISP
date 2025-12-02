@@ -23,10 +23,14 @@ class UnlockedFilesView(QWidget):
 
         self.scroll_area.setWidget(self.list_container)
 
+        self.error_label = QLabel("")
+        self.error_label.setStyleSheet("color: red;")
+        self.error_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
         main_layout = QVBoxLayout()
         main_layout.addWidget(self.title)
         main_layout.addWidget(self.scroll_area)
-
+        main_layout.addWidget(self.error_label)
         self.setLayout(main_layout)
 
     def set_files(self, file_records):

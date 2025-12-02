@@ -161,7 +161,7 @@ class PregledDatotekaController(BaseController):
         
         process_helper.open_file_in_default_app(str(full_path))
 
-        DatotekaModel.unlock_file(id, str(full_path))
+        DatotekaModel.set_file_lock(id, 0, str(full_path))
         log(f"Datoteka {file['name']} je otključana iz trezora.")
         
         self.reset()
