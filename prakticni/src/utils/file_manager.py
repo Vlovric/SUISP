@@ -52,4 +52,13 @@ class FileManager:
         
         return FileSelectionResponse(path)
     
+    def read_file(self, path: str) -> bytes | None:
+        if not path:
+            return None
+        try:
+            with open(path, "rb") as f:
+                return f.read()
+        except OSError:
+            return None
+    
 file_manager = FileManager()

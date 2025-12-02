@@ -1,4 +1,5 @@
 from PySide6.QtWidgets import QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout
+from PySide6.QtGui import QIcon
 
 class UnlockedFileItemWidget(QWidget):
     def __init__(self, file_record):
@@ -30,4 +31,6 @@ class UnlockedFileItemWidget(QWidget):
         layout.addLayout(left)
         layout.addStretch()
         layout.addLayout(right)
+
+        self.setLayout(layout)
 

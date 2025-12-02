@@ -39,7 +39,7 @@ class UnlockedFilesView(QWidget):
 
         for rec in file_records:
             w = UnlockedFileItemWidget(rec)
-            self.lock_buttons.append((w.btn_export, rec["id"]))
+            self.lock_buttons.append((w.btn_lock, rec["id"]))
             self.list_layout.addWidget(w)
         
         self.list_layout.addStretch()

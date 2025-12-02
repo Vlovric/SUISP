@@ -108,16 +108,9 @@ class PregledDatotekaController(BaseController):
         if not file:
             self.view.error_label.setText("Datoteka nije pronađena u bazi.")
             return
-
-        try:
-            pdk = key_manager.get_pdk()
-        except Exception as e:
-            self.view.error_label.setText("Pogreška pri pokušaju otključavanja datoteke: " + str(e))
-            return
         
-        private_key = key_manager.get_private_key()
         try:
-            private_key_decrypted = key_manager.decrypt_private_key(private_key, pdk)
+            private_key_decrypted = key_manager.get_private_key()
         except Exception as e:
             self.view.error_label.setText("Pogreška pri pokušaju otključavanja datoteke: " + str(e))
             return
@@ -128,7 +121,9 @@ class PregledDatotekaController(BaseController):
             self.view.error_label.setText("Pogreška pri pokušaju otključavanja datoteke: " + error)
             return
         
-        private_key_decrypted = b'\x00' * len(private_key_decrypted)
+        bits = private_key_decrypted.key_size
+        bytes_len = (bits + 7) // 8
+        private_key_decrypted = b'\x00' * bytes_len
 
         encrypted_content = file_manager.read_file(file["path"])
         if encrypted_content is None:
@@ -143,7 +138,7 @@ class PregledDatotekaController(BaseController):
         dek_bytes = b'\x00' * len(dek_bytes)
 
         old_hash = file["hash"]
-        if file.is_binary:
+        if file["binary"]:
             new_hash = hashlib.sha512(decrypted_content)
         else:
             new_hash = hashlib.sha512(decrypted_content.encode())
