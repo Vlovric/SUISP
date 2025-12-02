@@ -10,6 +10,8 @@ from src.utils.key_manager import key_manager
 from src.utils.security_policy_manager import security_policy_manager
 from datetime import datetime
 from src.utils.log_manager import log
+from pathlib import Path
+from src.utils.process_helper import process_helper
 import hashlib
 import uuid
 import os
@@ -101,8 +103,71 @@ class PregledDatotekaController(BaseController):
         self.reset()
 
     def handle_export(self, id):
-        # TODO implementirati
-        print(f"Export zapisa s {id} se handlea!")
+
+        file = DatotekaModel.fetch_by_id(id)
+        if not file:
+            self.view.error_label.setText("Datoteka nije pronađena u bazi.")
+            return
+
+        try:
+            pdk = key_manager.get_pdk()
+        except Exception as e:
+            self.view.error_label.setText("Pogreška pri pokušaju otključavanja datoteke: " + str(e))
+            return
+        
+        private_key = key_manager.get_private_key()
+        try:
+            private_key_decrypted = key_manager.decrypt_private_key(private_key, pdk)
+        except Exception as e:
+            self.view.error_label.setText("Pogreška pri pokušaju otključavanja datoteke: " + str(e))
+            return
+        
+        dek_encrypted_bytes = bytes.fromhex(file["dek_encrypted"])
+        dek_bytes, error = RsaHelper.decrypt(dek_encrypted_bytes, private_key_decrypted)
+        if error:
+            self.view.error_label.setText("Pogreška pri pokušaju otključavanja datoteke: " + error)
+            return
+        
+        private_key_decrypted = b'\x00' * len(private_key_decrypted)
+
+        encrypted_content = file_manager.read_file(file["path"])
+        if encrypted_content is None:
+            self.view.error_label.setText("Pogreška pri pokušaju čitanja datoteke iz trezora.")
+            return
+        
+        decrypted_content, error = AesHelper.decrypt(encrypted_content, dek_bytes, file["binary"])
+        if error:
+            self.view.error_label.setText("Pogreška pri pokušaju otključavanja datoteke: " + error)
+            return
+        
+        dek_bytes = b'\x00' * len(dek_bytes)
+
+        old_hash = file["hash"]
+        if file.is_binary:
+            new_hash = hashlib.sha512(decrypted_content)
+        else:
+            new_hash = hashlib.sha512(decrypted_content.encode())
+        
+        if old_hash != new_hash.hexdigest():
+            self.view.error_label.setText("Datoteka je oštećena ili je mijenjana dok je bila zaključana.")
+
+        # Ovo sa pathovima je privremeno za development
+        temp_path = Path(__file__).parent.parent.parent / "data" / "vault_storage" / "temp_otkljucane"
+        if not temp_path.exists():
+            os.makedirs(temp_path)
+        full_path = temp_path / file["name"]
+
+        successful = file_manager.save_file(full_path, decrypted_content)
+        decrypted_content = b'\x00' * len(decrypted_content)
+        if not successful:
+            self.view.error_label.setText("Pogreška pri pokušaju spremanja otključane datoteke.")
+            return
+        
+        process_helper.open_file_in_default_app(str(full_path))
+
+        DatotekaModel.unlock_file(id, str(full_path))
+
+        print(f"Otključavana datoteka s id-om {id}")
         self.reset()
 
     def handle_delete(self, id):
