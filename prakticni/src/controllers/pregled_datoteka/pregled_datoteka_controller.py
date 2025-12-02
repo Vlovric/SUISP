@@ -151,11 +151,12 @@ class PregledDatotekaController(BaseController):
         if old_hash != new_hash.hexdigest():
             self.view.error_label.setText("Datoteka je oštećena ili je mijenjana dok je bila zaključana.")
 
-        # Ovo sa pathovima je privremeno za development
+        # Ovo sa pathovima je privremeno za development TODO
         temp_path = Path(__file__).parent.parent.parent / "data" / "vault_storage" / "temp_otkljucane"
         if not temp_path.exists():
             os.makedirs(temp_path)
         full_path = temp_path / file["name"]
+        #
 
         successful = file_manager.save_file(full_path, decrypted_content)
         decrypted_content = b'\x00' * len(decrypted_content)
@@ -166,8 +167,8 @@ class PregledDatotekaController(BaseController):
         process_helper.open_file_in_default_app(str(full_path))
 
         DatotekaModel.unlock_file(id, str(full_path))
-
-        print(f"Otključavana datoteka s id-om {id}")
+        log(f"Datoteka {file['name']} je otključana iz trezora.")
+        
         self.reset()
 
     def handle_delete(self, id):
