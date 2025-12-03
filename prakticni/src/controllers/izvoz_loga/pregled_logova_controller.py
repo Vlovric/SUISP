@@ -20,11 +20,6 @@ class AuditLogsController(BaseController):
         self._stack.addWidget(self.view)
         self._stack.addWidget(self.result_view)
 
-        # Novi, auditorov par ključeva kojim se kriptiraju audit logovi
-        public_key_bytes, private_key_bytes = key_manager.generate_rsa_keypair()
-        self.public_key = public_key_bytes.decode("utf-8")
-        self.private_key = private_key_bytes.decode("utf-8")
-
         self.view.copy_public_key_btn.clicked.connect(self.copy_public_key)
         self.view.load_files_btn.clicked.connect(self.load_files)
         self.result_view.back_btn.clicked.connect(self.go_back)
@@ -77,7 +72,8 @@ class AuditLogsController(BaseController):
         log_bytes, key_bytes, signature_bytes = packaged_files
 
         # Provjeri može li se dekriptirati i je li ispravna, ako ne, napiši grešku
-        aes_key, rsa_error = RsaHelper.decrypt(key_bytes, self.private_key)
+        private_key = key_manager.get_private_key()
+        aes_key, rsa_error = RsaHelper.decrypt(key_bytes, private_key)
 
         if rsa_error:
             self.view.error_label.setText("Nije moguće dekriptirati datoteku ključa: " + rsa_error)
@@ -117,4 +113,5 @@ class AuditLogsController(BaseController):
             return (log_bytes, key_bytes, sig_bytes), None
 
     def copy_public_key(self):
-        QApplication.clipboard().setText(self.public_key)
+        public_key = key_manager.get_public_key()
+        QApplication.clipboard().setText(public_key)
