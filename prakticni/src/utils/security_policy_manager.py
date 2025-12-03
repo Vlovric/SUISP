@@ -1,4 +1,4 @@
-from src.utils.paths import SECURITY_POLICY_JSON, ensure_dirs
+from utils.path_manager import path_manager
 from pathlib import Path
 import json
 
@@ -14,18 +14,17 @@ class SecurityPolicyManager:
         return cls._instance
     
     def __load_policy(self):
-        ensure_dirs()
-        if not SECURITY_POLICY_JSON.exists():
+        if not path_manager.SECURITY_POLICY_JSON.exists():
             default_policy_path = Path(__file__).parent.parent.parent / "security_policy.json"
             try:
                 data = json.loads(default_policy_path.read_text(encoding="utf-8"))
-                SECURITY_POLICY_JSON.write_text(json.dumps(data, indent=2), encoding="utf-8")
+                path_manager.SECURITY_POLICY_JSON.write_text(json.dumps(data, indent=2), encoding="utf-8")
             except FileNotFoundError:
                 raise Exception("Default security policy file not found.")
             except json.JSONDecodeError:
                 raise Exception("Default security policy file is not a valid JSON.")
         
-        self._policy = json.loads(SECURITY_POLICY_JSON.read_text(encoding="utf-8"))
+        self._policy = json.loads(path_manager.SECURITY_POLICY_JSON.read_text(encoding="utf-8"))
     
     def get_policy_param(self, key: str):
         if self._policy is None:
