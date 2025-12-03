@@ -9,8 +9,7 @@ class AuditLogsView(QWidget):
             "Kako biste provjeriti audit log zapise nekog korisnika, potrebno je dati mu Vaš javni ključ.\n"
             "Kako bi se mogao provjeriti digitalni potpis korisnika, potrebno je u donje tekstualno polje zalijepiti njegov javni ključ.\n"
             "Zatim je potrebno učitati datoteku (audit paket) kojeg korisnik pošalje.\n"
-            "Nakon što je to gotovo, kliknite na gumb 'Dalje'.\n"
-            "NAPOMENA: Svaki put kad se odjavite i prijavite, Vaši ključevi se promijene!"
+            "Nakon što je to gotovo, kliknite na gumb 'Dalje'."
         )
         self.description_label.setWordWrap(True)
         self.description_label.setAlignment(Qt.AlignTop)
