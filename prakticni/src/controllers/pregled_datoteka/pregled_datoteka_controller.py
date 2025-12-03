@@ -8,6 +8,7 @@ from functools import partial
 from src.utils.file_manager import file_manager
 from src.utils.key_manager import key_manager
 from src.utils.security_policy_manager import security_policy_manager
+from src.controllers.pregled_datoteka.delete_file_controller import DeleteFileController
 from datetime import datetime
 from src.utils.log_manager import log
 import hashlib
@@ -20,6 +21,7 @@ class PregledDatotekaController(BaseController):
 
         self._stack = QStackedWidget()
         self.view = PregledDatotekaView()
+        self.delete_file_controller = DeleteFileController()
         self._stack.addWidget(self.view)
 
         self.load_files()
@@ -105,10 +107,16 @@ class PregledDatotekaController(BaseController):
         print(f"Export zapisa s {id} se handlea!")
         self.reset()
 
-    def handle_delete(self, id):
-        # TODO implementirati
-        print(f"Brisanje zapisa s {id} se handlea!")
-        self.reset()
+    def handle_delete(self, file_id):
+        fetched_file = DatotekaModel.get_file_by_id(file_id)
+        delete_file_dialog = file_manager.delete_file_dialog(self.root_widget, fetched_file["name"])
+        if delete_file_dialog:
+            deleted = self.delete_file_controller.delete_file(file_id)
+            if deleted["status"] == "success":
+                log(f"Datoteka {fetched_file['name']} je obrisana iz sustava.")
+            else:
+                log(f"Pokušaj brisanja datoteke {fetched_file['name']} nije uspio: {deleted['message']}")
+            self.reset()
 
     def handle_share(self, id):
         # TODO implementirati
