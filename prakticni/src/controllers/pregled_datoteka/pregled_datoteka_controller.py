@@ -169,7 +169,7 @@ class PregledDatotekaController(BaseController):
         self.reset()
 
     def handle_delete(self, file_id):
-        fetched_file = DatotekaModel.get_file_by_id(file_id)
+        fetched_file = DatotekaModel.fetch_by_id(file_id)
         delete_file_dialog = file_manager.delete_file_dialog(self.root_widget, fetched_file["name"])
         if delete_file_dialog:
             deleted = self.delete_file_controller.delete_file(file_id)

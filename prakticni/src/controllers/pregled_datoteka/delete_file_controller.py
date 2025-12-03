@@ -11,7 +11,7 @@ class DeleteFileController(BaseController):
 
     def delete_file(self, file_id):
         try:
-            database_path = DatotekaModel.get_file_by_id(file_id)["path"]
+            database_path = DatotekaModel.fetch_by_id(file_id)["path"]
             absolute_path = os.path.abspath(database_path)
             if os.path.exists(absolute_path):
                 file = FileSelectionResponse(absolute_path)
