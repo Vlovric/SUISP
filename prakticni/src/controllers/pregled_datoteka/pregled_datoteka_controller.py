@@ -93,7 +93,7 @@ class PregledDatotekaController(BaseController):
             hash = hashlib.sha512(file.content.encode())
         current_time = str(datetime.now().isoformat())
 
-        DatotekaModel.insert_file_entry(file.filename, path, file.is_binary, current_time, dek_encrypted.hex(), hash.hexdigest())
+        DatotekaModel.insert_file_entry(file.filename, encrypted_file_name, path, file.is_binary, current_time, dek_encrypted.hex(), hash.hexdigest())
         log(f"U sustav je prenesena datoteka {file.filename}")
 
         # Overwritea datoteku s nulama i onda ju obriše

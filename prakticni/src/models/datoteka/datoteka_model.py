@@ -12,9 +12,9 @@ class DatotekaModel:
         return db.fetch_all(query)
     
     @staticmethod
-    def insert_file_entry(name, path, is_binary, date_uploaded, dek_encrypted, hash):
-        query = "INSERT INTO file (name, path, binary, date_uploaded, dek_encrypted, hash) VALUES (?, ?, ?, ?, ?, ?)"
-        return db.execute_query(query, (name, path, is_binary, date_uploaded, dek_encrypted, hash))
+    def insert_file_entry(name, encrypted_name, path, is_binary, date_uploaded, dek_encrypted, hash):
+        query = "INSERT INTO file (name, encrypted_name, path, binary, date_uploaded, dek_encrypted, hash) VALUES (?, ?, ?, ?, ?, ?, ?)"
+        return db.execute_query(query, (name, encrypted_name, path, is_binary, date_uploaded, dek_encrypted, hash))
     
     @staticmethod
     def fetch_by_id(file_id):
@@ -25,3 +25,8 @@ class DatotekaModel:
     def set_file_lock(file_id, locked, new_path):
         query = "UPDATE file SET locked = ?, path = ? WHERE id = ?"
         return db.execute_query(query, (locked, new_path, file_id))
+    
+    @staticmethod
+    def update_file_lock(file_id, path, hash):
+        query = "UPDATE file SET path = ?, hash = ?, locked = ? WHERE id = ?"
+        return db.execute_query(query, (path, hash, 1, file_id))
