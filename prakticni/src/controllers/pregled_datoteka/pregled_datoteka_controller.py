@@ -147,7 +147,7 @@ class PregledDatotekaController(BaseController):
             self.view.error_label.setText("Datoteka je oštećena ili je mijenjana dok je bila zaključana.")
 
         # Ovo sa pathovima je privremeno za development TODO
-        temp_path = Path(__file__).parent.parent.parent / "data" / "vault_storage" / "temp_otkljucane"
+        temp_path = Path(__file__).parent.parent.parent.parent / "data" / "vault_storage" / "temp_otkljucane"
         if not temp_path.exists():
             os.makedirs(temp_path)
         full_path = temp_path / file["name"]

@@ -18,7 +18,7 @@ class PathManager:
     SECURITY_POLICY_JSON = CONFIG_DIR / "security_policy.json"
     DB_FILE = DATA_DIR / "file_vault_database.db"
 
-    # Windows: %LOCALAPPDATA%\SecureFileVault\temp_unlocked
+    # Windows: %LOCALAPPDATA%\SecureFileVault\Cache\temp_unlocked
     # Linux: ~/.cache/SecureFileVault/temp_unlocked
     CACHE_DIR = Path(_dirs.user_cache_dir)
     TEMP_DIR = CACHE_DIR / "temp_unlocked"
@@ -32,9 +32,10 @@ class PathManager:
     def _project_root() -> Path:
         return Path(__file__).resolve().parent.parent.parent
 
-    @staticmethod
+    @classmethod
     def ensure_dirs(cls):
         for d in (cls.BASE_APP_DIR, cls.CONFIG_DIR, cls.DATA_DIR, cls.FILES_DIR, cls.CACHE_DIR, cls.TEMP_DIR):
+                print("Creating directory:", d)
                 d.mkdir(parents=True, exist_ok=True)
     
 path_manager = PathManager()

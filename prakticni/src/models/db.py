@@ -1,4 +1,4 @@
-from utils.path_manager import path_manager
+from src.utils.path_manager import path_manager
 import os
 import sqlite3
 from contextlib import contextmanager

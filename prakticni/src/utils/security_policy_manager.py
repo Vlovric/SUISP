@@ -1,4 +1,4 @@
-from utils.path_manager import path_manager
+from src.utils.path_manager import path_manager
 from pathlib import Path
 import json
 
@@ -13,7 +13,7 @@ class SecurityPolicyManager:
             cls._instance = super(SecurityPolicyManager, cls).__new__(cls)
         return cls._instance
     
-    def __load_policy(self):
+    def _load_policy(self):
         if not path_manager.SECURITY_POLICY_JSON.exists():
             default_policy_path = Path(__file__).parent.parent.parent / "security_policy.json"
             try:
