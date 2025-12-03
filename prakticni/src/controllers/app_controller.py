@@ -9,6 +9,7 @@ from src.controllers.izvoz_loga.pregled_logova_controller import AuditLogsContro
 from src.controllers.pregled_datoteka.pregled_datoteka_controller import PregledDatotekaController
 from src.controllers.izvoz_loga.izvoz_loga_controller import AuditLogExportController
 from src.controllers.primjer.primjer_controller import PrimjerController
+from src.controllers.zakljucavanje_datoteke.unlocked_files_controller import UnlockedFilesController
 from src.utils.key_manager import key_manager
 from src.utils.log_manager import log
 from src.utils.security_policy_manager import security_policy_manager
@@ -64,6 +65,12 @@ class AppController(QMainWindow):
         pregled_datoteka_action = QAction("Pregled datoteka", self)
         pregled_datoteka_action.triggered.connect(partial(self._show_controller, "pregled_datoteka"))
         nav_bar.addAction(pregled_datoteka_action)
+
+        # Zakljucavanje datoteka
+        self._register_controller("zakljucavanje_datoteka", UnlockedFilesController())
+        zakljucavanje_datoteka_action = QAction("Zaključavanje datoteka", self)
+        zakljucavanje_datoteka_action.triggered.connect(partial(self._show_controller, "zakljucavanje_datoteka"))
+        nav_bar.addAction(zakljucavanje_datoteka_action)
         
         # Izvoz audit logova
         self._register_controller("audit_log_export", AuditLogExportController())
