@@ -96,6 +96,9 @@ class UnlockedFilesController(BaseController):
             return
 
         # - safe deleteam (overwrite s nule i delete) plaintext datoteku TODO
+        if not file_manager.secure_delete(file["path"]):
+            self.view.error_label.setText("Pogreška pri pokušaju brisanja originalne datoteke.")
+            return
         # - nukeam DEK iz memorije
         dek_bytes = b'\x00' * len(dek_bytes)
         # - mijenjam atribut u bazi da je zakljucana

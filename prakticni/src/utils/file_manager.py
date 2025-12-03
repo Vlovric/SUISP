@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import QFileDialog
 from src.utils.file_selection_response import FileSelectionResponse
+import os
 
 class FileManager:
     _instance = None
@@ -60,5 +61,32 @@ class FileManager:
                 return f.read()
         except OSError:
             return None
+        
+    def secure_delete(self, path: str) -> bool:
+        if not path:
+            return False
+        try:
+            size = os.path.getsize(path)
+            with open(path, "r+b") as f:
+                chunk = b"\x00" * (1024 * 1024)  # 1 MB
+                remaining = size
+                while remaining > 0:
+                    to_write = chunk if remaining >= len(chunk) else b"\x00" * remaining
+                    f.write(to_write)
+                    remaining -= len(to_write)
+                f.flush()
+                os.fsync(f.fileno())
+            
+            try:
+                dirpath = os.path.dirname(path)
+                tmpname = os.path.join(dirpath, f".del_{os.urandom(8).hex()}")
+                os.replace(path, tmpname)
+                path = tmpname
+            except Exception:
+                pass
+            os.remove(path)
+            return True
+        except Exception:
+            return False
     
 file_manager = FileManager()
