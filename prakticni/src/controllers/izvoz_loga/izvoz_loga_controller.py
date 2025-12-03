@@ -75,7 +75,7 @@ class AuditLogExportController(BaseController):
 
         zip_bytes = self.build_export_package(log_bytes, key_bytes, signature_bytes)
 
-        if not file_manager.open_file_download_dialog(self, "Spremi izvezen audit log.", filename, zip_bytes):
+        if not file_manager.open_file_download_dialog(self, "Spremi izvezen audit log.", filename, zip_bytes, "Audit Log Package (*.alogpkg)"):
             self.input_view.error_label.setText("Nije moguće spremiti audit log.")
         
         self.input_view.success_label.setText("Audit log zapisi su uspješno izvezeni! Javni ključ za provjeru digitalnog potpisa možete kopirati klikom na gumb.")

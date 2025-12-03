@@ -186,7 +186,7 @@ class PregledDatotekaController(BaseController):
         self.reset()
 
     def open_share_view(self, id):
-        self.file_to_share = DatotekaModel.get_file(id)
+        self.file_to_share = DatotekaModel.fetch_by_id(id)
         if self.file_to_share is None:
             self.view.error_label.setText("Ne postoji datoteka.")
             return
@@ -241,7 +241,7 @@ class PregledDatotekaController(BaseController):
         filename = f"{original_filename}_shared_file_{datetime.fromisoformat(now).strftime('%Y-%m-%d_%H-%M-%S')}.shfipkg"
         zip_bytes = self.build_share_package(file.content, dek_bytes)
 
-        if not file_manager.open_file_download_dialog(self, "Spremi datoteku za podijeliti.", filename, zip_bytes):
+        if not file_manager.open_file_download_dialog(self, "Spremi datoteku za podijeliti.", filename, zip_bytes, "Shared File Package (*.shfipkg)"):
             self.share_view.error_label.setText("Nije moguće spremiti datoteku za dijeliti.")
             return
 
