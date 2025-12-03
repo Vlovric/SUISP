@@ -7,6 +7,7 @@ from src.utils.rsa_helper import RsaHelper
 from src.utils.aes_helper import AesHelper
 from src.utils.security_policy_manager import security_policy_manager
 from src.utils.log_manager import log
+from datetime import datetime
 
 from PySide6.QtWidgets import QStackedWidget, QWidget
 from functools import partial
@@ -52,40 +53,35 @@ class UnlockedFilesController(BaseController):
             self.view.error_label.setText("Pogreška pri čitanju datoteke.")
             return
         
-        # - ponovno se hashira i pohranjuje u bazu
         try:
             file_hash = hashlib.sha512(file_content).hexdigest()
         except Exception as e:
             self.view.error_label.setText("Pogreška pri izračunu hash vrijednosti datoteke.")
             return
                 
-        
-        
-        # - uzimam privatni iz baze, dekriptiram
         try:
             private_key_decrypted = key_manager.get_private_key()
         except Exception as e:
             self.view.error_label.setText(str(e))
             return
         
-        # - uzimam DEK od filea, dekriptiram
         dek_encrypted_bytes = bytes.fromhex(file["dek_encrypted"])
         dek_bytes, error = RsaHelper.decrypt(dek_encrypted_bytes, private_key_decrypted)
         if error:
             self.view.error_label.setText("Pogreška pri pokušaju zaključavanja datoteke: " + error)
-        # - nukeam privatni iz memorije
+
         bits = private_key_decrypted.key_size
         bytes_len = (bits + 7) // 8
         private_key_decrypted = b'\x00' * bytes_len
 
-        # - kriptiram datoteku s DEK-om
+
         plaintext_content = file_content
         encrypted_content, error = AesHelper.encrypt(plaintext_content, dek_bytes)
         if error:
             self.view.error_label.setText("Pogreška pri pokušaju zaključavanja datoteke: " + error)
             return
 
-        # - premjestam u izvorni folder
+
         vault_storage_path = security_policy_manager.get_policy_param("vault_storage_path")
         encrypted_file_name = file["encrypted_name"]
 
@@ -95,17 +91,17 @@ class UnlockedFilesController(BaseController):
             self.view.error_label.setText("Pogreška pri pokušaju spremanja zaključane datoteke u trezor.")
             return
 
-        # - safe deleteam (overwrite s nule i delete) plaintext datoteku TODO
+
         if not file_manager.secure_delete(file["path"]):
             self.view.error_label.setText("Pogreška pri pokušaju brisanja originalne datoteke.")
             return
-        # - nukeam DEK iz memorije
+
         dek_bytes = b'\x00' * len(dek_bytes)
-        # - mijenjam atribut u bazi da je zakljucana
-        # - updateam putanju na kriptiranu
-        DatotekaModel.update_file_lock(file_id, path, file_hash)
-        # - loggam zakljucavanje
+
+        current_time = str(datetime.now().isoformat())
+        DatotekaModel.update_file_lock(file_id, path, file_hash, current_time)
+
         log(f"Datoteka {file['name']} je zaključana i spremljena u trezor.")
-        
-        return
+
+        self.reset()
     

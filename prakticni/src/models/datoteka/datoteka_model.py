@@ -27,6 +27,6 @@ class DatotekaModel:
         return db.execute_query(query, (locked, new_path, file_id))
     
     @staticmethod
-    def update_file_lock(file_id, path, hash):
-        query = "UPDATE file SET path = ?, hash = ?, locked = ? WHERE id = ?"
-        return db.execute_query(query, (path, hash, 1, file_id))
+    def update_file_lock(file_id, path, hash, date_modified):
+        query = "UPDATE file SET path = ?, hash = ?, locked = ?, date_modified = ? WHERE id = ?"
+        return db.execute_query(query, (path, hash, 1, date_modified, file_id))
