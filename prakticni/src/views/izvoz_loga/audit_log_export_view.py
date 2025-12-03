@@ -17,6 +17,14 @@ class AuditLogExportView(QWidget):
         self.error_label.setStyleSheet("color: red;")
         self.error_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
+        self.success_label = QLabel("")
+        self.success_label.setStyleSheet("color: lime;")
+        self.success_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.copy_btn = QPushButton("Kopiraj")
+        self.copy_btn.setToolTip("Kopiraj javni ključ za provjeru digitalnog potpisa")
+        self.copy_btn.setProperty("class", "info")
+
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
@@ -25,5 +33,7 @@ class AuditLogExportView(QWidget):
         layout.addSpacing(12)
         layout.addWidget(self.submit_btn, alignment=Qt.AlignHCenter)
         layout.addWidget(self.error_label)
+        layout.addWidget(self.success_label)
+        layout.addWidget(self.copy_btn, alignment=Qt.AlignHCenter)
 
         self.setLayout(layout)

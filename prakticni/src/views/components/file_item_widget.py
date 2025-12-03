@@ -26,8 +26,8 @@ class FileItemWidget(QWidget):
         button_style = "QPushButton { padding: 0px; margin: 0px; }"
 
         self.btn_export = QPushButton()
-        self.btn_export.setIcon(QIcon("src/pic/download.svg"))
-        self.btn_export.setToolTip("Izvezi datoteku")
+        self.btn_export.setIcon(QIcon("src/pic/unlock.svg"))
+        self.btn_export.setToolTip("Otključaj datoteku")
         self.btn_export.setFixedSize(40, 40)
         self.btn_export.setStyleSheet(button_style)
         self.btn_export.setProperty("class", "success")

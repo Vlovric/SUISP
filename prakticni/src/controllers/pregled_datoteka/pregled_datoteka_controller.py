@@ -14,6 +14,8 @@ from src.utils.key_manager import key_manager
 from src.utils.security_policy_manager import security_policy_manager
 from datetime import datetime
 from src.utils.log_manager import log
+from pathlib import Path
+from src.utils.process_helper import process_helper
 import hashlib
 import uuid
 import os
@@ -50,7 +52,7 @@ class PregledDatotekaController(BaseController):
 
     # Učitava datoteke iz baze (pozivati npr. kod dodavanja nove ili brisanja kako bi se osvježio popis)
     def load_files(self):
-        files = DatotekaModel.fetch_all()
+        files = DatotekaModel.fetch_all_locked()
         self.view.set_files(files)
         self.connect_buttons()
 
@@ -105,7 +107,7 @@ class PregledDatotekaController(BaseController):
             hash = hashlib.sha512(file.content.encode())
         current_time = str(datetime.now().isoformat())
 
-        DatotekaModel.insert_file_entry(file.filename, path, file.is_binary, current_time, dek_encrypted.hex(), hash.hexdigest())
+        DatotekaModel.insert_file_entry(file.filename, encrypted_file_name, path, file.is_binary, current_time, dek_encrypted.hex(), hash.hexdigest())
         log(f"U sustav je prenesena datoteka {file.filename}")
 
         # Overwritea datoteku s nulama i onda ju obriše
@@ -115,8 +117,67 @@ class PregledDatotekaController(BaseController):
         self.reset()
 
     def handle_export(self, id):
-        # TODO implementirati
-        print(f"Export zapisa s {id} se handlea!")
+
+        file = DatotekaModel.fetch_by_id(id)
+        if not file:
+            self.view.error_label.setText("Datoteka nije pronađena u bazi.")
+            return
+        
+        try:
+            private_key_decrypted = key_manager.get_private_key()
+        except Exception as e:
+            self.view.error_label.setText("Pogreška pri pokušaju otključavanja datoteke: " + str(e))
+            return
+        
+        dek_encrypted_bytes = bytes.fromhex(file["dek_encrypted"])
+        dek_bytes, error = RsaHelper.decrypt(dek_encrypted_bytes, private_key_decrypted)
+        if error:
+            self.view.error_label.setText("Pogreška pri pokušaju otključavanja datoteke: " + error)
+            return
+        
+        bits = private_key_decrypted.key_size
+        bytes_len = (bits + 7) // 8
+        private_key_decrypted = b'\x00' * bytes_len
+
+        encrypted_content = file_manager.read_file(file["path"])
+        if encrypted_content is None:
+            self.view.error_label.setText("Pogreška pri pokušaju čitanja datoteke iz trezora.")
+            return
+        
+        decrypted_content, error = AesHelper.decrypt(encrypted_content, dek_bytes, file["binary"])
+        if error:
+            self.view.error_label.setText("Pogreška pri pokušaju otključavanja datoteke: " + error)
+            return
+        
+        dek_bytes = b'\x00' * len(dek_bytes)
+
+        old_hash = file["hash"]
+        if file["binary"]:
+            new_hash = hashlib.sha512(decrypted_content)
+        else:
+            new_hash = hashlib.sha512(decrypted_content.encode())
+        
+        if old_hash != new_hash.hexdigest():
+            self.view.error_label.setText("Datoteka je oštećena ili je mijenjana dok je bila zaključana.")
+
+        # Ovo sa pathovima je privremeno za development TODO
+        temp_path = Path(__file__).parent.parent.parent.parent / "data" / "vault_storage" / "temp_otkljucane"
+        if not temp_path.exists():
+            os.makedirs(temp_path)
+        full_path = temp_path / file["name"]
+        #
+
+        successful = file_manager.save_file(full_path, decrypted_content)
+        decrypted_content = b'\x00' * len(decrypted_content)
+        if not successful:
+            self.view.error_label.setText("Pogreška pri pokušaju spremanja otključane datoteke.")
+            return
+        
+        process_helper.open_file_in_default_app(str(full_path))
+
+        DatotekaModel.set_file_lock(id, 0, str(full_path))
+        log(f"Datoteka {file['name']} je otključana iz trezora.")
+        
         self.reset()
 
     def handle_delete(self, id):
