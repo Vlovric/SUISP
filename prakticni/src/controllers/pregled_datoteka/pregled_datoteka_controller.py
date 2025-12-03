@@ -1,4 +1,5 @@
 import io
+import json
 import zipfile
 from PySide6.QtWidgets import QWidget, QStackedWidget
 from src.utils.file_selection_response import FileSelectionResponse
@@ -235,11 +236,12 @@ class PregledDatotekaController(BaseController):
             self.share_view.error_label.setText(encryption_error)
             return
 
-        # Sve spremi u jedan paket i spremi datoteku
+        # Sve spremi u jedan paket
         now = datetime.now().isoformat()
-        original_filename = self.file_to_share["name"].split(".")[0]
-        filename = f"{original_filename}_shared_file_{datetime.fromisoformat(now).strftime('%Y-%m-%d_%H-%M-%S')}.shfipkg"
-        zip_bytes = self.build_share_package(file.content, dek_bytes)
+        original_filename = self.file_to_share["name"]
+        filename_no_extension = original_filename.split(".")[0]
+        filename = f"{filename_no_extension}_shared_file_{datetime.fromisoformat(now).strftime('%Y-%m-%d_%H-%M-%S')}.shfipkg"
+        zip_bytes = self.build_share_package(file.content, dek_bytes, original_filename, self.file_to_share["binary"] == 1)
 
         if not file_manager.open_file_download_dialog(self, "Spremi datoteku za podijeliti.", filename, zip_bytes, "Shared File Package (*.shfipkg)"):
             self.share_view.error_label.setText("Nije moguće spremiti datoteku za dijeliti.")
@@ -247,12 +249,19 @@ class PregledDatotekaController(BaseController):
 
         self.share_view.success_label.setText("Datoteka za dijeliti je uspješno spremljena.")
 
-    def build_share_package(self, file_bytes: bytes, dek_bytes: bytes) -> bytes:
+    def build_share_package(self, file_bytes: bytes, dek_bytes: bytes, filename: str, is_binary: bool) -> bytes:
         buffer = io.BytesIO()
+
+        metadata = {
+            "filename": filename,
+            "is_binary": is_binary
+        }
+        metadata_json = json.dumps(metadata, indent = 2).encode("utf-8")
 
         with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
             zip_file.writestr("file.bin", file_bytes)
             zip_file.writestr("dek.bin", dek_bytes)
+            zip_file.writestr("metadata.json", metadata_json)
 
         return buffer.getvalue()
         
