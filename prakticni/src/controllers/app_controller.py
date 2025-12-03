@@ -5,6 +5,7 @@ from src.utils.activity_monitor import ActivityMonitor
 from datetime import datetime
 
 from functools import partial
+from src.controllers.izvoz_loga.pregled_logova_controller import AuditLogsController
 from src.controllers.pregled_datoteka.pregled_datoteka_controller import PregledDatotekaController
 from src.controllers.izvoz_loga.izvoz_loga_controller import AuditLogExportController
 from src.controllers.primjer.primjer_controller import PrimjerController
@@ -64,12 +65,18 @@ class AppController(QMainWindow):
         pregled_datoteka_action.triggered.connect(partial(self._show_controller, "pregled_datoteka"))
         nav_bar.addAction(pregled_datoteka_action)
         
-        # Ostavi ovo zadnje na navbaru (iznad ovog dodaj druge feature) i TODO David makni ovaj komentar
+        # Izvoz audit logova
         self._register_controller("audit_log_export", AuditLogExportController())
         audit_log_export_action = QAction("Izvoz audit loga", self)
         audit_log_export_action.triggered.connect(partial(self._show_controller, "audit_log_export"))
         nav_bar.addAction(audit_log_export_action)
 
+        # Pregled audit logova
+        self._register_controller("audit_logs", AuditLogsController())
+        audit_log_export_action = QAction("Pregled audit logova", self)
+        audit_log_export_action.triggered.connect(partial(self._show_controller, "audit_logs"))
+        nav_bar.addAction(audit_log_export_action)
+        
         # Spacer koji gura gumb za odjavu na desnu stranu
         spacer = QWidget()
         spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)

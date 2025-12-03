@@ -1,10 +1,13 @@
 from datetime import datetime
-from PySide6.QtWidgets import QWidget, QStackedWidget
+import io
+import zipfile
+from PySide6.QtWidgets import QWidget, QStackedWidget, QApplication
 from src.controllers.base_controller import BaseController
-from src.utils.log_manager import log_manager
+from src.utils.log_manager import log, log_manager
 from src.utils.file_manager import file_manager
 from src.utils.rsa_helper import RsaHelper
 from src.utils.aes_helper import AesHelper
+from src.utils.key_manager import key_manager
 
 from src.views.izvoz_loga.audit_log_export_view import AuditLogExportView
 
@@ -18,6 +21,8 @@ class AuditLogExportController(BaseController):
         self._stack.addWidget(self.input_view)
 
         self.input_view.submit_btn.clicked.connect(self.handle_submit)
+        self.input_view.copy_btn.clicked.connect(self.copy_public_key)
+        self.input_view.copy_btn.hide()
 
     @property
     def root_widget(self) -> QWidget:
@@ -25,10 +30,15 @@ class AuditLogExportController(BaseController):
     
     def reset(self):
         self.input_view.input_field.clear()
+        self.input_view.error_label.setText("")
+        self.input_view.success_label.setText("")
+        self.input_view.copy_btn.hide()
         self._stack.setCurrentIndex(0)
 
     def handle_submit(self):
         self.input_view.error_label.setText("")
+        self.input_view.success_label.setText("")
+        self.input_view.copy_btn.hide()
 
         public_key = self.input_view.input_field.toPlainText()
 
@@ -36,49 +46,54 @@ class AuditLogExportController(BaseController):
             self.input_view.error_label.setText("Ključ nije unesen!")
             return
         
+        log("Korisnik je pokrenuo izvoz audit log zapisa.")
+        
         log_text, error = log_manager.get_logs()
         if error:
             self.input_view.error_label.setText(error)
-
-        now = datetime.now().isoformat()
-        filename = f"audit_log_{datetime.fromisoformat(now).strftime('%Y-%m-%d_%H-%M-%S')}.bin"
+            return
 
         aes_key = AesHelper.generate_key()
 
-        aes_error = self.encrypt_and_save(log_text, aes_key, filename)
+        log_bytes, aes_error = AesHelper.encrypt(log_text, aes_key)
 
         if aes_error:
             self.input_view.error_label.setText(aes_error)
             return
 
-        key_filename = f"audit_log_key_{datetime.fromisoformat(now).strftime('%Y-%m-%d_%H-%M-%S')}.bin"
-        rsa_error = self.save_key(aes_key, public_key, key_filename)
+        key_bytes, rsa_error = RsaHelper.encrypt(aes_key, public_key)
 
         if rsa_error:
             self.input_view.error_label.setText(rsa_error)
+            return
 
-    def encrypt_and_save(self, log_text: str, key: str, filename: str) -> str | None:
-        encrypted_bytes, encryption_error = AesHelper.encrypt(log_text, key)
+        private_key = key_manager.get_private_key()
+        signature_bytes = RsaHelper.sign(log_text, private_key)
 
-        if encryption_error:
-            return encryption_error
+        now = datetime.now().isoformat()
+        filename = f"audit_log_{datetime.fromisoformat(now).strftime('%Y-%m-%d_%H-%M-%S')}.alogpkg"
 
-        if not file_manager.open_file_download_dialog(self, "Spremi datoteku", filename, encrypted_bytes):
-            self.input_view.error_label.setText("Nije moguće spremiti datoteku s izvozom.")
+        zip_bytes = self.build_export_package(log_bytes, key_bytes, signature_bytes)
 
-        return None
-    
-    def save_key(self, key: str, public_key: str, filename: str) -> str | None:
-        encrypted_bytes, encryption_error = RsaHelper.encrypt(key, public_key)
-
-        if encryption_error:
-            return encryption_error
+        if not file_manager.open_file_download_dialog(self, "Spremi izvezen audit log.", filename, zip_bytes):
+            self.input_view.error_label.setText("Nije moguće spremiti audit log.")
         
-        if not file_manager.open_file_download_dialog(self, "Spremi kriptirani ključ", filename, encrypted_bytes):
-            self.input_view.error_label.setText("Nije moguće spremiti kriptirani ključ.")
+        self.input_view.success_label.setText("Audit log zapisi su uspješno izvezeni! Javni ključ za provjeru digitalnog potpisa možete kopirati klikom na gumb.")
+        self.input_view.copy_btn.show()
 
-        return None
+    def build_export_package(self, log_bytes: bytes, key_bytes: bytes, signature_bytes: bytes) -> bytes:
+        buffer = io.BytesIO()
 
+        with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+            zip_file.writestr("encrypted_log.bin", log_bytes)
+            zip_file.writestr("encrypted_key.bin", key_bytes)
+            zip_file.writestr("signature.sig", signature_bytes)
+        
+        return buffer.getvalue()
+    
+    def copy_public_key(self):
+        public_key = key_manager.get_public_key()
+        QApplication.clipboard().setText(public_key)
     
         
         
