@@ -8,7 +8,6 @@ from functools import partial
 from src.controllers.izvoz_loga.pregled_logova_controller import AuditLogsController
 from src.controllers.pregled_datoteka.pregled_datoteka_controller import PregledDatotekaController
 from src.controllers.izvoz_loga.izvoz_loga_controller import AuditLogExportController
-from src.controllers.primjer.primjer_controller import PrimjerController
 from src.controllers.zakljucavanje_datoteke.unlocked_files_controller import UnlockedFilesController
 from src.controllers.dijeljenje_datoteke.upload_shared_file_controller import UploadSharedFileController
 from src.utils.key_manager import key_manager
@@ -68,10 +67,10 @@ class AppController(QMainWindow):
         nav_bar.addAction(otkljucane_datoteke_action)
         
         # Prijenos dijeljene datoteke
-        self._register_controller("prijenos_dijeljene_datoteke", UploadSharedFileController())
-        prijenos_dijeljene_datoteke_action = QAction("Prijenos dijeljene datoteke", self)
-        prijenos_dijeljene_datoteke_action.triggered.connect(partial(self._show_controller, "prijenos_dijeljene_datoteke"))
-        nav_bar.addAction(prijenos_dijeljene_datoteke_action)
+        self._register_controller("ucitavanje_dijeljene_datoteke", UploadSharedFileController())
+        ucitavanje_dijeljene_datoteke_action = QAction("Učitavanje dijeljene datoteke", self)
+        ucitavanje_dijeljene_datoteke_action.triggered.connect(partial(self._show_controller, "ucitavanje_dijeljene_datoteke"))
+        nav_bar.addAction(ucitavanje_dijeljene_datoteke_action)
 
         # Izvoz audit logova
         self._register_controller("audit_log_export", AuditLogExportController())
@@ -97,7 +96,7 @@ class AppController(QMainWindow):
         nav_bar.addWidget(logout_button)
 
         # Palimo prvi controller tj. inicijalni ekran
-        self._show_controller("primjer")
+        self._show_controller("pregled_datoteka")
 
     def _register_controller(self, name: str, controller):
         self.controllers[name] = controller

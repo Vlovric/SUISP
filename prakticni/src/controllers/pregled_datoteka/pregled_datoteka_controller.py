@@ -17,6 +17,7 @@ from datetime import datetime
 from src.utils.log_manager import log
 from pathlib import Path
 from src.utils.process_helper import process_helper
+from src.utils.path_manager import path_manager
 import hashlib
 import uuid
 import os
@@ -91,7 +92,7 @@ class PregledDatotekaController(BaseController):
             self.view.error_label.setText(error)
             return
 
-        vault_storage_path = security_policy_manager.get_policy_param("vault_storage_path")
+        vault_storage_path = path_manager.FILES_DIR
 
         path = os.path.join(vault_storage_path, encrypted_file_name)
         successful = file_manager.save_file(path, encrypted_content)
@@ -139,6 +140,7 @@ class PregledDatotekaController(BaseController):
         bits = private_key_decrypted.key_size
         bytes_len = (bits + 7) // 8
         private_key_decrypted = b'\x00' * bytes_len
+        del private_key_decrypted
 
         encrypted_content = file_manager.read_file(file["path"])
         if encrypted_content is None:
@@ -151,6 +153,7 @@ class PregledDatotekaController(BaseController):
             return
         
         dek_bytes = b'\x00' * len(dek_bytes)
+        del dek_bytes
 
         old_hash = file["hash"]
         if file["binary"]:
@@ -161,15 +164,14 @@ class PregledDatotekaController(BaseController):
         if old_hash != new_hash.hexdigest():
             self.view.error_label.setText("Datoteka je oštećena ili je mijenjana dok je bila zaključana.")
 
-        # Ovo sa pathovima je privremeno za development TODO
-        temp_path = Path(__file__).parent.parent.parent.parent / "data" / "vault_storage" / "temp_otkljucane"
-        if not temp_path.exists():
-            os.makedirs(temp_path)
+        temp_path = path_manager.TEMP_DIR
         full_path = temp_path / file["name"]
-        #
+        
 
         successful = file_manager.save_file(full_path, decrypted_content)
         decrypted_content = b'\x00' * len(decrypted_content)
+        del decrypted_content
+
         if not successful:
             self.view.error_label.setText("Pogreška pri pokušaju spremanja otključane datoteke.")
             return
