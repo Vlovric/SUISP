@@ -9,6 +9,7 @@ from src.controllers.izvoz_loga.pregled_logova_controller import AuditLogsContro
 from src.controllers.pregled_datoteka.pregled_datoteka_controller import PregledDatotekaController
 from src.controllers.izvoz_loga.izvoz_loga_controller import AuditLogExportController
 from src.controllers.zakljucavanje_datoteke.unlocked_files_controller import UnlockedFilesController
+from src.controllers.dijeljenje_datoteke.upload_shared_file_controller import UploadSharedFileController
 from src.utils.key_manager import key_manager
 from src.utils.log_manager import log
 from src.utils.security_policy_manager import security_policy_manager
@@ -55,16 +56,22 @@ class AppController(QMainWindow):
 
         # Pregled svih datoteka
         self._register_controller("pregled_datoteka", PregledDatotekaController())
-        pregled_datoteka_action = QAction("Pregled datoteka", self)
+        pregled_datoteka_action = QAction("Zaključane datoteke", self)
         pregled_datoteka_action.triggered.connect(partial(self._show_controller, "pregled_datoteka"))
         nav_bar.addAction(pregled_datoteka_action)
 
         # Zakljucavanje datoteka
-        self._register_controller("zakljucavanje_datoteka", UnlockedFilesController())
-        zakljucavanje_datoteka_action = QAction("Zaključavanje datoteka", self)
-        zakljucavanje_datoteka_action.triggered.connect(partial(self._show_controller, "zakljucavanje_datoteka"))
-        nav_bar.addAction(zakljucavanje_datoteka_action)
+        self._register_controller("otkljucane_datoteke", UnlockedFilesController())
+        otkljucane_datoteke_action = QAction("Otključane datoteke", self)
+        otkljucane_datoteke_action.triggered.connect(partial(self._show_controller, "otkljucane_datoteke"))
+        nav_bar.addAction(otkljucane_datoteke_action)
         
+        # Prijenos dijeljene datoteke
+        self._register_controller("prijenos_dijeljene_datoteke", UploadSharedFileController())
+        prijenos_dijeljene_datoteke_action = QAction("Prijenos dijeljene datoteke", self)
+        prijenos_dijeljene_datoteke_action.triggered.connect(partial(self._show_controller, "prijenos_dijeljene_datoteke"))
+        nav_bar.addAction(prijenos_dijeljene_datoteke_action)
+
         # Izvoz audit logova
         self._register_controller("audit_log_export", AuditLogExportController())
         audit_log_export_action = QAction("Izvoz audit loga", self)
