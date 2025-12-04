@@ -49,7 +49,7 @@ class AuditLogsController(BaseController):
             return
         
         # Učitava zip file i čita iz njega ostale datoteke
-        package_file = file_manager.select_file_dialog(self, "Otvori audit paket.", "Audit paket (*.alogpkg)")
+        package_file = file_manager.select_file_dialog(self, "Otvori audit paket.", "Audit Log Package (*.alogpkg)")
 
         if package_file is None:
             self.view.error_label.setText("Nije moguće otvoriti datoteku.")
