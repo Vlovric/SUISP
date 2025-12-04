@@ -10,17 +10,23 @@ CREATE TABLE IF NOT EXISTS user (
     mk_salt VARCHAR(255) NOT NULL,
     pdk_salt VARCHAR(255) NOT NULL,
     public_key VARCHAR(255) NOT NULL,
-    private_key_encrypted VARCHAR(255) NOT NULL
+    private_key_encrypted VARCHAR(255) NOT NULL,
+    failed_attempts INTEGER DEFAULT 0,
+    lockout_count INTEGER DEFAULT 0,
+    lockout_until DATETIME NULL
 );
 
 CREATE TABLE IF NOT EXISTS file (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name VARCHAR(255) NOT NULL,
+    encrypted_name VARCHAR(255) NOT NULL,
     path VARCHAR(255) NOT NULL,
+    binary TINYINT NOT NULL,
     date_uploaded DATETIME NOT NULL,
     date_modified DATETIME,
-    dek VARCHAR(255) NOT NULL,
-    hash VARCHAR(255) NOT NULL
+    dek_encrypted VARCHAR(255) NOT NULL,
+    hash VARCHAR(255) NOT NULL,
+    locked TINYINT NOT NULL DEFAULT 1
 );
 
 CREATE TABLE IF NOT EXISTS log (

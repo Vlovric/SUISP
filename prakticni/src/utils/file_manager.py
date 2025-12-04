@@ -1,4 +1,6 @@
 from PySide6.QtWidgets import QFileDialog
+from src.utils.file_selection_response import FileSelectionResponse
+import os
 
 class FileManager:
     _instance = None
@@ -18,8 +20,11 @@ class FileManager:
             save_options
         )
 
-        is_binary_file = isinstance(data, (bytes, bytearray))
+        return self.save_file(path, data, encoding)
 
+    def save_file(self, path, data, encoding = None) -> bool:
+        is_binary_file = isinstance(data, (bytes, bytearray))
+        
         if path:
             try:
                 if is_binary_file:
@@ -32,5 +37,56 @@ class FileManager:
                 return False
             
         return True
+    
+    def select_file_dialog(self, component, 
+                    open_text: str = "Otvori datoteku",
+                    file_filter: str = "All Files (*)", ) -> FileSelectionResponse | None:
+        path, _ = QFileDialog.getOpenFileName(
+            component.root_widget,
+            open_text,
+            "",
+            file_filter
+        )
+
+        if not path:
+            return None
+        
+        return FileSelectionResponse(path)
+    
+    def read_file(self, path: str) -> bytes | None:
+        if not path:
+            return None
+        try:
+            with open(path, "rb") as f:
+                return f.read()
+        except OSError:
+            return None
+        
+    def secure_delete(self, path: str) -> bool:
+        if not path:
+            return False
+        try:
+            size = os.path.getsize(path)
+            with open(path, "r+b") as f:
+                chunk = b"\x00" * (1024 * 1024)  # 1 MB
+                remaining = size
+                while remaining > 0:
+                    to_write = chunk if remaining >= len(chunk) else b"\x00" * remaining
+                    f.write(to_write)
+                    remaining -= len(to_write)
+                f.flush()
+                os.fsync(f.fileno())
+            
+            try:
+                dirpath = os.path.dirname(path)
+                tmpname = os.path.join(dirpath, f".del_{os.urandom(8).hex()}")
+                os.replace(path, tmpname)
+                path = tmpname
+            except Exception:
+                pass
+            os.remove(path)
+            return True
+        except Exception:
+            return False
     
 file_manager = FileManager()
