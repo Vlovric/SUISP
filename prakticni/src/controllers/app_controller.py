@@ -8,7 +8,6 @@ from functools import partial
 from src.controllers.izvoz_loga.pregled_logova_controller import AuditLogsController
 from src.controllers.pregled_datoteka.pregled_datoteka_controller import PregledDatotekaController
 from src.controllers.izvoz_loga.izvoz_loga_controller import AuditLogExportController
-from src.controllers.primjer.primjer_controller import PrimjerController
 from src.controllers.zakljucavanje_datoteke.unlocked_files_controller import UnlockedFilesController
 from src.utils.key_manager import key_manager
 from src.utils.log_manager import log
@@ -54,12 +53,6 @@ class AppController(QMainWindow):
 
         self.controllers = {}
 
-        # OVAKO registriramo nove kontrolere za svaki feature koji zelimo na navigaciji na main menu
-        self._register_controller("primjer", PrimjerController())
-        primjer_action = QAction("Primjer", self)
-        primjer_action.triggered.connect(partial(self._show_controller, "primjer"))
-        nav_bar.addAction(primjer_action)
-
         # Pregled svih datoteka
         self._register_controller("pregled_datoteka", PregledDatotekaController())
         pregled_datoteka_action = QAction("Pregled datoteka", self)
@@ -96,7 +89,7 @@ class AppController(QMainWindow):
         nav_bar.addWidget(logout_button)
 
         # Palimo prvi controller tj. inicijalni ekran
-        self._show_controller("primjer")
+        self._show_controller("pregled_datoteka")
 
     def _register_controller(self, name: str, controller):
         self.controllers[name] = controller
