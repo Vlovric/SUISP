@@ -15,6 +15,7 @@ from PySide6.QtWidgets import QWidget, QStackedWidget, QApplication
 from src.utils.key_manager import key_manager
 from src.utils.file_manager import file_manager
 from src.utils.log_manager import log
+from src.utils.path_manager import path_manager
 
 class UploadSharedFileController(BaseController):
     def __init__(self):
@@ -86,7 +87,7 @@ class UploadSharedFileController(BaseController):
         del decrypted_dek
 
         # Spremamo file na disk
-        vault_storage_path = security_policy_manager.get_policy_param("vault_storage_path")
+        vault_storage_path = path_manager.FILES_DIR
         encrypted_file_name = f"{str(uuid.uuid4())}.bin"
 
         path = os.path.join(vault_storage_path, encrypted_file_name)
