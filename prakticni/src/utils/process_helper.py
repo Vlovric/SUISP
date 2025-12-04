@@ -13,7 +13,7 @@ class ProcessHelper:
                 os.startfile(file_path)
             elif system_name == "Darwin":  # macOS
                 subprocess.run(["open", file_path])
-            else:  # Linux and other Unix-like systems
+            else: # Linux i drugi
                 subprocess.run(["xdg-open", file_path])
         except Exception as e:
             print(f"Error opening file {file_path}: {e}")
