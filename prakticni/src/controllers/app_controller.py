@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QMainWindow, QStackedWidget, QToolBar, QMessageBox, QPushButton, QWidget, QSizePolicy
+from PySide6.QtWidgets import QMainWindow, QStackedWidget, QMessageBox, QPushButton, QWidget, QSizePolicy, QHBoxLayout, QVBoxLayout
 from PySide6.QtGui import QAction
 from PySide6.QtCore import QTimer, QCoreApplication, Signal
 from src.utils.activity_monitor import ActivityMonitor
@@ -13,6 +13,7 @@ from src.controllers.dijeljenje_datoteke.upload_shared_file_controller import Up
 from src.utils.key_manager import key_manager
 from src.utils.log_manager import log
 from src.utils.security_policy_manager import security_policy_manager
+from src.views.components.flow_layout import FlowLayout
 
 class AppController(QMainWindow):
     logout_requested = Signal()
@@ -45,9 +46,10 @@ class AppController(QMainWindow):
         QCoreApplication.instance().installEventFilter(self.activity_monitor)
 
         # Kreiramo toolbar za navigaciju
-        nav_bar = QToolBar("Navigation")
-        nav_bar.setMovable(False)
-        self.addToolBar(nav_bar)
+        nav_widget = QWidget()
+        nav_widget.setObjectName("nav_widget")
+        nav_layout = FlowLayout(nav_widget)
+        nav_layout.setContentsMargins(10, 10, 10, 10)
 
         # Kreiramo stack widget za content ekrana
         self.stack = QStackedWidget()
@@ -56,45 +58,58 @@ class AppController(QMainWindow):
         self.controllers = {}
 
         # Pregled svih datoteka
-        self._register_controller("pregled_datoteka", PregledDatotekaController())
-        pregled_datoteka_action = QAction("Zaključane datoteke", self)
-        pregled_datoteka_action.triggered.connect(partial(self._show_controller, "pregled_datoteka"))
-        nav_bar.addAction(pregled_datoteka_action)
+        self. _register_controller("pregled_datoteka", PregledDatotekaController())
+        btn1 = QPushButton("Zaključane datoteke")
+        btn1.clicked.connect(partial(self._show_controller, "pregled_datoteka"))
+        nav_layout.addWidget(btn1)
 
         # Zakljucavanje datoteka
         self._register_controller("otkljucane_datoteke", UnlockedFilesController())
-        otkljucane_datoteke_action = QAction("Otključane datoteke", self)
-        otkljucane_datoteke_action.triggered.connect(partial(self._show_controller, "otkljucane_datoteke"))
-        nav_bar.addAction(otkljucane_datoteke_action)
+        btn2 = QPushButton("Otključane datoteke")
+        btn2.clicked.connect(partial(self._show_controller, "otkljucane_datoteke"))
+        nav_layout.addWidget(btn2)
         
         # Prijenos dijeljene datoteke
-        self._register_controller("ucitavanje_dijeljene_datoteke", UploadSharedFileController())
-        ucitavanje_dijeljene_datoteke_action = QAction("Učitavanje dijeljene datoteke", self)
-        ucitavanje_dijeljene_datoteke_action.triggered.connect(partial(self._show_controller, "ucitavanje_dijeljene_datoteke"))
-        nav_bar.addAction(ucitavanje_dijeljene_datoteke_action)
+        self._register_controller("prijenos_dijeljene_datoteke", UploadSharedFileController())
+        btn3 = QPushButton("Prijenos dijeljene datoteke")
+        btn3.clicked.connect(partial(self._show_controller, "prijenos_dijeljene_datoteke"))
+        nav_layout.addWidget(btn3)
 
         # Izvoz audit logova
-        self._register_controller("audit_log_export", AuditLogExportController())
-        audit_log_export_action = QAction("Izvoz audit loga", self)
-        audit_log_export_action.triggered.connect(partial(self._show_controller, "audit_log_export"))
-        nav_bar.addAction(audit_log_export_action)
+        self._register_controller("izvoz_audit_logova", AuditLogExportController())
+        btn4 = QPushButton("Izvoz audit logova")
+        btn4.clicked.connect(partial(self._show_controller, "izvoz_audit_logova"))
+        nav_layout.addWidget(btn4)
 
         # Pregled audit logova
-        self._register_controller("audit_logs", AuditLogsController())
-        audit_log_export_action = QAction("Pregled audit logova", self)
-        audit_log_export_action.triggered.connect(partial(self._show_controller, "audit_logs"))
-        nav_bar.addAction(audit_log_export_action)
+        self._register_controller("pregled_audit_logova", AuditLogsController())
+        btn5 = QPushButton("Pregled audit logova")
+        btn5.clicked.connect(partial(self._show_controller, "pregled_audit_logova"))
+        nav_layout.addWidget(btn5)
         
         # Spacer koji gura gumb za odjavu na desnu stranu
         spacer = QWidget()
         spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        nav_bar.addWidget(spacer)
+        nav_layout.addWidget(spacer)
 
         # Crveni gumb za odjavu
         logout_button = QPushButton("Odjava")
-        logout_button.setProperty("class", "danger")
+        logout_button.setObjectName("logout_button")
         logout_button.clicked.connect(self._handle_logout)
-        nav_bar.addWidget(logout_button)
+        nav_layout.addWidget(logout_button)
+
+        # Postavite nav_widget kao središnji widget u toolbar area ili kao dio glavnog layouta
+        toolbar_container = QWidget()
+        toolbar_layout = QHBoxLayout(toolbar_container)
+        toolbar_layout.setContentsMargins(0, 0, 0, 0)
+        toolbar_layout.addWidget(nav_widget)
+
+        # Dodajte toolbar_container iznad stack widgeta
+        main_widget = QWidget()
+        main_layout = QVBoxLayout(main_widget)
+        main_layout.addWidget(toolbar_container)
+        main_layout.addWidget(self.stack)
+        self.setCentralWidget(main_widget)
 
         # Palimo prvi controller tj. inicijalni ekran
         self._show_controller("pregled_datoteka")
