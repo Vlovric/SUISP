@@ -47,7 +47,6 @@ class AppController(QMainWindow):
 
         # Kreiramo toolbar za navigaciju
         nav_widget = QWidget()
-        nav_widget.setObjectName("nav_widget")
         nav_layout = FlowLayout(nav_widget)
         nav_layout.setContentsMargins(10, 10, 10, 10)
 
@@ -60,30 +59,35 @@ class AppController(QMainWindow):
         # Pregled svih datoteka
         self. _register_controller("pregled_datoteka", PregledDatotekaController())
         btn1 = QPushButton("Zaključane datoteke")
+        btn1.setObjectName("nav_btn")
         btn1.clicked.connect(partial(self._show_controller, "pregled_datoteka"))
         nav_layout.addWidget(btn1)
 
         # Zakljucavanje datoteka
         self._register_controller("otkljucane_datoteke", UnlockedFilesController())
         btn2 = QPushButton("Otključane datoteke")
+        btn2.setObjectName("nav_btn")
         btn2.clicked.connect(partial(self._show_controller, "otkljucane_datoteke"))
         nav_layout.addWidget(btn2)
         
         # Prijenos dijeljene datoteke
         self._register_controller("prijenos_dijeljene_datoteke", UploadSharedFileController())
         btn3 = QPushButton("Prijenos dijeljene datoteke")
+        btn3.setObjectName("nav_btn")
         btn3.clicked.connect(partial(self._show_controller, "prijenos_dijeljene_datoteke"))
         nav_layout.addWidget(btn3)
 
         # Izvoz audit logova
         self._register_controller("izvoz_audit_logova", AuditLogExportController())
         btn4 = QPushButton("Izvoz audit logova")
+        btn4.setObjectName("nav_btn")
         btn4.clicked.connect(partial(self._show_controller, "izvoz_audit_logova"))
         nav_layout.addWidget(btn4)
 
         # Pregled audit logova
         self._register_controller("pregled_audit_logova", AuditLogsController())
         btn5 = QPushButton("Pregled audit logova")
+        btn5.setObjectName("nav_btn")
         btn5.clicked.connect(partial(self._show_controller, "pregled_audit_logova"))
         nav_layout.addWidget(btn5)
         

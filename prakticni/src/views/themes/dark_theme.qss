@@ -84,15 +84,15 @@ QPushButton[class="danger"]:pressed {
     background-color: #910813;
 }
 
-QWidget#nav_widget QPushButton#logout_button {
+QPushButton#logout_button {
     background-color: #d35153;
 }
 
-QWidget#nav_widget QPushButton#logout_button:hover {
+QPushButton#logout_button:hover {
     background-color: #bf1a28;
 }
 
-QWidget#nav_widget QPushButton#logout_button:pressed {
+QPushButton#logout_button:pressed {
     background-color: #910813;
 }
 
@@ -115,19 +115,28 @@ QToolBar {
     padding: 2px;
 }
 
-/* Style for buttons inside the toolbar */
-QWidget#nav_widget QPushButton {
+#title{
+    font-size: 30px;
+    margin: 10px 0px;
+}
+
+#description{
+    font-size: 18px;
+    margin: 10px 0px;
+}
+
+QPushButton#nav_btn {
     color: #f0f0f0;
     background-color: transparent;
     padding: 5px 10px;
     border-radius: 4px;
 }
 
-QWidget#nav_widget QPushButton:hover {
+QPushButton#nav_btn:hover {
     background-color: #555;
 }
 
-QWidget#nav_widget QPushButton:checked { /* Style for the currently active/selected button */
+QPushButton#nav_btn:checked {
     background-color: #007bff;
     color: white;
 }

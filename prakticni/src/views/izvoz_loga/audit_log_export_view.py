@@ -7,6 +7,8 @@ class AuditLogExportView(QWidget):
         super().__init__()
 
         label = QLabel("Izvoz audit loga")
+        label.setObjectName("title")
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.input_field = QTextEdit()
         self.input_field.setPlaceholderText("Unesite javni ključ auditora")
         self.input_field.setFixedHeight(200)

@@ -6,6 +6,8 @@ class AuditLogsResultView(QWidget):
         super().__init__()
 
         self.text = QLabel("Audit log zapisi...")
+        self.text.setObjectName("title")
+        self.text.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.text.setWordWrap(True)
         self.text.setAlignment(Qt.AlignTop | Qt.AlignLeft)
 

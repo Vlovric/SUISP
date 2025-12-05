@@ -59,7 +59,7 @@ class FileManager:
         
         layout = QVBoxLayout()
         
-        label = QLabel(f"Ako ste sigurni da želite obrisati ovu datoteku,\nupišite {file_name} u prozor kako bi ju obrisali:")
+        label = QLabel(f'Ako ste sigurni da želite obrisati ovu datoteku,<br>upišite <b style="color: red;">{file_name}</b> u prozor kako bi ju obrisali:')
         layout.addWidget(label)
         
         input_field = QLineEdit()

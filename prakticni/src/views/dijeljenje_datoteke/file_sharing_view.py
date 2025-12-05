@@ -8,6 +8,8 @@ class FileSharingView(QWidget):
         self.description_label = QLabel(
             "Dijeljenje datoteke "
         )
+        self.description_label.setObjectName("title")
+        self.description_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.description_label.setWordWrap(True)
         self.description_label.setAlignment(Qt.AlignTop)
 
