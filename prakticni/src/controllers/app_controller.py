@@ -15,11 +15,12 @@ from src.utils.log_manager import log
 from src.utils.security_policy_manager import security_policy_manager
 
 class AppController(QMainWindow):
-    logout_requested = Signal()  # Signal koji se emitira kad treba odjava
+    logout_requested = Signal()
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Secure File Vault")
-        self.resize(800, 600)
+        self.setWindowTitle("Sigurnosni trezor datoteka")
+        self.resize(1000, 800)
+        self.center()
         self.INACTIVITY_TIMEOUT = security_policy_manager.get_policy_param("inactivity_timeout_minutes") * 60  # 15 minuta (za testiranje se može staviti kraći interval)
         self.WARNING_TIME = security_policy_manager.get_policy_param("wallet_session_timeout_minutes")  # (za testiranje se može staviti kraći interval)
 
@@ -175,3 +176,9 @@ class AppController(QMainWindow):
         if hasattr(self, 'warning_dialog'):
             self.warning_dialog.close()
         self.logout_requested.emit()
+
+    def center(self):
+        frame_gm = self.frameGeometry()
+        screen = self.screen().availableGeometry().center()
+        frame_gm.moveCenter(screen)
+        self.move(frame_gm.topLeft())

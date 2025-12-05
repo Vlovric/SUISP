@@ -7,10 +7,10 @@ class RegistrationView(QWidget):
         super().__init__()
 
         self.username_input = QLineEdit()
-        self.username_input.setPlaceholderText("Username")
+        self.username_input.setPlaceholderText("Korisničko ime")
 
         self.password_input = QLineEdit()
-        self.password_input.setPlaceholderText("Password")
+        self.password_input.setPlaceholderText("Lozinka")
         self.password_input.setEchoMode(QLineEdit.EchoMode.Password)
 
         self.toggle_password_action = QAction(self)
@@ -18,7 +18,7 @@ class RegistrationView(QWidget):
         self.toggle_password_action.triggered.connect(self.toggle_password_visibility)
         self.password_input.addAction(self.toggle_password_action, QLineEdit.ActionPosition.TrailingPosition)
 
-        self.register_button = QPushButton("Register")
+        self.register_button = QPushButton("Registriraj se")
 
         self.error_label = QLabel("")
         self.error_label.setStyleSheet("color: red;")
@@ -44,3 +44,9 @@ class RegistrationView(QWidget):
         else:
             self.password_input.setEchoMode(QLineEdit.EchoMode.Password)
             self.toggle_password_action.setIcon(QIcon("src/pic/view_dark.svg"))
+
+    def center(self):
+        frame_gm = self.frameGeometry()
+        screen = self.screen().availableGeometry().center()
+        frame_gm.moveCenter(screen)
+        self.move(frame_gm.topLeft())
