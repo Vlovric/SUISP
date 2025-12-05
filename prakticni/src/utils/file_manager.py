@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QFileDialog
+from PySide6.QtWidgets import QFileDialog, QDialog, QDialogButtonBox, QVBoxLayout, QLabel, QLineEdit
 from src.utils.file_selection_response import FileSelectionResponse
 import os
 
@@ -52,6 +52,42 @@ class FileManager:
             return None
         
         return FileSelectionResponse(path)
+    
+    def delete_file_dialog(self, parent, file_name: str) -> bool:
+        dlg = QDialog(parent)
+        dlg.setWindowTitle("UPOZORENJE!")
+        
+        layout = QVBoxLayout()
+        
+        label = QLabel(f"Ako ste sigurni da želite obrisati ovu datoteku,\nupišite {file_name} u prozor kako bi ju obrisali:")
+        layout.addWidget(label)
+        
+        input_field = QLineEdit()
+        layout.addWidget(input_field)
+        
+        error_label = QLabel("")
+        error_label.setStyleSheet("color: red;")
+        error_label.hide()
+        layout.addWidget(error_label)
+        
+        QBtn = QDialogButtonBox.Ok | QDialogButtonBox.Cancel
+        buttonBox = QDialogButtonBox(QBtn)
+        layout.addWidget(buttonBox)
+        
+        dlg.setLayout(layout)
+        
+        def on_accept():
+            if input_field.text() == file_name:
+                dlg.accept()
+            else:
+                error_label.setText(f"GREŠKA: Krivo upisano ime! Upišite točno: {file_name}")
+                error_label.show()
+        
+        buttonBox.accepted.connect(on_accept)
+        buttonBox.rejected.connect(dlg.reject)
+        
+        result = dlg.exec()
+        return result == QDialog.Accepted
     
     def read_file(self, path: str) -> bytes | None:
         if not path:
