@@ -22,6 +22,11 @@ class DatotekaModel:
         return db.fetch_one(query, (file_id,))
     
     @staticmethod
+    def delete_file_by_id(file_id):
+        query = "DELETE FROM file WHERE id = ?"
+        return db.execute_query(query, (file_id,))
+    
+    @staticmethod
     def set_file_lock(file_id, locked, new_path):
         query = "UPDATE file SET locked = ?, path = ? WHERE id = ?"
         return db.execute_query(query, (locked, new_path, file_id))
