@@ -5,7 +5,7 @@ from src.utils.file_manager import file_manager
 from src.utils.key_manager import key_manager
 from src.utils.rsa_helper import RsaHelper
 from src.utils.aes_helper import AesHelper
-from src.utils.security_policy_manager import security_policy_manager
+from src.utils.path_manager import path_manager
 from src.utils.log_manager import log
 from datetime import datetime
 
@@ -73,6 +73,7 @@ class UnlockedFilesController(BaseController):
         bits = private_key_decrypted.key_size
         bytes_len = (bits + 7) // 8
         private_key_decrypted = b'\x00' * bytes_len
+        del private_key_decrypted
 
 
         plaintext_content = file_content
@@ -80,9 +81,11 @@ class UnlockedFilesController(BaseController):
         if error:
             self.view.error_label.setText("Pogreška pri pokušaju zaključavanja datoteke: " + error)
             return
+        
+        plaintext_content = b'\x00' * len(plaintext_content)
+        del plaintext_content
 
-
-        vault_storage_path = security_policy_manager.get_policy_param("vault_storage_path")
+        vault_storage_path = path_manager.FILES_DIR
         encrypted_file_name = file["encrypted_name"]
 
         path = os.path.join(vault_storage_path, encrypted_file_name)
@@ -97,6 +100,7 @@ class UnlockedFilesController(BaseController):
             return
 
         dek_bytes = b'\x00' * len(dek_bytes)
+        del dek_bytes
 
         current_time = str(datetime.now().isoformat())
         DatotekaModel.update_file_lock(file_id, path, file_hash, current_time)

@@ -1,4 +1,9 @@
+import io
+import json
+import zipfile
 from PySide6.QtWidgets import QWidget, QStackedWidget
+from src.utils.file_selection_response import FileSelectionResponse
+from src.views.dijeljenje_datoteke.file_sharing_view import FileSharingView
 from src.utils.rsa_helper import RsaHelper
 from src.utils.aes_helper import AesHelper
 from src.models.datoteka.datoteka_model import DatotekaModel
@@ -13,6 +18,7 @@ from datetime import datetime
 from src.utils.log_manager import log
 from pathlib import Path
 from src.utils.process_helper import process_helper
+from src.utils.path_manager import path_manager
 import hashlib
 import uuid
 import os
@@ -24,11 +30,18 @@ class PregledDatotekaController(BaseController):
         self._stack = QStackedWidget()
         self.view = PregledDatotekaView()
         self.delete_file_controller = DeleteFileController()
+        self.share_view = FileSharingView()
         self._stack.addWidget(self.view)
+        self._stack.addWidget(self.share_view)
+        self._stack.setCurrentIndex(0)
 
         self.load_files()
 
         self.view.import_btn.clicked.connect(self.handle_new_file)
+        self.share_view.back_btn.clicked.connect(self.reset)
+        self.share_view.share_file_btn.clicked.connect(self.handle_share)
+
+        self.file_to_share = None
 
     @property
     def root_widget(self) -> QWidget:
@@ -36,6 +49,9 @@ class PregledDatotekaController(BaseController):
     
     def reset(self):
         self.load_files()
+        self.share_view.error_label.setText("")
+        self.share_view.success_label.setText("")
+        self.share_view.public_key_field.setText("")
         self._stack.setCurrentIndex(0)
 
     # Učitava datoteke iz baze (pozivati npr. kod dodavanja nove ili brisanja kako bi se osvježio popis)
@@ -56,7 +72,7 @@ class PregledDatotekaController(BaseController):
 
         for share_btn in self.view.share_buttons:
             btn, file_id = share_btn
-            btn.clicked.connect(partial(self.handle_share, file_id))
+            btn.clicked.connect(partial(self.open_share_view, file_id))
     
     def handle_new_file(self):
         file = file_manager.select_file_dialog(self)
@@ -78,7 +94,7 @@ class PregledDatotekaController(BaseController):
             self.view.error_label.setText(error)
             return
 
-        vault_storage_path = security_policy_manager.get_policy_param("vault_storage_path")
+        vault_storage_path = path_manager.FILES_DIR
 
         path = os.path.join(vault_storage_path, encrypted_file_name)
         successful = file_manager.save_file(path, encrypted_content)
@@ -126,6 +142,7 @@ class PregledDatotekaController(BaseController):
         bits = private_key_decrypted.key_size
         bytes_len = (bits + 7) // 8
         private_key_decrypted = b'\x00' * bytes_len
+        del private_key_decrypted
 
         encrypted_content = file_manager.read_file(file["path"])
         if encrypted_content is None:
@@ -138,6 +155,7 @@ class PregledDatotekaController(BaseController):
             return
         
         dek_bytes = b'\x00' * len(dek_bytes)
+        del dek_bytes
 
         old_hash = file["hash"]
         if file["binary"]:
@@ -148,15 +166,14 @@ class PregledDatotekaController(BaseController):
         if old_hash != new_hash.hexdigest():
             self.view.error_label.setText("Datoteka je oštećena ili je mijenjana dok je bila zaključana.")
 
-        # Ovo sa pathovima je privremeno za development TODO
-        temp_path = Path(__file__).parent.parent.parent.parent / "data" / "vault_storage" / "temp_otkljucane"
-        if not temp_path.exists():
-            os.makedirs(temp_path)
+        temp_path = path_manager.TEMP_DIR
         full_path = temp_path / file["name"]
-        #
+        
 
         successful = file_manager.save_file(full_path, decrypted_content)
         decrypted_content = b'\x00' * len(decrypted_content)
+        del decrypted_content
+
         if not successful:
             self.view.error_label.setText("Pogreška pri pokušaju spremanja otključane datoteke.")
             return
@@ -179,7 +196,84 @@ class PregledDatotekaController(BaseController):
                 log(f"Pokušaj brisanja datoteke {fetched_file['name']} nije uspio: {deleted['message']}")
             self.reset()
 
-    def handle_share(self, id):
-        # TODO implementirati
-        print(f"Dijeljenje zapisa s {id} se handlea!")
-        self.reset()
+    def open_share_view(self, id):
+        self.file_to_share = DatotekaModel.fetch_by_id(id)
+        if self.file_to_share is None:
+            self.view.error_label.setText("Ne postoji datoteka.")
+            return
+        
+        self.share_view.description_label.setText(f"Dijeljenje datoteke '{self.file_to_share['name']}'\nZa dijeljenje datoteke s korisnikom, u donje polje zalijepite njegov javni ključ.")
+        
+        self._stack.setCurrentIndex(1)
+
+    def handle_share(self):
+        self.share_view.error_label.setText("")
+        self.share_view.success_label.setText("")
+        
+        if self.file_to_share is None:
+            return
+        
+        public_key = self.share_view.public_key_field.toPlainText()
+
+        if (len(public_key) == 0):
+            self.share_view.error_label.setText("Javni ključ nije unesen!")
+            return
+        
+        # Dohvati datoteku
+        file = FileSelectionResponse(self.file_to_share["path"])
+
+        if file is None:
+            self.share_view.error_label.setText("Nije moguće otvoriti datoteku.")
+            return
+        
+        if not file.successful:
+            self.share_view.error_label.setText("Nije moguće otvoriti datoteku.")
+            return
+
+        # Dekriptiraj DEK svojim privatnim ključem
+        encrypted_dek = self.file_to_share["dek_encrypted"]
+        private_key = key_manager.get_private_key()
+        decrypted_dek, decryption_error = RsaHelper.decrypt(bytes.fromhex(encrypted_dek), private_key)
+
+        if decryption_error:
+            self.share_view.error_label.setText(decryption_error)
+            return
+
+        # Enkriptiraj DEK unesenim javnim ključem
+        dek_bytes, encryption_error = RsaHelper.encrypt(decrypted_dek, public_key)
+
+        if encryption_error:
+            self.share_view.error_label.setText(encryption_error)
+            return
+
+        # Sve spremi u jedan paket
+        now = datetime.now().isoformat()
+        original_filename = self.file_to_share["name"]
+        filename_no_extension = original_filename.split(".")[0]
+        filename = f"{filename_no_extension}_shared_file_{datetime.fromisoformat(now).strftime('%Y-%m-%d_%H-%M-%S')}.shfipkg"
+        zip_bytes = self.build_share_package(file.content, dek_bytes, original_filename, self.file_to_share["binary"] == 1)
+
+        if not file_manager.open_file_download_dialog(self, "Spremi datoteku za podijeliti.", filename, zip_bytes, "Shared File Package (*.shfipkg)"):
+            self.share_view.error_label.setText("Nije moguće spremiti datoteku za dijeliti.")
+            return
+
+        self.share_view.success_label.setText("Datoteka za dijeliti je uspješno spremljena.")
+
+    def build_share_package(self, file_bytes: bytes, dek_bytes: bytes, filename: str, is_binary: bool) -> bytes:
+        buffer = io.BytesIO()
+
+        metadata = {
+            "filename": filename,
+            "is_binary": is_binary
+        }
+        metadata_json = json.dumps(metadata, indent = 2).encode("utf-8")
+
+        with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+            zip_file.writestr("file.bin", file_bytes)
+            zip_file.writestr("dek.bin", dek_bytes)
+            zip_file.writestr("metadata.json", metadata_json)
+
+        return buffer.getvalue()
+        
+
+        
