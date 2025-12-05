@@ -36,10 +36,10 @@ class KeyManager:
         
         kdf = Scrypt(
             salt = salt,
-            length = key_length, #256-bit kljuc
-            n = scrypt_n, #CPU/memory cost parametar
-            r= scrypt_r, # Velicina bloka
-            p= scrypt_p, # Paralelizacija
+            length = key_length,
+            n = scrypt_n,
+            r= scrypt_r,
+            p= scrypt_p,
             backend=default_backend()
         )
 
@@ -78,7 +78,7 @@ class KeyManager:
 
     def clear_kek(self):
         if self._kek is not None:
-            self._kek = b'\x00' * len(self._kek) # overwritea kljuc u memoriji, temp solution
+            self._kek = b'\x00' * len(self._kek)
         self._kek = None
 
     def derive_pdk(self, master_key: bytes, pdk_salt: str) -> bytes:
@@ -124,21 +124,18 @@ class KeyManager:
 
     def generate_rsa_keypair(self) -> tuple[bytes, bytes]:
         """Generira RSA par ključeva (4096-bit)"""
-        # Generiraj RSA privatni ključ
         private_key = rsa.generate_private_key(
-            public_exponent=security_policy_manager.get_policy_param("rsa_public_exponent"),  # Standardna vrijednost
-            key_size=security_policy_manager.get_policy_param("rsa_key_size_bits"),  # Ili 3072/4096 za veću sigurnost
+            public_exponent=security_policy_manager.get_policy_param("rsa_public_exponent"),
+            key_size=security_policy_manager.get_policy_param("rsa_key_size_bits"),
         )
         public_key = private_key.public_key()
         
-        # Serializiraj privatni ključ (PEM format)
         private_key_bytes = private_key.private_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PrivateFormat.PKCS8,
             encryption_algorithm=serialization.NoEncryption()
         )
         
-        # Serializiraj javni ključ (PEM format)
         public_key_bytes = public_key.public_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PublicFormat.SubjectPublicKeyInfo
@@ -149,7 +146,7 @@ class KeyManager:
     def encrypt_private_key(self, private_key: bytes, pdk: bytes) -> str:
         """Enkriptira privatni ključ s PDK-om (AES-256-GCM)"""
         aesgcm = AESGCM(pdk)
-        nonce = os.urandom(12)  # 96-bit nonce za GCM
+        nonce = os.urandom(12)
         ciphertext = aesgcm.encrypt(nonce, private_key, None)
         return nonce.hex() + "$" + ciphertext.hex() 
         

@@ -79,7 +79,6 @@ class PasswordManager:
         iterations = security_policy_manager.get_policy_param("pbkdf2_iterations")
         hash_name = security_policy_manager.get_policy_param("pbkdf2_hash_name")
 
-        # Hash lozinke za autentifikaciju, hashiramo sa saltom od MK-a
         password_hash = hashlib.pbkdf2_hmac(
             hash_name,
             mk,

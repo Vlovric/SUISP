@@ -3,15 +3,15 @@ from datetime import datetime
 from src.utils.log_manager import log
 from src.utils.key_manager import key_manager
 from datetime import datetime
+from src.utils.security_policy_manager import security_policy_manager
 
 class ActivityMonitor(QObject):
     activity_detected = Signal()
-    WARNING_TIME: int = 240  # seconds
-    INACTIVITY_TIMEOUT: int = 15 * 60  # seconds
+    WARNING_TIME: int = security_policy_manager.get_policy_param("session_timeout_minutes")
+    INACTIVITY_TIMEOUT: int = security_policy_manager.get_policy_param("inactivity_timeout_minutes") * 60
     last_activity: datetime
     
     def eventFilter(self, obj, event):
-        # Prati sve tipke, klikove, scroll, pomak miša
         if event.type() in [
             QEvent.Type.MouseMove,
             QEvent.Type.MouseButtonPress,

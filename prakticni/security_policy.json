@@ -25,5 +25,5 @@
     "pbkdf2_hash_name": "sha256",
     "pbkdf2_salt_length": 16,
     "inactivity_timeout_minutes": 15,
-    "wallet_session_timeout_minutes": 60
+    "session_timeout_minutes": 60
 }
