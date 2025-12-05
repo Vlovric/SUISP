@@ -68,7 +68,7 @@ class FileManager:
         try:
             size = os.path.getsize(path)
             with open(path, "r+b") as f:
-                chunk = b"\x00" * (1024 * 1024)  # 1 MB
+                chunk = b"\x00" * (1024 * 1024)
                 remaining = size
                 while remaining > 0:
                     to_write = chunk if remaining >= len(chunk) else b"\x00" * remaining

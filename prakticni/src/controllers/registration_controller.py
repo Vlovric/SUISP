@@ -9,7 +9,6 @@ from src.utils.password_manager import PasswordManager
 from src.models.user_model import UserModel
 
 class RegistrationController(BaseController):
-    # Signal koji se emitta kad je login successful
     proceed = Signal()
 
     def __init__(self):
@@ -18,6 +17,7 @@ class RegistrationController(BaseController):
         self._view = RegistrationView()
         self._view.setWindowTitle("Registracija korisnika")
         self._view.resize(400, 200)
+        self._view.center()
 
         self._view.register_button.clicked.connect(self._handle_registration)
     
@@ -32,12 +32,12 @@ class RegistrationController(BaseController):
             self._view.set_error_message("")
 
             if not username or not password:
-                self._view.set_error_message("Username and password are required!")
+                self._view.set_error_message("Korisničko ime i lozinka su obavezni!")
                 return
 
             jeValidna = PasswordManager.validate_password_strength(password)
             if jeValidna != "sucessful_validation":
-                self._view.set_error_message(jeValidna)  # Prikaži specifičnu grešku
+                self._view.set_error_message(jeValidna)
                 return
 
             try:

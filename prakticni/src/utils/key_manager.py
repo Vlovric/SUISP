@@ -27,7 +27,7 @@ class KeyManager:
             raise Exception("KEK is already set.")
         
         if not isinstance(password, str) or not password:
-            raise ValueError("Password must be a non-empty string.")
+            raise ValueError("Lozinka mora biti neprazan string.")
         
         key_length = security_policy_manager.get_policy_param("kek_key_length_bytes")
         scrypt_n = security_policy_manager.get_policy_param("scrypt_cost_param_n")
@@ -47,18 +47,17 @@ class KeyManager:
 
     def get_kek(self) -> bytes:
         if self._kek is None:
-            raise Exception("KEK is not set.")
+            raise Exception("KEK nije postavljen.")
         return self._kek
     
     def get_private_key(self) -> RSAPrivateKey:
         user = UserModel.get_user()
         if user is None:
-            raise Exception("User is not set.")
+            raise Exception("Korisnik nije postavljen.")
 
         private_key_encrypted = user["private_key_encrypted"]
         if private_key_encrypted is None:
-            raise Exception("Private key is not set.")
-
+            raise Exception("Privatni ključ nije postavljen.")
         pdk = self.get_pdk()
         private_key_bytes = self.decrypt_private_key(private_key_encrypted, pdk)
         
@@ -73,7 +72,7 @@ class KeyManager:
     def get_public_key(self) -> str:
         user = UserModel.get_user()
         if user is None:
-            raise Exception("User is not set.")
+            raise Exception("Korisnik nije postavljen.")
         
         return user["public_key"].decode("utf-8")
 
@@ -82,8 +81,6 @@ class KeyManager:
             self._kek = b'\x00' * len(self._kek) # overwritea kljuc u memoriji, temp solution
         self._kek = None
 
-# Dio sa MK i PDK
-    
     def derive_pdk(self, master_key: bytes, pdk_salt: str) -> bytes:
         """Derivira PDK iz MK-a za enkripciju privatnog ključa"""
         hash_name = security_policy_manager.get_policy_param("pbkdf2_hash_name")
@@ -104,20 +101,20 @@ class KeyManager:
             hash_name,
             password.encode(),
             mk_salt.encode(),
-            iterations # MK ima velik broj iteracija, a PDK će imati malu, jer nije potrebno više
+            iterations 
         )
 
     def set_pdk(self, master_key: bytes, pdk_salt: str):
         """Postavlja PDK nakon derivacije iz MK-a"""
         if self._pdk is not None:
-            raise Exception("PDK is already set.")
+            raise Exception("PDK je već postavljen.")
         
         self._pdk = self.derive_pdk(master_key, pdk_salt)
     
     def get_pdk(self) -> bytes:
         """Dohvaća PDK za enkripciju/dekripciju privatnog ključa"""
         if self._pdk is None:
-            raise Exception("PDK is not set.")
+            raise Exception("PDK nije postavljen.")
         return self._pdk
 
     def clear_pdk(self):

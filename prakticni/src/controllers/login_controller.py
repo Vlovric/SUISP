@@ -18,8 +18,9 @@ class LoginController(BaseController):
         self.user_model = UserModel()
 
         self._view = LoginView()
-        self._view.setWindowTitle("Login")
+        self._view.setWindowTitle("Prijava")
         self._view.resize(400, 200)
+        self._view.center()
 
         self._view.login_button.clicked.connect(self._handle_login)
 
