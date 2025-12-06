@@ -10,24 +10,27 @@ class KeyRotationWorker(QObject):
     finished = Signal(bool, str)
 
     def run(self):
+        print("Key rotation worker started")
         def cb(current, total):
             self.progress.emit(current, total)
         success, error = KeyRotationHelper.rotate_keys(progress_callback=cb)
+        print("Key rotation worker finished", success, error)
         self.finished.emit(success, error or "")
 
 class KeyRotationController(BaseController):
     def __init__(self, parent_window):
+        super().__init__()
         self.parent = parent_window
         self.dialog = None
         self.thread = None
+        self.worker = None
 
     def start_key_rotation(self):
         total_files = DatotekaModel.get_file_count()
         
         self.dialog = KeyRotationDialog(total_files, parent=self.parent)
-        self.dialog.show()
 
-        self.thread = QThread()
+        self.thread = QThread(self.parent)
         self.worker = KeyRotationWorker()
         self.worker.moveToThread(self.thread)
 
@@ -38,10 +41,14 @@ class KeyRotationController(BaseController):
         self.worker.finished.connect(self.worker.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
 
+        self.dialog.show()
         self.thread.start()
 
     def on_finished(self, success: bool, error_message: str):
-        self.dialog.close()
+        print("Key rotation finished callback", success, error_message)
+        if self.dialog is not None:
+            self.dialog.close()
+            self.dialog = None
         if success:
             QMessageBox.information(self.parent, "Rotacija ključeva", "Rotacija ključeva je uspješno dovršena.")
         else:
