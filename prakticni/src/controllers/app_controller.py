@@ -13,6 +13,8 @@ from src.controllers.dijeljenje_datoteke.upload_shared_file_controller import Up
 from src.utils.key_manager import key_manager
 from src.utils.log_manager import log
 from src.utils.security_policy_manager import security_policy_manager
+from src.controllers.key_rotation_controller import KeyRotationController
+from src.utils.key_rotation_helper import KeyRotationHelper
 
 class AppController(QMainWindow):
     logout_requested = Signal()  # Signal koji se emitira kad treba odjava
@@ -95,8 +97,20 @@ class AppController(QMainWindow):
         logout_button.clicked.connect(self._handle_logout)
         nav_bar.addWidget(logout_button)
 
+        self.key_rotation_controller = KeyRotationController(self)
+        # Rucna rotacija kljuceva
+        rotate_keys_action = QAction("Rotacija ključeva", self)
+        rotate_keys_action.triggered.connect(self.key_rotation_controller.start_key_rotation)
+        nav_bar.addAction(rotate_keys_action)
+
         # Palimo prvi controller tj. inicijalni ekran
         self._show_controller("pregled_datoteka")
+
+        self._check_key_rotation()
+
+    def _check_key_rotation(self):
+        if KeyRotationHelper.needs_rotation():
+            self.key_rotation_controller.start_key_rotation()
 
     def _register_controller(self, name: str, controller):
         self.controllers[name] = controller
