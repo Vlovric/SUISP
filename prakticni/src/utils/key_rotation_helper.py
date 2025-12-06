@@ -79,7 +79,7 @@ class KeyRotationHelper():
 
                 cursor.execute(
                     "UPDATE user SET public_key = ?, private_key_encrypted = ?, last_key_rotation = ? WHERE id = ?",
-                    (public_key_pem, private_key_encrypted, now_iso, user["id"])
+                    (public_key, private_key_encrypted, now_iso, user["id"])
                 )
 
                 print("Nakon executea")
