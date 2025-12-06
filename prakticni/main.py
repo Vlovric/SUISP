@@ -8,6 +8,7 @@ from src.models.user_model import UserModel
 from src.models.db import db
 from src.utils.key_manager import key_manager
 from src.utils.single_application import SingleApplication
+from src.utils.path_manager import path_manager
 
 APP_ID = "secure.file.vault.app.suisp"
 
@@ -21,7 +22,7 @@ class App:
         db.init_db()
 
         try:
-            theme_path = Path(__file__).parent / "src" / "views" / "themes" / "dark_theme.qss"
+            theme_path = path_manager.get_resource_path("src/views/themes/dark_theme.qss")
             with open(theme_path, "r") as f:
                 self.app.setStyleSheet(f.read())
         except FileNotFoundError:
