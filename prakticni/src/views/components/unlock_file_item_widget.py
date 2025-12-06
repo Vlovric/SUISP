@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout
 from PySide6.QtGui import QIcon
 from PySide6.QtCore import QSize
+from src.utils.path_manager import path_manager
 
 class UnlockedFileItemWidget(QWidget):
     def __init__(self, file_record):
@@ -16,7 +17,8 @@ class UnlockedFileItemWidget(QWidget):
         button_style = "QPushButton { padding: 0px; margin: 0px; }"
 
         self.btn_lock = QPushButton()
-        self.btn_lock.setIcon(QIcon("src/pic/lock.svg"))
+        icon_path = str(path_manager.get_resource_path("src/pic/lock.svg"))
+        self.btn_lock.setIcon(QIcon(icon_path))
         self.btn_lock.setIconSize(QSize(36, 36))
 
         self.btn_lock.setToolTip("Zaključaj datoteku")

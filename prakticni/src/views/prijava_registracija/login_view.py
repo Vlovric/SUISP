@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLineEdit, QLabel
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtCore import Qt
+from src.utils.path_manager import path_manager
 
 class LoginView(QWidget):
     def __init__(self):
@@ -14,7 +15,8 @@ class LoginView(QWidget):
         self.password_input.setEchoMode(QLineEdit.EchoMode.Password)
         
         self.toggle_password_action = QAction(self)
-        self.toggle_password_action.setIcon(QIcon("src/pic/view_dark.svg"))
+        icon_path = str(path_manager.get_resource_path("src/pic/view_dark.svg"))
+        self.toggle_password_action.setIcon(QIcon(icon_path))
         self.toggle_password_action.triggered.connect(self.toggle_password_visibility)
         self.password_input.addAction(self.toggle_password_action, QLineEdit.ActionPosition.TrailingPosition)
 

@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QWidget, QLabel, QScrollArea, QFrame, QVBoxLayout, QPushButton
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
+from src.utils.path_manager import path_manager
 
 from src.views.components.file_item_widget import FileItemWidget
 
@@ -30,7 +31,8 @@ class PregledDatotekaView(QWidget):
         self.scroll_area.setWidget(self.list_container)
 
         self.import_btn = QPushButton("Prenesi")
-        self.import_btn.setIcon(QIcon("src/pic/upload.svg"))
+        icon_path = str(path_manager.get_resource_path("src/pic/upload.svg"))
+        self.import_btn.setIcon(QIcon(icon_path))
         self.import_btn.setToolTip("Prenesi datoteku")
 
         self.error_label = QLabel("")
