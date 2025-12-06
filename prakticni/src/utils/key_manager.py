@@ -27,7 +27,7 @@ class KeyManager:
             raise Exception("KEK is already set.")
         
         if not isinstance(password, str) or not password:
-            raise ValueError("Password must be a non-empty string.")
+            raise ValueError("Lozinka mora biti neprazan string.")
         
         key_length = security_policy_manager.get_policy_param("kek_key_length_bytes")
         scrypt_n = security_policy_manager.get_policy_param("scrypt_cost_param_n")
@@ -36,10 +36,10 @@ class KeyManager:
         
         kdf = Scrypt(
             salt = salt,
-            length = key_length, #256-bit kljuc
-            n = scrypt_n, #CPU/memory cost parametar
-            r= scrypt_r, # Velicina bloka
-            p= scrypt_p, # Paralelizacija
+            length = key_length,
+            n = scrypt_n,
+            r= scrypt_r,
+            p= scrypt_p,
             backend=default_backend()
         )
 
@@ -47,18 +47,17 @@ class KeyManager:
 
     def get_kek(self) -> bytes:
         if self._kek is None:
-            raise Exception("KEK is not set.")
+            raise Exception("KEK nije postavljen.")
         return self._kek
     
     def get_private_key(self) -> RSAPrivateKey:
         user = UserModel.get_user()
         if user is None:
-            raise Exception("User is not set.")
+            raise Exception("Korisnik nije postavljen.")
 
         private_key_encrypted = user["private_key_encrypted"]
         if private_key_encrypted is None:
-            raise Exception("Private key is not set.")
-
+            raise Exception("Privatni ključ nije postavljen.")
         pdk = self.get_pdk()
         private_key_bytes = self.decrypt_private_key(private_key_encrypted, pdk)
         
@@ -73,17 +72,15 @@ class KeyManager:
     def get_public_key(self) -> str:
         user = UserModel.get_user()
         if user is None:
-            raise Exception("User is not set.")
+            raise Exception("Korisnik nije postavljen.")
         
         return user["public_key"].decode("utf-8")
 
     def clear_kek(self):
         if self._kek is not None:
-            self._kek = b'\x00' * len(self._kek) # overwritea kljuc u memoriji, temp solution
+            self._kek = b'\x00' * len(self._kek)
         self._kek = None
 
-# Dio sa MK i PDK
-    
     def derive_pdk(self, master_key: bytes, pdk_salt: str) -> bytes:
         """Derivira PDK iz MK-a za enkripciju privatnog ključa"""
         hash_name = security_policy_manager.get_policy_param("pbkdf2_hash_name")
@@ -104,20 +101,20 @@ class KeyManager:
             hash_name,
             password.encode(),
             mk_salt.encode(),
-            iterations # MK ima velik broj iteracija, a PDK će imati malu, jer nije potrebno više
+            iterations 
         )
 
     def set_pdk(self, master_key: bytes, pdk_salt: str):
         """Postavlja PDK nakon derivacije iz MK-a"""
         if self._pdk is not None:
-            raise Exception("PDK is already set.")
+            raise Exception("PDK je već postavljen.")
         
         self._pdk = self.derive_pdk(master_key, pdk_salt)
     
     def get_pdk(self) -> bytes:
         """Dohvaća PDK za enkripciju/dekripciju privatnog ključa"""
         if self._pdk is None:
-            raise Exception("PDK is not set.")
+            raise Exception("PDK nije postavljen.")
         return self._pdk
 
     def clear_pdk(self):
@@ -127,21 +124,18 @@ class KeyManager:
 
     def generate_rsa_keypair(self) -> tuple[bytes, bytes]:
         """Generira RSA par ključeva (4096-bit)"""
-        # Generiraj RSA privatni ključ
         private_key = rsa.generate_private_key(
-            public_exponent=security_policy_manager.get_policy_param("rsa_public_exponent"),  # Standardna vrijednost
-            key_size=security_policy_manager.get_policy_param("rsa_key_size_bits"),  # Ili 3072/4096 za veću sigurnost
+            public_exponent=security_policy_manager.get_policy_param("rsa_public_exponent"),
+            key_size=security_policy_manager.get_policy_param("rsa_key_size_bits"),
         )
         public_key = private_key.public_key()
         
-        # Serializiraj privatni ključ (PEM format)
         private_key_bytes = private_key.private_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PrivateFormat.PKCS8,
             encryption_algorithm=serialization.NoEncryption()
         )
         
-        # Serializiraj javni ključ (PEM format)
         public_key_bytes = public_key.public_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PublicFormat.SubjectPublicKeyInfo
@@ -152,7 +146,7 @@ class KeyManager:
     def encrypt_private_key(self, private_key: bytes, pdk: bytes) -> str:
         """Enkriptira privatni ključ s PDK-om (AES-256-GCM)"""
         aesgcm = AESGCM(pdk)
-        nonce = os.urandom(12)  # 96-bit nonce za GCM
+        nonce = os.urandom(12)
         ciphertext = aesgcm.encrypt(nonce, private_key, None)
         return nonce.hex() + "$" + ciphertext.hex() 
         

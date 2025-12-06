@@ -14,6 +14,8 @@ class PregledDatotekaView(QWidget):
         self.share_buttons = []
 
         self.title = QLabel("Moje zaključane datoteke")
+        self.title.setObjectName("title")
+        self.title.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.scroll_area = QScrollArea()
         self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)

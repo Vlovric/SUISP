@@ -32,7 +32,7 @@ class SingleApplication(QApplication):
 
         self._server.removeServer(self.app_id)
         if not self._server.listen(self.app_id):
-            raise RuntimeError(f"Unable to start the server: {self._server.errorString()}")
+            raise RuntimeError(f"Nemogućnost pokretanja servera: {self._server.errorString()}")
 
         self._server.newConnection.connect(self._handle_new_connection)
 

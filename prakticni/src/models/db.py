@@ -35,7 +35,6 @@ class Database:
                 cursor = conn.cursor()
                 cursor.execute(query, params)
                 result = cursor.fetchone()
-                # rezultat koji je sqlite3.Row se pretvara u dictionary
                 return dict(result) if result else None
         except sqlite3.Error as e:
             print(f"Greška u fetch_one: {e}")
