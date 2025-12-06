@@ -9,6 +9,7 @@ class UploadSharedFileView(QWidget):
             "Kako biste dobili dijeljenu datoteku, pošaljite osobi od koje tražite datoteku svoj javni ključ.\n"
             "Zatim kliknite na gumb 'Učitaj datoteku' kako biste ju unijeli u sustav."
         )
+        self.description_label.setObjectName("description")
         self.description_label.setWordWrap(True)
         self.description_label.setAlignment(Qt.AlignTop)
 

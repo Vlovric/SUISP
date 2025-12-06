@@ -54,13 +54,11 @@ class PregledDatotekaController(BaseController):
         self.share_view.public_key_field.setText("")
         self._stack.setCurrentIndex(0)
 
-    # Učitava datoteke iz baze (pozivati npr. kod dodavanja nove ili brisanja kako bi se osvježio popis)
     def load_files(self):
         files = DatotekaModel.fetch_all_locked()
         self.view.set_files(files)
         self.connect_buttons()
 
-    # Povezuje sve gumbove sa handlerima
     def connect_buttons(self):
         for export_btn in self.view.export_buttons:
             btn, file_id = export_btn
@@ -103,8 +101,6 @@ class PregledDatotekaController(BaseController):
             self.view.error_label.setText("Nije moguće spremiti datoteku.")
             return
         
-        # Hashiram NE-kriptiran sadržaj (provjeriti je li ispravno),
-        # pa se može provjeriti nakon dekriptiranja kod izvoza datoteke iz trezora je li enkriptirana datoteka mijenjana
         if file.is_binary:
             hash = hashlib.sha512(file.content)
         else:
@@ -114,7 +110,6 @@ class PregledDatotekaController(BaseController):
         DatotekaModel.insert_file_entry(file.filename, encrypted_file_name, path, file.is_binary, current_time, dek_encrypted.hex(), hash.hexdigest())
         log(f"U sustav je prenesena datoteka {file.filename}")
 
-        # Overwritea datoteku s nulama i onda ju obriše
         file.content = b'\x00' * len(file.content)
         del file
 
@@ -219,7 +214,6 @@ class PregledDatotekaController(BaseController):
             self.share_view.error_label.setText("Javni ključ nije unesen!")
             return
         
-        # Dohvati datoteku
         file = FileSelectionResponse(self.file_to_share["path"])
 
         if file is None:
@@ -230,7 +224,6 @@ class PregledDatotekaController(BaseController):
             self.share_view.error_label.setText("Nije moguće otvoriti datoteku.")
             return
 
-        # Dekriptiraj DEK svojim privatnim ključem
         encrypted_dek = self.file_to_share["dek_encrypted"]
         private_key = key_manager.get_private_key()
         decrypted_dek, decryption_error = RsaHelper.decrypt(bytes.fromhex(encrypted_dek), private_key)
@@ -239,14 +232,12 @@ class PregledDatotekaController(BaseController):
             self.share_view.error_label.setText(decryption_error)
             return
 
-        # Enkriptiraj DEK unesenim javnim ključem
         dek_bytes, encryption_error = RsaHelper.encrypt(decrypted_dek, public_key)
 
         if encryption_error:
             self.share_view.error_label.setText(encryption_error)
             return
 
-        # Sve spremi u jedan paket
         now = datetime.now().isoformat()
         original_filename = self.file_to_share["name"]
         filename_no_extension = original_filename.split(".")[0]

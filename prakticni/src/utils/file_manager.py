@@ -59,7 +59,7 @@ class FileManager:
         
         layout = QVBoxLayout()
         
-        label = QLabel(f"Ako ste sigurni da želite obrisati ovu datoteku,\nupišite {file_name} u prozor kako bi ju obrisali:")
+        label = QLabel(f'Ako ste sigurni da želite obrisati ovu datoteku,<br>upišite <b style="color: red;">{file_name}</b> u prozor kako bi ju obrisali:')
         layout.addWidget(label)
         
         input_field = QLineEdit()
@@ -104,7 +104,7 @@ class FileManager:
         try:
             size = os.path.getsize(path)
             with open(path, "r+b") as f:
-                chunk = b"\x00" * (1024 * 1024)  # 1 MB
+                chunk = b"\x00" * (1024 * 1024)
                 remaining = size
                 while remaining > 0:
                     to_write = chunk if remaining >= len(chunk) else b"\x00" * remaining

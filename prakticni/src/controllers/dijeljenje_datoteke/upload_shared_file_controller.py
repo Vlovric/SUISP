@@ -44,7 +44,6 @@ class UploadSharedFileController(BaseController):
         self.view.error_label.setText("")
         self.view.success_label.setText("")
 
-        # Učitavanje datoteke
         package_file = file_manager.select_file_dialog(self, "Otvori dijeljenu datoteku.", "Shared File Package (*.shfipkg)")
 
         if package_file is None:
@@ -67,7 +66,6 @@ class UploadSharedFileController(BaseController):
         
         encrypted_dek_bytes, file_bytes, filename, is_binary = packaged_files
 
-        # Pokušaj dekripcije DEK-a
         private_key = key_manager.get_private_key()
         decrypted_dek, decryption_error = RsaHelper.decrypt(encrypted_dek_bytes, private_key)
 
@@ -75,18 +73,15 @@ class UploadSharedFileController(BaseController):
             self.view.error_label.setText(decryption_error + " - DEK je neispravan")
             return
         
-        # Pokušaj dekripcije same datoteke (nigdje se ne sprema, samo u memoriji)
         decrypted_file, decryption_error = AesHelper.decrypt(file_bytes, decrypted_dek)
 
         if decryption_error:
             self.view.error_label.setText(decryption_error + " - datoteka je neispravna")
             return
         
-        # Brišemo dekriptirani DEK - bilo potrebno samo da se testira je li kriptiran ispravnim javnim ključem
         decrypted_dek = b'\x00' * len(decrypted_dek)
         del decrypted_dek
 
-        # Spremamo file na disk
         vault_storage_path = path_manager.FILES_DIR
         encrypted_file_name = f"{str(uuid.uuid4())}.bin"
 
@@ -97,7 +92,6 @@ class UploadSharedFileController(BaseController):
             self.view.error_label.setText("Nije moguće spremiti datoteku.")
             return
 
-        # Ubacivanje u bazu
         if is_binary:
             hash = hashlib.sha512(decrypted_file)
         else:
@@ -107,7 +101,6 @@ class UploadSharedFileController(BaseController):
         DatotekaModel.insert_file_entry(filename, encrypted_file_name, path, is_binary, current_time, encrypted_dek_bytes.hex(), hash.hexdigest())
         log(f"U sustav je prenesena dijeljena datoteka {filename}")
 
-        # Brišemo dekriptiranu datoteku u memoriji
         decrypted_file = b'\x00' * len(decrypted_file)
         del decrypted_file
 

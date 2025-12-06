@@ -23,7 +23,6 @@ class PasswordManager:
             return 0.0
         
         pool_size = 0
-        # brojevi poola se izvlače iz security policy-a
         if any(char.islower() for char in password):
             pool_size += security_policy_manager.get_policy_param("password_char_pools")["lowercase"]
         if any(char.isupper() for char in password):
@@ -48,7 +47,6 @@ class PasswordManager:
         min_length = security_policy_manager.get_policy_param("password_length_min")
         if len(password) < min_length:
             return "Lozinka mora imati najmanje {} znakova.".format(min_length)
-        # Kako sam dodala nove parametre u policy, određene provjere se mogu "izgasiti" ako se stavi false u policy-u
         if security_policy_manager.get_policy_param("pasword_require_digits"):
             if not any(char.isdigit() for char in password):
                 return "Lozinka mora sadržavati barem jedan broj."
@@ -81,7 +79,6 @@ class PasswordManager:
         iterations = security_policy_manager.get_policy_param("pbkdf2_iterations")
         hash_name = security_policy_manager.get_policy_param("pbkdf2_hash_name")
 
-        # Hash lozinke za autentifikaciju, hashiramo sa saltom od MK-a
         password_hash = hashlib.pbkdf2_hmac(
             hash_name,
             mk,

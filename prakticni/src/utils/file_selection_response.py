@@ -1,4 +1,3 @@
-# Klasa koja reprezentira odabranu datoteku iz dijaloga
 class FileSelectionResponse:
     def __init__(self, path):
         self.path = path
