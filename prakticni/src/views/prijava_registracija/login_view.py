@@ -42,11 +42,12 @@ class LoginView(QWidget):
     def toggle_password_visibility(self):
         if self.password_input.echoMode() == QLineEdit.EchoMode.Password:
             self.password_input.setEchoMode(QLineEdit.EchoMode.Normal)
-            self.toggle_password_action.setIcon(QIcon("src/pic/hide_dark.svg"))
+            icon_path = str(path_manager.get_resource_path("src/pic/hide_dark.svg"))
+            self.toggle_password_action.setIcon(QIcon(icon_path))
         else:
             self.password_input.setEchoMode(QLineEdit.EchoMode.Password)
-            self.toggle_password_action.setIcon(QIcon("src/pic/view_dark.svg"))
-
+            icon_path = str(path_manager.get_resource_path("src/pic/view_dark.svg"))
+            self.toggle_password_action.setIcon(QIcon(icon_path))
     def center(self):
         frame_gm = self.frameGeometry()
         screen = self.screen().availableGeometry().center()

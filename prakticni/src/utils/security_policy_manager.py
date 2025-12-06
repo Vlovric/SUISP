@@ -15,7 +15,7 @@ class SecurityPolicyManager:
     
     def _load_policy(self):
         if not path_manager.SECURITY_POLICY_JSON.exists():
-            default_policy_path = Path(__file__).parent.parent.parent / "security_policy.json"
+            default_policy_path = path_manager.get_resource_path("security_policy.json")
             try:
                 data = json.loads(default_policy_path.read_text(encoding="utf-8"))
                 path_manager.SECURITY_POLICY_JSON.write_text(json.dumps(data, indent=2), encoding="utf-8")
