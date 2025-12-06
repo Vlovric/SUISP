@@ -1,6 +1,7 @@
 import sys
 from pathlib import Path
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QIcon
 from src.controllers.app_controller import AppController
 from src.controllers.login_controller import LoginController
 from src.controllers.registration_controller import RegistrationController
@@ -20,6 +21,12 @@ class App:
             sys.exit(0)
 
         db.init_db()
+
+        try:
+            icon_path = path_manager.get_resource_path("src/pic/app_icon.png")
+            self.app.setWindowIcon(QIcon(str(icon_path)))
+        except Exception as e:
+            print(f"Ne mogu postaviti ikonu aplikacije: {e}")
 
         try:
             theme_path = path_manager.get_resource_path("src/views/themes/dark_theme.qss")

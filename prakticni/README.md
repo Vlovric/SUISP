@@ -24,6 +24,7 @@ Na vsc-u instalirajte extention "SQLite Viewer" za pregledavanje baze
 ### Linux
 
 pyinstaller --noconfirm --onefile --windowed --name "SecureFileVault" \
+    --icon "src/pic/app_icon.png" \
     --add-data "data/schema.sql:data" \
     --add-data "security_policy.json:." \
     --add-data "src/views/themes/dark_theme.qss:src/views/themes" \
@@ -33,6 +34,7 @@ pyinstaller --noconfirm --onefile --windowed --name "SecureFileVault" \
 ### Windows
 
 pyinstaller --noconfirm --onefile --windowed --name "SecureFileVault" `
+    --icon "src/pic/app_icon.ico" `
     --add-data "data/schema.sql;data" `
     --add-data "security_policy.json;." `
     --add-data "src/views/themes/dark_theme.qss;src/views/themes" `
