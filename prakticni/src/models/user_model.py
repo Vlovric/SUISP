@@ -13,8 +13,8 @@ class UserModel:
         master_password_hash: str, 
         mk_salt: str,
         pdk_salt: str,
-        public_key: str,  # hex/base64 encoded
-        encrypted_private_key: str  # hex/base64 encoded
+        public_key: str,
+        encrypted_private_key: str
     ) -> bool:
         query = """
             INSERT INTO user 
@@ -86,7 +86,6 @@ class UserModel:
             remaining = int((lockout_until - now).total_seconds())
             return True, remaining
         else:
-            # Lockout je istekao, resetiraj
             self.update_login_attempt(username, success=True)
             return False, 0
 

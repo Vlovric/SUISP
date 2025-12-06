@@ -11,6 +11,7 @@ class AuditLogsView(QWidget):
             "Zatim je potrebno učitati datoteku (audit paket) kojeg korisnik pošalje.\n"
             "Nakon što je to gotovo, kliknite na gumb 'Dalje'."
         )
+        self.description_label.setObjectName("description")
         self.description_label.setWordWrap(True)
         self.description_label.setAlignment(Qt.AlignTop)
 

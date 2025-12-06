@@ -9,7 +9,6 @@ from src.models.user_model import UserModel
 from src.utils.file_cleanup_manager import FileCleanupManager
 
 class LoginController(BaseController):
-    # Signal koji se emitta kad je login successful
     proceed = Signal()
     failed_attempts: int = 0
     lockout_counter: int = 0
@@ -19,8 +18,9 @@ class LoginController(BaseController):
         self.user_model = UserModel()
 
         self._view = LoginView()
-        self._view.setWindowTitle("Login")
+        self._view.setWindowTitle("Prijava")
         self._view.resize(400, 200)
+        self._view.center()
 
         self._view.login_button.clicked.connect(self._handle_login)
 
@@ -57,7 +57,6 @@ class LoginController(BaseController):
             else:
                 self.user_model.update_login_attempt(username, success=False)
                 log("Neispravno korisničko ime ili lozinka.")
-                # Ponovo dohvaćamo korisnika da bi dobili ažurirani broj neuspjelih pokušaja
                 fetched_user = self.user_model.get_user_by_username(username)
                 failed = fetched_user.get('failed_attempts', 0)
                 
@@ -80,7 +79,6 @@ class LoginController(BaseController):
         self.lockout_counter += 1
         self.remaining_seconds = 60 * self.lockout_counter
 
-        # Onemogući login button tokom odbrojavanja
         self._view.login_button.setEnabled(False)
 
         self.countdown_timer.start(1000)

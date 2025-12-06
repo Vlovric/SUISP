@@ -41,14 +41,12 @@ class AuditLogsController(BaseController):
         self.view.error_label.setText("")
         self.view.success_label.setText("")
 
-        # Provjeri je li unesen privatni ključ
         user_private_key = self.view.public_key_field.toPlainText()
 
         if (len(user_private_key) == 0):
             self.view.error_label.setText("Javni ključ osobe nije unesen!")
             return
         
-        # Učitava zip file i čita iz njega ostale datoteke
         package_file = file_manager.select_file_dialog(self, "Otvori audit paket.", "Audit Log Package (*.alogpkg)")
 
         if package_file is None:
@@ -71,7 +69,6 @@ class AuditLogsController(BaseController):
 
         log_bytes, key_bytes, signature_bytes = packaged_files
 
-        # Provjeri može li se dekriptirati i je li ispravna, ako ne, napiši grešku
         private_key = key_manager.get_private_key()
         aes_key, rsa_error = RsaHelper.decrypt(key_bytes, private_key)
 
@@ -79,21 +76,18 @@ class AuditLogsController(BaseController):
             self.view.error_label.setText("Nije moguće dekriptirati datoteku ključa: " + rsa_error)
             return
 
-        # Provjeri može li se dekriptirati dekriptiranim ključem i je li ispravna, ako ne napiši grešku
         log_text, aes_error = AesHelper.decrypt(log_bytes, aes_key, False)
 
         if aes_error:
             self.view.error_label.setText("Nije moguće dekriptirati datoteku log zapisa: " + aes_error)
             return
 
-        # Provjeri je li digitalni potpis ispravan i ako nije, ispiši grešku
         valid = RsaHelper.verify(log_text, signature_bytes, user_private_key)
 
         if not valid:
             self.view.error_label.setText("Digitalni potpis nije validan!")
             return
 
-        # Otvori novi prozor s log zapisima koji se mogu skrolati
         self.result_view.text.setText(log_text)
         self._stack.setCurrentIndex(1)
 

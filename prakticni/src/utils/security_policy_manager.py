@@ -20,9 +20,9 @@ class SecurityPolicyManager:
                 data = json.loads(default_policy_path.read_text(encoding="utf-8"))
                 path_manager.SECURITY_POLICY_JSON.write_text(json.dumps(data, indent=2), encoding="utf-8")
             except FileNotFoundError:
-                raise Exception("Default security policy file not found.")
+                raise Exception("Zadana datoteka sigurnosne politike nije pronađena.")
             except json.JSONDecodeError:
-                raise Exception("Default security policy file is not a valid JSON.")
+                raise Exception("Zadana datoteka sigurnosne politike nije valjani JSON.")
         
         self._policy = json.loads(path_manager.SECURITY_POLICY_JSON.read_text(encoding="utf-8"))
     
@@ -32,7 +32,7 @@ class SecurityPolicyManager:
 
         value = self._policy.get(key)
         if value is None:
-            raise KeyError(f"Policy parameter '{key}' not found.")
+            raise KeyError(f"Parametar politike '{key}' nije pronađen.")
         return value
     
 security_policy_manager = SecurityPolicyManager()

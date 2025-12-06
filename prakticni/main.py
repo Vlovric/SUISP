@@ -15,7 +15,7 @@ class App:
     def __init__(self):
         self.app = SingleApplication(sys.argv, APP_ID)
         if getattr(self.app, "is_running", False):
-            print("Application is already running.")
+            print("Aplikacija je već pokrenuta!")
             sys.exit(0)
 
         db.init_db()
@@ -25,10 +25,9 @@ class App:
             with open(theme_path, "r") as f:
                 self.app.setStyleSheet(f.read())
         except FileNotFoundError:
-            print("Nema filea teme")
+            print("Nema datoteke teme")
 
         self.app.activateRequested.connect(self._activate_top_window)    
-        ## provjera jesmo li se registirali prvi put
         if UserModel.has_user("user"):
             self.current_controller = LoginController()
             self.current_controller.proceed.connect(self._show_main_app)
@@ -45,10 +44,8 @@ class App:
         self.main_window.show()
     
     def _show_login_after_logout(self):
-        # Zatvori glavni prozor
         if hasattr(self, 'main_window'):
             self.main_window.close()
-        # Prikaži login
         self.current_controller = LoginController()
         self.current_controller.proceed.connect(self._show_main_app)
         self.current_controller.root_widget.show()
