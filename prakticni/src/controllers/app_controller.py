@@ -79,6 +79,13 @@ class AppController(QMainWindow):
         btn5.setObjectName("nav_btn")
         btn5.clicked.connect(partial(self._show_controller, "pregled_audit_logova"))
         nav_layout.addWidget(btn5)
+
+        self.key_rotation_controller = KeyRotationController(self)
+        
+        rotate_keys_button = QPushButton("Rotacija ključeva")
+        rotate_keys_button.setObjectName("rotate_keys_button")
+        rotate_keys_button.clicked.connect(self.key_rotation_controller.start_key_rotation)
+        nav_layout.addWidget(rotate_keys_button)
         
         spacer = QWidget()
         spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
@@ -99,12 +106,6 @@ class AppController(QMainWindow):
         main_layout.addWidget(toolbar_container)
         main_layout.addWidget(self.stack)
         self.setCentralWidget(main_widget)
-
-        self.key_rotation_controller = KeyRotationController(self)
-        
-        rotate_keys_action = QAction("Rotacija ključeva", self)
-        rotate_keys_action.triggered.connect(self.key_rotation_controller.start_key_rotation)
-        nav_bar.addAction(rotate_keys_action)
 
         self._show_controller("pregled_datoteka")
 
