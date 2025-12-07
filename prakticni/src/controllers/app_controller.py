@@ -14,6 +14,7 @@ from src.utils.key_manager import key_manager
 from src.utils.log_manager import log
 from src.utils.security_policy_manager import security_policy_manager
 from src.views.components.flow_layout import FlowLayout
+from src.utils.file_cleanup_manager import FileCleanupManager
 
 class AppController(QMainWindow):
     logout_requested = Signal()
@@ -153,6 +154,7 @@ class AppController(QMainWindow):
     
     def _auto_logout(self):
         log("Automatska odjava zbog neaktivnosti")
+        FileCleanupManager.cleanup_on_logout()
         key_manager.clear_kek()
         key_manager.clear_pdk()
         
@@ -162,6 +164,7 @@ class AppController(QMainWindow):
 
     def _handle_logout(self):
         log("Korisnik se odjavio")
+        FileCleanupManager.cleanup_on_logout()
         key_manager.clear_kek()
         key_manager.clear_pdk()
         
@@ -179,3 +182,11 @@ class AppController(QMainWindow):
         screen = self.screen().availableGeometry().center()
         frame_gm.moveCenter(screen)
         self.move(frame_gm.topLeft())
+
+    def closeEvent(self, event):
+
+        log("Korisnik je zatvorio aplikaciju.")
+        FileCleanupManager.cleanup_on_logout()
+        key_manager.clear_kek()
+        key_manager.clear_pdk()
+        event.accept()
