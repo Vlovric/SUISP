@@ -266,13 +266,92 @@ del decrypted_file
 
 Implementiran je nepromjenjiv revizijski trag s mogućnošću izvoza.
 U aplikaciji se sve radnje korisnika, kao što su prijava, prijenos datoteke, promjena lozinke, izvoz audit loga ili drugo, bilježe.
+To se obavlja u pozadini i ne smeta radu korisnika.
 U bazi podataka zapisi revizijskog traga imaju sljedeći oblik:
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{slike/revizijski_trag_u_bazi.png}
+    \caption{Revizijski trag u bazi podataka.}
+\end{figure}
 
+Na slici je vidljivo kako svaki zapis ima vlastiti sažetak (engl. \textit{hash}) i sažetak prethodnog zapisa, čime se ostvaruje \textbf{lanac sažetaka} (engl. \textit{hash chain}) i onemogućuje bilo kakva izmjena u prethodnim zapisima.
+
+\subsection{Izvoz revizijskog traga}
+
+Izvoz zapisa revizijskog traga moguće je obaviti na kartici "Izvoz audit logova" gdje je prije samog izvoza potrebno unijeti javni ključ osobe koja provjerava zapise:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{slike/izvoz_audit_logova.png}
+    \caption{Izvoz revizijskog traga.}
+\end{figure}
+
+Nakon izvoza stvara se datoteka s ekstenzijom \textit{.alogpkg} (\textit{audit log package}) koja sadrži enkriptirane zapise, enkriptiran simetrični ključ i digitalni potpis korisnika koji je izveo revizijski trag.
+Također se nakon izvoza pojavljuje gumb "Kopiraj" koji kopira javni ključ osobe čiji se revizijski trag provjerava kako bi druga osoba mogla provjeriti digitalni potpis.
+
+Aplikacija pri izvozu revizijskog traga obavlja sljedeće:
+\begin{enumerate}
+    \item Učitava zalijepljen javni ključ osobe koja će pregledavati revizijski trag.
+    \item Generira novi nasumični simetrični ključ kojim će biti kriptirani zapisi revizijskog traga.
+    \item Dohvaća sve zapise revizijskog traga iz baze podataka. \textbf{U slučaju da lanac sažetaka (engl. \textit{hash chain}) zapisa ne odgovara, u zapisima će biti vidljivo.}
+    \item Kriptira zapise revizijskog traga koristeći simetrični ključ i AES algoritam.
+    \item Kriptira novogenerirani simetrični ključ javnim ključem osobe koja će provjeravati zapise koristeći RSA algoritam.
+    \item Digitalno potpisuje nekriptiran tekst zapisa revizijskog traga javnim ključem osobe čiji se zapisi izvoze.
+    \item Upakiruje kriptirane zapise, kriptirani simetrični ključ i digitalni potpis u \textit{.alogpkg} datoteku.
+\end{enumerate}
+
+U slučaju da lanac sažetaka ne odgovara, to bi u zapisima izgledalo ovako:
+
+\begin{listing}[H]
+    \begin{minted}[frame=lines, linenos, breaklines]{text}
+ID | Vrijeme | Poruka
+
+ZAPISI SU MIJENJANI: Log zapisi nisu validni od zapisa s ID-om 5 - nije validan hash tog zapisa.
+
+1 | 27.11.2025. 17:56:30 | Aplikacija je pokrenuta.
+2 | 27.11.2025. 17:59:13 | Aplikacija je pokrenuta.
+3 | 27.11.2025. 17:59:20 | Aplikacija je pokrenuta.
+4 | 27.11.2025. 18:08:33 | Aplikacija je pokrenuta.
+5 | 27.11.2025. 18:08:55 | Aplikacija NIJE pokrenuta.  <--- POTENCIJALNE IZMJENE OD OVOG ZAPISA
+6 | 27.11.2025. 18:09:53 | Aplikacija je pokrenuta.
+7 | 27.11.2025. 18:12:24 | Aplikacija je pokrenuta.
+8 | 27.11.2025. 18:12:54 | Aplikacija je pokrenuta.
+    \end{minted}
+    \caption{Izmijenjeni zapisi revizijskog traga.}
+\end{listing}
+
+\subsection{Učitavanje revizijskog traga}
+
+Učitavanje revizijskog traga moguće je obaviti na zaslonu "Pregled audit logova" na kojemu je prvo potrebno unijeti javni ključ osobe čiji se revizijski trag pregledava, zatim se klikom na gumb "Dalje" učitava datoteka revizijskog traga (\textit{.alogpkg}):
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{slike/ucitavanje_audit_logova.png}
+    \caption{Učitavanje revizijskog traga.}
+\end{figure}
+
+Ako je učitana ispravna datoteka te su zapisi ispravni i digitalni potpis odgovarajući, moguće je vidjeti sve zapise revizijskog traga unutar same aplikacije:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{slike/svi_zapisi_audit_logova.png}
+    \caption{Svi zapisi revizijskog traga vidljivi unutar aplikacije.}
+\end{figure}
+
+Aplikacija pri učitavanju revizijskog traga obavlja sljedeće:
+\begin{enumerate}
+    \item Učitava zalijepljeni javni ključ osobe čiji se zapisi revizijskog traga provjeravaju.
+    \item Učitava u memoriju sadržaj datoteke revizijskog traga (\textit{.alogpkg}).
+    \item Dekriptira simetrični ključ za dekripciju zapisa revizijskog traga koristeći vlastiti privatni ključ.
+    \item Dekriptira sadržaj revizijskog traga koristeći taj simetrični ključ.
+    \item Provjerava digitalni potpis koristeći javni ključ osobe čiji se zapisi provjeravaju.
+    \item Prikazuje sadržaj zapisa na zaslon.
+\end{enumerate}
 
 \chapter{Zaključak}
 
-David
+Megi
 
 \makebackmatter
 
