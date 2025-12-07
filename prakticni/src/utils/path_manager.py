@@ -1,5 +1,6 @@
 from platformdirs import PlatformDirs
 from pathlib import Path
+import sys
 
 APP_NAME = "SecureFileVault"
 APP_AUTHOR = "SUISP"
@@ -29,8 +30,14 @@ class PathManager:
         return cls._instance
 
     @staticmethod
-    def _project_root() -> Path:
-        return Path(__file__).resolve().parent.parent.parent
+    def get_resource_path(relative_path: str) -> Path:
+         
+        try:
+              base_path = sys._MEIPASS
+        except Exception:
+            base_path = Path(__file__).resolve().parent.parent.parent
+        
+        return Path(base_path) / relative_path
 
     @classmethod
     def ensure_dirs(cls):

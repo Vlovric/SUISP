@@ -18,3 +18,25 @@ python main.py
 
 ## Preporuke
 Na vsc-u instalirajte extention "SQLite Viewer" za pregledavanje baze
+
+## Packaganje aplikacije
+
+### Linux
+
+pyinstaller --noconfirm --onefile --windowed --name "SecureFileVault" \
+    --icon "src/pic/app_icon.png" \
+    --add-data "data/schema.sql:data" \
+    --add-data "security_policy.json:." \
+    --add-data "src/views/themes/dark_theme.qss:src/views/themes" \
+    --add-data "src/pic:src/pic" \
+    main.py
+
+### Windows
+
+pyinstaller --noconfirm --onefile --windowed --name "SecureFileVault" `
+    --icon "src/pic/app_icon.ico" `
+    --add-data "data/schema.sql;data" `
+    --add-data "security_policy.json;." `
+    --add-data "src/views/themes/dark_theme.qss;src/views/themes" `
+    --add-data "src/pic;src/pic" `
+    main.py
