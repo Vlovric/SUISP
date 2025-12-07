@@ -125,6 +125,10 @@ QToolBar {
     margin: 10px 0px;
 }
 
+#auditLogs{
+    font-size: 14px;
+}
+
 QPushButton#nav_btn {
     color: #f0f0f0;
     background-color: transparent;
