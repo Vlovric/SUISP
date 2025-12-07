@@ -135,9 +135,13 @@ Softver će biti implementiran koristeći programski jezik Python. Bit će klije
 
 \section{Prijava, registracija i odjava}
 
+Implementacija aplikacije započinje izradom registracije odnosno postavljanjem inicijalne lozinke u sustav. Aplikacija prepozaje ako ne postoji niti jedan korisnik u sustavu te upućuje korisnika na ekran registracije. Kako bi lozinka bila sigurna, prilikom unosa se provjeravaju njezina jačina i složenost po slijedećim parametrima:
+   \textbf{minimalna duljina od 12 znakova}, \textbf{barem jedno veliko slovo}, \textbf{barem jedno malo slovo}, \textbf{barem jedan broj} i \textbf{barem jedan specijalni znak}.
+Aplikacija provjerava i minimalnu entropiju lozinke koja po ne smije niti manja od 80 bitova. Ukoliko lozinka ne zadovoljava navedene uvjete, korisnik dobiva povratnu informaciju o tome što treba popraviti. 
+
 \subsection{Generiranje javnog i privatnog ključa}
 
-Megi
+Nakon uspješne registracije, sustav generira par ključeva (javni i privatni) koristeći \textbf{RSA algoritam} s duljinom ključa od \textbf{4096 bita}. Privatni ključ se zatim kriptira simetričnim ključem izvedenim iz korisničke lozinke pomoću \textbf{PBKDF2 algoritma} s \textbf{600000 iteracija} i nasumičnom soli(\textit{saltom}). Kriptirani privatni ključ i javni ključ se pohranjuju u bazuk, dok se hash lozinke također pohranjuje za potrebe autentikacije.
 
 \subsection{Cleananje datoteka}
 
