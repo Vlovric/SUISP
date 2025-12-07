@@ -1,8 +1,3 @@
-CREATE TABLE IF NOT EXISTS test (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    text TEXT NOT NULL
-);
-
 CREATE TABLE IF NOT EXISTS user (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username VARCHAR(255) NOT NULL,
@@ -13,7 +8,8 @@ CREATE TABLE IF NOT EXISTS user (
     private_key_encrypted VARCHAR(255) NOT NULL,
     failed_attempts INTEGER DEFAULT 0,
     lockout_count INTEGER DEFAULT 0,
-    lockout_until DATETIME NULL
+    lockout_until DATETIME NULL,
+    last_key_rotation DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS file (

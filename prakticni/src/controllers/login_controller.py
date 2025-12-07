@@ -6,6 +6,7 @@ from src.views.prijava_registracija.login_view import LoginView
 from src.utils.log_manager import log
 from src.utils.password_manager import PasswordManager
 from src.models.user_model import UserModel
+from src.utils.key_rotation_helper import KeyRotationHelper
 from src.utils.file_cleanup_manager import FileCleanupManager
 
 class LoginController(BaseController):

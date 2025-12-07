@@ -35,3 +35,14 @@ class DatotekaModel:
     def update_file_lock(file_id, path, hash, date_modified):
         query = "UPDATE file SET path = ?, hash = ?, locked = ?, date_modified = ? WHERE id = ?"
         return db.execute_query(query, (path, hash, 1, date_modified, file_id))
+    
+    @staticmethod
+    def get_file_count():
+        query = "SELECT COUNT(*) as count FROM file"
+        result = db.fetch_one(query)
+        return result["count"] if result else 0
+    
+    @staticmethod
+    def fetch_all():
+        query = "SELECT * FROM file"
+        return db.fetch_all(query)

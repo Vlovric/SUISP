@@ -14,6 +14,8 @@ from src.utils.key_manager import key_manager
 from src.utils.log_manager import log
 from src.utils.security_policy_manager import security_policy_manager
 from src.views.components.flow_layout import FlowLayout
+from src.controllers.key_rotation_controller import KeyRotationController
+from src.utils.key_rotation_helper import KeyRotationHelper
 from src.utils.file_cleanup_manager import FileCleanupManager
 
 class AppController(QMainWindow):
@@ -78,6 +80,13 @@ class AppController(QMainWindow):
         btn5.setObjectName("nav_btn")
         btn5.clicked.connect(partial(self._show_controller, "pregled_audit_logova"))
         nav_layout.addWidget(btn5)
+
+        self.key_rotation_controller = KeyRotationController(self)
+        
+        rotate_keys_button = QPushButton("Rotacija ključeva")
+        rotate_keys_button.setObjectName("rotate_keys_button")
+        rotate_keys_button.clicked.connect(self.key_rotation_controller.start_key_rotation)
+        nav_layout.addWidget(rotate_keys_button)
         
         spacer = QWidget()
         spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
@@ -100,6 +109,12 @@ class AppController(QMainWindow):
         self.setCentralWidget(main_widget)
 
         self._show_controller("pregled_datoteka")
+
+        self._check_key_rotation()
+
+    def _check_key_rotation(self):
+        if KeyRotationHelper.needs_rotation():
+            self.key_rotation_controller.start_key_rotation()
 
     def _register_controller(self, name: str, controller):
         self.controllers[name] = controller
