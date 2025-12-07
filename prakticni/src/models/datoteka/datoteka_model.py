@@ -41,3 +41,8 @@ class DatotekaModel:
         query = "SELECT COUNT(*) as count FROM file"
         result = db.fetch_one(query)
         return result["count"] if result else 0
+    
+    @staticmethod
+    def fetch_all():
+        query = "SELECT * FROM file"
+        return db.fetch_all(query)

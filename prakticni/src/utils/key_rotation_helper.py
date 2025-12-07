@@ -19,7 +19,7 @@ class KeyRotationHelper():
             public_key_pem = public_key.decode('utf-8')
             old_private_key = key_manager.get_private_key()
             pdk = key_manager.get_pdk()
-            files =  DatotekaModel.fetch_all_locked() or []
+            files =  DatotekaModel.fetch_all() or []
 
             print("Locked files:", len(files))
             
