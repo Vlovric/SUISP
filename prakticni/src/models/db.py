@@ -60,11 +60,14 @@ class Database:
 
     def init_db(self, schema_path="data/schema.sql"):
         """ Čita schemu i stvara tablice ako ne postoje"""
-        if not os.path.exists(schema_path):
+
+        full_schema_path = path_manager.get_resource_path(schema_path)
+        
+        if not os.path.exists(full_schema_path):
             print("Schema baze ne postoji")
             return
         
-        with open(schema_path, 'r') as f:
+        with open(full_schema_path, 'r') as f:
             schema_sql = f.read()
 
         with self.get_connection() as conn:

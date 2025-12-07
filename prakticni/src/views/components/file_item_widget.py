@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QWidget, QLabel, QPushButton, QHBoxLayout, QVBoxLayout
 from PySide6.QtGui import QIcon
 from datetime import datetime
+from src.utils.path_manager import path_manager
 
 class FileItemWidget(QWidget):
     def __init__(self, file_record):
@@ -26,21 +27,21 @@ class FileItemWidget(QWidget):
         button_style = "QPushButton { padding: 0px; margin: 0px; }"
 
         self.btn_export = QPushButton()
-        self.btn_export.setIcon(QIcon("src/pic/unlock.svg"))
+        self.btn_export.setIcon(QIcon(str(path_manager.get_resource_path("src/pic/unlock.svg"))))
         self.btn_export.setToolTip("Otključaj datoteku")
         self.btn_export.setFixedSize(40, 40)
         self.btn_export.setStyleSheet(button_style)
         self.btn_export.setProperty("class", "success")
         
         self.btn_delete = QPushButton()
-        self.btn_delete.setIcon(QIcon("src/pic/delete.svg"))
+        self.btn_delete.setIcon(QIcon(str(path_manager.get_resource_path("src/pic/delete.svg"))))
         self.btn_delete.setToolTip("Sigurnosno obriši datoteku")
         self.btn_delete.setFixedSize(40, 40)
         self.btn_delete.setStyleSheet(button_style)
         self.btn_delete.setProperty("class", "danger")
 
         self.btn_share = QPushButton()
-        self.btn_share.setIcon(QIcon("src/pic/share.svg"))
+        self.btn_share.setIcon(QIcon(str(path_manager.get_resource_path("src/pic/share.svg"))))
         self.btn_share.setToolTip("Dijeli datoteku")
         self.btn_share.setFixedSize(40, 40)
         self.btn_share.setStyleSheet(button_style)

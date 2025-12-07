@@ -93,14 +93,13 @@ class UnlockedFilesController(BaseController):
         if not successful:
             self.view.error_label.setText("Pogreška pri pokušaju spremanja zaključane datoteke u trezor.")
             return
-
+        
+        dek_bytes = b'\x00' * len(dek_bytes)
+        del dek_bytes
 
         if not file_manager.secure_delete(file["path"]):
             self.view.error_label.setText("Pogreška pri pokušaju brisanja originalne datoteke.")
             return
-
-        dek_bytes = b'\x00' * len(dek_bytes)
-        del dek_bytes
 
         current_time = str(datetime.now().isoformat())
         DatotekaModel.update_file_lock(file_id, path, file_hash, current_time)

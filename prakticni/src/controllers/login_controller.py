@@ -7,6 +7,7 @@ from src.utils.log_manager import log
 from src.utils.password_manager import PasswordManager
 from src.models.user_model import UserModel
 from src.utils.key_rotation_helper import KeyRotationHelper
+from src.utils.file_cleanup_manager import FileCleanupManager
 
 class LoginController(BaseController):
     proceed = Signal()
@@ -52,6 +53,7 @@ class LoginController(BaseController):
                 self.user_model.update_login_attempt(username, success=True)
                 log("Korisnik uspješno prijavljen!")
                 self._view.set_error_message("")
+                FileCleanupManager.cleanup_on_login()
                 self.proceed.emit()
             else:
                 self.user_model.update_login_attempt(username, success=False)

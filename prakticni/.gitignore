@@ -22,3 +22,8 @@ env/
 *.db
 vault_storage/
 *.bin
+
+# Packaging
+dist/
+build/
+*.spec
