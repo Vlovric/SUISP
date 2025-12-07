@@ -10,11 +10,9 @@ class KeyRotationWorker(QObject):
     finished = Signal(bool, str)
 
     def run(self):
-        print("Key rotation worker started")
         def cb(current, total):
             self.progress.emit(current, total)
         success, error = KeyRotationHelper.rotate_keys(progress_callback=cb)
-        print("Key rotation worker finished", success, error)
         self.finished.emit(success, error or "")
 
 class KeyRotationController(BaseController):
@@ -45,7 +43,6 @@ class KeyRotationController(BaseController):
         self.thread.start()
 
     def on_finished(self, success: bool, error_message: str):
-        print("Key rotation finished callback", success, error_message)
         if self.dialog is not None:
             self.dialog.close()
             self.dialog = None
