@@ -62,7 +62,7 @@ Ključ za kriptiranje podataka (engl. \textit{data encryption key}), u nastavku 
 Za svaku datoteku se koristi zaseban DEK koji se nakon generiranja kriptira pri pohrani što zadovoljava zahtjev kriptiranja pri pohrani (engl. \textit{encryption at rest}) \cite{google_envelope}.
 \newline
 Ključ za kriptiranje ključa (engl. \textit{key encryption key}), u nastavku teksta \textbf{KEK}, je asimetrični javni ključ koji koji se koristi za \textit{omotavanje} (engl. \textit{wrapping}) DEK-a, tj. kriptiranje DEK-a \cite{google_envelope}.
-KEK se generira prilikom kreiranja korisničkog računa koristeći RSA (engl. \textit{Rivest-Shamir-Adleman}) ili ECC (engl. \textit{Elliptic Curve Cryptography}) algoritme i koristi se kako bi jedan KEK kriptirao više DEK-ova što eliminira potrebu za rotiranem ključeva za svaku datoteku, već je potrebno rotirati samo KEK.
+KEK se generira prilikom kreiranja korisničkog računa koristeći RSA (engl. \textit{Rivest-Shamir-Adleman}) ili ECC (engl. \textit{Elliptic Curve Cryptography}) algoritme i koristi se kako bi jedan KEK kriptirao više DEK-ova što eliminira potrebu za rotiranjem ključeva za svaku datoteku, već je potrebno rotirati samo KEK.
 Za generiranje DEK-a je preporučeno korištenje AES-256 (engl. \textit{Advanced Encryption Standard}) algoritma u GCM (engl. \textit{Galois Counter Mode}) načinu rada zbog njegove sigurnosti i brzine \cite{google_envelope}.
 AES-256-GCM pruža i efikasnu provjeru integriteta podataka koristeći autentifikacijsku oznaku (engl. \textit{authentication tag}) kojom prilikom dekriptiranja provjerava integritet podataka.
 
@@ -153,7 +153,44 @@ Viktor
 
 \section{Prijenos datoteke}
 
-David
+Implementirana je mogućnost prijenosa datoteke u siturnosni kriptirani trezor. To je moguće učiniti na zaslonu "Zaključane datoteke" klikom na gumb "Prenesi".
+Sam proces je jednostavan i intuitivan za razumjeti, što odgovara funkcionalnom zahtjevu \textbf{5. Sigurnosni detalji ne bi trebali biti javno vidljivi}.
+Nakon prijenosa datoteke, ona je vidljiva na popisu svih zaključanih datoteka. Sljedeća slika prikazuje kako izgleda zaslon zaključanih datoteka nakon što su se određene prenijele:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{slike/prenesene_datoteke.png}
+    \caption{Datoteke su prenesene u sustav.}
+\end{figure}
+
+Kako datoteka još nije prošla otključavanje i ponovno zaključavanje, ispod nazive piše vrijeme prijenosa, a ne vrijeme ažuriranja.
+
+Implementacija u pozadini aplikacije obavlja sljedeće korake:
+
+\begin{enumerate}
+    \item Dobiva se datoteka koju je odabrao korisnik.
+    \item Dohvaća se korisnikov javni KEK i generira se nasumični DEK.
+    \item DEK se enkriptira javnim KEK-om koristeći RSA algoritam.
+    \item Datoteka se kriptira DEK-om koristeći AES algoritam.
+    \item Datoteka se pohranjuje u određeni direktorij i u bazu podataka se sprema zapis koji sadrži izvorni naziv datoteke, putanju do kriptirane datoteke, kriptirani DEK i ostale informacije.
+\end{enumerate}
+
+Iako Python sadrži sakupljač smeća (engl. \textit{garbage collector}), za svaki slučaj je na kraju izvršenja metode za prijenos datoteke dodatno obrisan sadržaj učitane datoteke iz memorije, tako što je prepisan s nulama i zato eksplicitno obrisan koristeći ključnu riječ \texttt{del}:
+\begin{listing}[H]
+    \begin{minted}[frame=lines, linenos, breaklines]{python}
+file.content = b'\x00' * len(file.content)
+del file
+    \end{minted}
+    \caption{Uklanjanje sadržaja učitane datoteke iz memorije.}
+\end{listing}
+
+Kriptirane datoteke se mogu vidjeti u direktoriju, no ne mogu se pročitati bez DEK-a:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\textwidth]{slike/kriptirane_datoteke.png}
+    \caption{Kriptirane datoteke u sustavu.}
+\end{figure}
 
 \section{Zaključavanje i otključavanje datoteke}
 
@@ -165,7 +202,65 @@ Magdalena
 
 \section{Dijeljenje datoteke}
 
-David
+Implementirana je funkcionalnost sigurnosnog dijeljenja datoteke. Na desnom kraju svake zaključane datoteke na popisu "Zaključane datoteke" nalazi se gumb za dijeljenje.
+Klikom na taj gumb otvara se zaslon na kojemu je moguće unijeti javni ključ osobe kojoj želimo podijeliti datoteku. Sljedeća slika pokazuje taj zaslon:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{slike/zaslon_za_dijeljenje_datoteke.png}
+    \caption{Zaslon za dijeljenje datoteke.}
+\end{figure}
+
+Nakon unosa javnog ključa i klika na gumb "Podijeli", dijeljena datoteka se izvozi s ekstenzijom \textit{.shfipkg} (\textit{shared file package}):
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.2\textwidth]{slike/podijeljena_datoteka.png}
+    \caption{Podijeljena datoteka.}
+\end{figure}
+
+Osoba koja želi učitati dijeljenu datoteku, \textbf{prvo mora osobi koja dijeli datoteku poslati svoj javni ključ}. To je moguće učiniti na zaslonu "Prijenos dijeljene datoteke":
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{slike/zaslon_za_prijenos_dijeljene_datoteke.png}
+    \caption{Zaslon za prijenos dijeljene datoteke.}
+\end{figure}
+
+Na slici je vidljiv gumb "Kopiraj javni ključ" koji kopira javni ključ te osobe, odnosno javni dio KEK-a u međuspremnik. Na dnu zaslona se nalazi gumb "Učitaj datoteku" koji otvara odabir dijeljene datoteke.
+Nakon odabira datoteke s ekstenzijom \textit{.shfipkg}, ako je podijeljena koristeći ispravni javni ključ, datoteka se unosi u kriptirani trezor.
+
+Iako je dijeljenje ove datoteke intuitivno, aplikacija u pozadini obavlja dodatne radnje, kako bi se osigurala sigurnost datoteke u prijenosu te osigurali povjerljivost i integritet.
+
+Na strani osobe koja dijeli datoteku obavlja se sljedeće:
+\begin{enumerate}
+    \item Dohvaća se zalijepljen javni ključ osobe (javni dio KEK-a) kojoj se želi podijeliti datoteka, kako bi se DEK mogao zaključati istim.
+    \item Učitava se kriptirani sadržaj datoteke koja se želi podijeliti.
+    \item Dohvaća se privatni ključ osobe (privatni dio KEK-a) koja dijeli datoteku.
+    \item DEK pripadajuće datoteke se dekriptira privatnim ključem osobe koja dijeli datoteku i ponovno kriptira javnim ključem osobe kojoj se dijeli datoteka.
+    \item Kreira se datoteka koja sadrži kriptiranu datoteku, kriptirani DEK i dodatne metapodatke (kao što su originalni naziv datoteke i informacija o tome je li binarna ili ne).
+\end{enumerate}
+Na ovaj način omogućeno je da nitko ne može pročitati sadržaj datoteke bilo gdje u prijenosu od pošiljatelja do primatelja, pošto nema privatni ključ osobe kojoj se datoteka šalje.
+Isto tako, nije moguće pročitati dekriptiranu datoteku iz memorije jer se nikad ne dekriptira. Još jedna prednost ovog pristupa s KEK-om i DEK-om je ta što je proces dekripcije i enkripcije DEK-a iznimno brz te u slučaju da je kriptirana datoteka ogromna, nije ju potrebno cijelu dekriptirati i enkriptirati ponovno.
+
+Na strani osobe koja učitava dijeljenu datoteku obavlja se sljedeće:
+\begin{enumerate}
+    \item Učitava se paket s dijeljenom datotekom u sustav.
+    \item Pokušava se dekriptirati kriptirani DEK iz dijeljene datoteke, kako bi se utvrdilo da je kriptiran s ispravnim javnim ključem, odnosno javnim dijelom KEK-a osobe koja učitava datoteku te u slučaju da to nije moguće, ne nastavlja se s učitavanjem datoteke u sustav.
+    \item Ako je DEK uspješno dekriptiran, pokušava se dekriptirati datoteku kako bi se utvrdilo da je podijeljena odgovarajuća datoteka za taj DEK.
+    \item Ako je sve uspješno obavljeno, kriptirana datoteka se ubacuje u direktorij s ostalim kriptiranim datotekama i dodaje se novi zapis u bazi koji sadrži putanju, kriptiran DEK i ostale informacije.
+\end{enumerate}
+
+Na kraju se iz memorije brišu dekriptirani DEK i dekriptirana datoteka na sljedeći način:
+\begin{listing}[H]
+    \begin{minted}[frame=lines, linenos, breaklines]{python}
+decrypted_dek = b'\x00' * len(decrypted_dek)
+del decrypted_dek
+
+decrypted_file = b'\x00' * len(decrypted_file)
+del decrypted_file
+    \end{minted}
+    \caption{Uklanjanje sadržaja učitane datoteke i dekriptiranog DEK-a iz memorije.}
+\end{listing}
 
 \section{Revizijski trag}
 
