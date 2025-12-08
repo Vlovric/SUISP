@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
+import PySide6.QtSvg
 from src.controllers.app_controller import AppController
 from src.controllers.login_controller import LoginController
 from src.controllers.registration_controller import RegistrationController

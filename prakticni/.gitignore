@@ -5,8 +5,14 @@
 
 # Virtualno
 venv/
+venv_backup/
+venv_windows/
+venv_linux/
 env/
 .venv/
+.venv_backup/
+.venv_windows/
+.venv_linux/
 
 # env varijable ak cemo koristit
 .env

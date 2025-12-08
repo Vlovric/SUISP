@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLineEdit, QLabel
 from PySide6.QtGui import QAction, QIcon
+import PySide6.QtSvg
 from PySide6.QtCore import Qt
 from src.utils.path_manager import path_manager
 

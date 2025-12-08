@@ -162,8 +162,15 @@ class PregledDatotekaController(BaseController):
             self.view.error_label.setText("Datoteka je oštećena ili je mijenjana dok je bila zaključana.")
 
         temp_path = path_manager.TEMP_DIR
-        full_path = temp_path / file["name"]
-        
+        original_name = file["name"]
+        base = Path(original_name).stem
+        ext = Path(original_name).suffix
+
+        full_path = temp_path / original_name
+
+        while full_path.exists():
+            base = base + "_"
+            full_path = temp_path / f"{base}{ext}"
 
         successful = file_manager.save_file(full_path, decrypted_content)
         decrypted_content = b'\x00' * len(decrypted_content)

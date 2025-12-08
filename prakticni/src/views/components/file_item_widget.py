@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import QWidget, QLabel, QPushButton, QHBoxLayout, QVBoxLayout
 from PySide6.QtGui import QIcon
+import PySide6.QtSvg
 from datetime import datetime
 from src.utils.path_manager import path_manager
 

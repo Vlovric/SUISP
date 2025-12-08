@@ -31,9 +31,8 @@ class PathManager:
 
     @staticmethod
     def get_resource_path(relative_path: str) -> Path:
-         
         try:
-              base_path = sys._MEIPASS
+            base_path = sys._MEIPASS
         except Exception:
             base_path = Path(__file__).resolve().parent.parent.parent
         
