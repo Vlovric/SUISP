@@ -135,7 +135,7 @@ Softver će biti implementiran koristeći programski jezik Python. Bit će klije
 
 \section{Prijava, registracija i odjava}
 
-Implementacija aplikacije započinje izradom registracije odnosno postavljanjem inicijalne lozinke u sustav. Aplikacija prepozaje ako ne postoji niti jedan korisnik u sustavu te upućuje korisnika na ekran registracije. Ako korisnik već postoji u bazi, aplikacija korisnika upućuje na ekran prijaveKVažno je napomenuti da se do registracije ne mođe doći niti jednim drugim načinom osim ako u bazi ne postoji korisnik, stoga se aplikacija može korisititi isklučivo od strane jednog korisnika koji je ujedno i vlasnik profila na računalu. 
+Implementacija aplikacije započinje izradom registracije odnosno postavljanjem inicijalne lozinke u sustav. Aplikacija prepozaje ako ne postoji niti jedan korisnik u sustavu te upućuje korisnika na ekran registracije. Ako korisnik već postoji u bazi, aplikacija korisnika upućuje na ekran prijave. Važno je napomenuti da se do registracije ne može doći niti jednim drugim načinom osim ako u bazi ne postoji korisnik, stoga se aplikacija može korisititi isklučivo od strane jednog korisnika koji je ujedno i vlasnik profila na računalu. 
 
 \begin{figure}[h]
 
@@ -151,9 +151,9 @@ Implementacija aplikacije započinje izradom registracije odnosno postavljanjem 
 
 Kako bi lozinka bila sigurna, prilikom unosa se provjeravaju njezina jačina i složenost po slijedećim parametrima:
    \textbf{minimalna duljina od 12 znakova}, \textbf{barem jedno veliko slovo}, \textbf{barem jedno malo slovo}, \textbf{barem jedan broj} i \textbf{barem jedan specijalni znak}.
-Aplikacija provjerava i minimalnu entropiju lozinke koja po ne smije niti manja od 80 bitova. Ukoliko lozinka ne zadovoljava navedene uvjete, korisnik dobiva povratnu informaciju o tome što treba popraviti. 
+Aplikacija provjerava i minimalnu entropiju lozinke koja ne smije niti manja od 80 bitova. Ukoliko lozinka ne zadovoljava navedene uvjete, korisnik dobiva povratnu informaciju o tome što treba popraviti. 
 
-Lozinka se, nakon upisa, hashira koristeći \textbf{PBKDF2 algoritam} s \textbf{SHA-256} funkcijom sažetka, \textbf{600000 iteracija}. Algoritam kao parametre prima Master key (objašnjeno u nastavku) i lozinku u obličnom tekstu kao sol.
+Lozinka se, nakon upisa, hashira koristeći \textbf{PBKDF2 algoritam} s \textbf{SHA-256} funkcijom sažetka i \textbf{600000 iteracija}. Algoritam kao parametre prima Master key (objašnjeno u nastavku) i lozinku u obličnom tekstu kao sol.
 Hash lozinke se sprema se u bazu podataka.
 
 Odjava iz sustava vrši se pritiskom na gumb odjave koji briše sve osjetljive podatke (KEK, PDK) iz memorije (sesije) i vraća korisnika na ekran prijave.
@@ -161,7 +161,7 @@ Sve akcije (registracija, prijava i odjava) se bilježe u revizijski trag u bazi
 
 \subsection{Dodatni zaštitni mehanizmi prijave i dojave}
 
-Kako bi se spriječili \textit{bruteforce} napadi na lozinku, implementirani je \textit{lockout} mehanizam. Nakon 3 nesupjela pokušaja prijave, vrijeme čekanja za sljedeća 3 pokušaja povećava za minutu (npr. 3 neuspjela = 60s, 6 neuspjelih = 120s...). Važno je napomenuti da nema gornje granice za broj pokušaja. Kako bi se spriječilo rsetiranje vremena čekanja ako se korisnik ugasi aplikaciju ili računalo, vrijeme posljednjeg neuspjelog pokušaja prijave se sprema u bazu podataka i koristi se za izračun vremena čekanja prilikom svakog novog pokušaja prijave.
+Kako bi se spriječili \textit{bruteforce} napadi na lozinku, implementirani je \textit{lockout} mehanizam. Nakon 3 nesupjela pokušaja prijave, vrijeme čekanja za sljedeća 3 pokušaja povećava za minutu (npr. 3 neuspjela = 60s, 6 neuspjelih = 120s...). Važno je napomenuti da nema gornje granice za broj pokušaja. Kako bi se spriječilo resetiranje vremena čekanja ako se korisnik ugasi aplikaciju ili računalo, vrijeme posljednjeg neuspjelog pokušaja prijave se sprema u bazu podataka i koristi se za izračun vremena čekanja prilikom svakog novog pokušaja prijave.
 
 \begin{figure}[h]
 
@@ -251,7 +251,7 @@ Viktor
 
 Pritiskom gumba za brisanje na odabranoj datoteci, poziva se funkcija koja prvo traži postoji li odabrana kriptirana datoteka na našem računalu. Ako postoji, datoteka se prvo otvara, prepisuje tako što se upišu nulti bajtovi preko cijele datoteke, zatim se zatvara i briše iz datotečnog sustava. Nakon brisanja datoteke na računalu, briše se i zapis o datoteci iz baze podataka. Sve ove radnje bilježe se u revizijski trag. 
 
-Implementirana je zaštita od pogrešnog prisanja datoteka tako što se pritiskom na gumb otvara dijalog prozor koji traži potvrdu brisanja datoteke. KAo potvrda za brisanje, korisnik mora unjeti naziv datoteke koju želi izbrisati. Ako uneseni naziv odgovara nazivu datoteke koja se briše, datoteka se briše, inače se ispisuje greška.
+Implementirana je zaštita od pogrešnog brisanja datoteka tako što se pritiskom na gumb otvara dijalog prozor koji traži potvrdu brisanja datoteke. Kao potvrda za brisanje, korisnik mora unjeti naziv datoteke koju želi izbrisati. Ako uneseni naziv odgovara nazivu datoteke koja se briše, datoteka se briše, inače se ispisuje greška.
 
 \begin{figure}[h]
 
