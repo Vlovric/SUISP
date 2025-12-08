@@ -172,9 +172,6 @@ class PregledDatotekaController(BaseController):
             base = base + "_"
             full_path = temp_path / f"{base}{ext}"
 
-        while (os.path.exists(full_path)):
-            full_path = full_path / "_"
-
         successful = file_manager.save_file(full_path, decrypted_content)
         decrypted_content = b'\x00' * len(decrypted_content)
         del decrypted_content
