@@ -2,6 +2,7 @@
 \usepackage{lipsum}
 \usepackage[utf8]{inputenc}
 \usepackage{float}
+\usepackage{subcaption}
 
 \vrstaRada{\seminar}
 \predmet{Strate\v{s}ko upravljanje informacijskom sigurno\v{s}\'{c}u i privatno\v{s}\'{c}u}
@@ -43,7 +44,7 @@ Ključan dio ISO 27001 standarda za ovaj projekt su \textbf{kriptografske kontro
 
 \textbf{Kontrole pristupa i autentikacije (A.9.4.2 i A.9.4.3)} zahtjevaju definiranje i upravljanje pravima pristupa korisnika te implementaciju sigurnih metoda autentikacije prije pristupanja resursima. Ove kontrole direktno se odnose na implementaciju lozinki i autentikacijskih mehanizama temeljenih na ključevima. 
 
-\textbf{Kontrola A.11.2.7} (Sigurno odlaganje ili ponovna upotreba opreme) zahtijeva da sva oprema koja sadrži medije za pohranu bude provjerena kako bi se osiguralo da su svi podaci uklonjeni ili zaštićeni, što projekt adresira kroz \textit{secure deletion workflow} koji osigurava kriptografski siguran način brisanja podataka i ključeva.
+\textbf{Kontrola "Sigurno odlaganje ili ponovna upotreba opreme" (A.11.2.7)} zahtijeva da sva oprema koja sadrži medije za pohranu bude provjerena kako bi se osiguralo da su svi podaci uklonjeni ili zaštićeni, što projekt adresira kroz \textit{secure deletion workflow} koji osigurava kriptografski siguran način brisanja podataka i ključeva.
 
 \textbf{Kontrole zapisivanja i zaštite zapisa revizije (A.12.4.1, A.12.4.2 i A.12.4.3)} zahtijevaju izradu zapisnika događaja koji bilježe aktivnosti korisnika, iznimke i greške u sustavu, te zaštitu tih zapisa od neovlaštenih promjena. Projekt implementira nepromjenjivi zapisnik revizije koji evidentira sve operacije s ključevima, rotacije, pristupe datotekama te administratorske aktivnosti. Zapisnici su zaštićeni od izmjena i omogućuju export za eksterne revizije, čime se osigurava transparentnost i mogućnost revizije sigurnosnih događaja u skladu s regulatornim zahtjevima.
 \cite{iso_27001}
@@ -129,31 +130,48 @@ Kako za sigurnost softvera vrijedi: "ako se za ono što sustav nije namijenjen n
 
 \section{Tehnologije za implementaciju}
 
-Softver će biti implementiran koristeći programski jezik Python. Bit će klijentski (bez poslužitelja), odnosno izvršavat će se na jednom računalu za jednog korisnika. Imat će korisničko sučelje (GUI). Za kriptografske funkcionalnosti koristit će se već poznate Python biblioteke.
+Softver će biti implementiran koristeći programski jezik Python. Bit će klijentski (bez poslužitelja), odnosno izvršavat će se na jednom računalu za jednog korisnika.
+Softver je zamišljen da funkcionira na operacijskim sustavima Linux i Windows i da se može koristiti bez ikakvih ovisnosti, odnosno da korisnik ne mora sam instalirati Python, nego je dovoljno samo aplikaciju.
+
+Aplikacija će imati korisničko sučelje, odnosno GUI.
+Za grafičko sučelje će se koristiti Python modul \textit{PySide6}, koji je "službeni Python modul za \textit{Qt for Python project}, koji pruža pristup kompletnom \textit{Qt} 6.0+ okviru" \cite{pyside6}.
+Dostupan je na sljedećoj poveznici: \url{https://pypi.org/project/PySide6/}.
+
+Za kriptografske funkcionalnosti koristit će se već poznate Python biblioteke, kao što je \textit{cryptography} modul.
+\textit{Cryptography} modul je dostupan na sljedećoj poveznici: \url{https://cryptography.io/en/latest/}.
+
+
 
 \chapter{Implementacija}
 
+Implementirana je kompletna aplikacija koristeći tehnologije navedene u poglavlju "Tehnologije za implementaciju" i implementirana sve spomenute funkcionalne i nefunkcionalne zahtjeve.
+Može se pokretati na Linux i Windows operacijskim sustavima, bez potrebnog instaliranja drugih aplikacija i modula.
+Sljedeća poglavlja opisuju kako su implementirani glavni funkcionalni zahtjevi.
+
 \section{Prijava, registracija i odjava}
 
-Implementacija aplikacije započinje izradom registracije odnosno postavljanjem inicijalne lozinke u sustav. Aplikacija prepoznaje ako ne postoji niti jedan korisnik u sustavu te upućuje korisnika na ekran registracije. Ako korisnik već postoji u bazi, aplikacija korisnika upućuje na ekran prijave. Važno je napomenuti da se do registracije ne može doći niti jednim drugim načinom osim ako u bazi ne postoji korisnik, stoga se aplikacija može korisititi isklučivo od strane jednog korisnika koji je ujedno i vlasnik profila na računalu. 
+Implementacija aplikacije započinje izradom registracije odnosno postavljanjem inicijalne lozinke u sustav.
+Aplikacija prepoznaje ako ne postoji niti jedan korisnik u sustavu te upućuje korisnika na zaslon registracije. Ako korisnik već postoji u bazi, aplikacija korisnika upućuje na zaslon prijave. Važno je napomenuti da se do registracije ne može doći niti jednim drugim načinom osim ako u bazi ne postoji korisnik, stoga se aplikacija može korisititi isklučivo od strane jednog korisnika koji je ujedno i vlasnik profila na računalu. 
 
 \begin{figure}[h]
-
-\begin{subfigure}
-\includegraphics[width=0.5\linewidth, height=6cm]{slike/prijava_suisp.png} 
-\end{subfigure}
-\begin{subfigure}
-\includegraphics[width=0.5\linewidth, height=6cm]{slike/registracija_suisp.png}
-\end{subfigure}
-
-\caption{Zaslon prijave i registracije}
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{slike/prijava_suisp.png} 
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{slike/registracija_suisp.png}
+    \end{subfigure}
+    \caption{Zasloni prijave i registracije}
 \end{figure}
 
 Kako bi lozinka bila sigurna, prilikom unosa se provjeravaju njezina jačina i složenost po slijedećim parametrima:
    \textbf{minimalna duljina od 12 znakova}, \textbf{barem jedno veliko slovo}, \textbf{barem jedno malo slovo}, \textbf{barem jedan broj} i \textbf{barem jedan specijalni znak}.
 Aplikacija provjerava i minimalnu entropiju lozinke koja ne smije niti manja od 80 bitova. Ukoliko lozinka ne zadovoljava navedene uvjete, korisnik dobiva povratnu informaciju o tome što treba popraviti. 
 
-Lozinka se, nakon upisa, hashira koristeći \textbf{PBKDF2 algoritam} s \textbf{SHA-256} funkcijom sažetka i \textbf{600000 iteracija}. Algoritam kao parametre prima Master key (objašnjeno u nastavku) i lozinku u obličnom tekstu kao sol.
+Lozinka se, nakon upisa, hashira koristeći \textbf{PBKDF2 algoritam} s \textbf{SHA-256} funkcijom sažetka i \textbf{600000 iteracija}. Algoritam kao parametre prima \textit{Master key} (objašnjeno u nastavku) i lozinku u obličnom tekstu kao sol.
 Hash lozinke se sprema se u bazu podataka.
 
 Odjava iz sustava vrši se pritiskom na gumb odjave koji briše sve osjetljive podatke (KEK, PDK) iz memorije (sesije) i vraća korisnika na ekran prijave.
@@ -161,35 +179,37 @@ Sve akcije (registracija, prijava i odjava) se bilježe u revizijski trag u bazi
 
 \subsection{Dodatni zaštitni mehanizmi prijave i odjave}
 
-Kako bi se spriječili \textit{bruteforce} napadi na lozinku, implementirani je \textit{lockout} mehanizam. Nakon 3 nesupjela pokušaja prijave, vrijeme čekanja za sljedeća 3 pokušaja povećava za minutu (npr. 3 neuspjela = 60s, 6 neuspjelih = 120s...). Važno je napomenuti da nema gornje granice za broj pokušaja. Kako bi se spriječilo resetiranje vremena čekanja ako se korisnik ugasi aplikaciju ili računalo, vrijeme posljednjeg neuspjelog pokušaja prijave se sprema u bazu podataka i koristi se za izračun vremena čekanja prilikom svakog novog pokušaja prijave.
+Kako bi se spriječili \textit{bruteforce} napadi na lozinku, implementirani je \textit{lockout} mehanizam. Nakon 3 nesupjela pokušaja prijave, vrijeme čekanja za sljedeća 3 pokušaja povećava za minutu (npr. 3 neuspjela = 60s, 6 neuspjelih = 120s...). Važno je napomenuti da nema gornje granice za broj pokušaja. Kako bi se spriječilo ponovno postavljanje i zaobilaženje vremena čekanja ako se korisnik ugasi aplikaciju ili računalo, vrijeme posljednjeg neuspjelog pokušaja prijave sprema se u bazu podataka i koristi se za izračun vremena čekanja prilikom svakog novog pokušaja prijave.
 
 \begin{figure}[h]
-
-\begin{subfigure}
-\includegraphics[width=0.5\linewidth, height=6cm]{slike/odbrojavanje_60.png} 
-\end{subfigure}
-\begin{subfigure}
-\includegraphics[width=0.5\linewidth, height=6cm]{slike/odbrojavanje_120.png}
-\end{subfigure}
-
-\caption{Primjer lockout mehanizma nakon 3 i 6 neuspjelih pokušaja prijave}
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{slike/odbrojavanje_60.png} 
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{slike/odbrojavanje_120.png}
+    \end{subfigure}
+    \caption{Primjer lockout mehanizma nakon 3 i 6 neuspjelih pokušaja prijave}
 \end{figure}
 
 Drugi mehanizam zaštite je automatska odjava iz sustava nakon određenog vremena neaktivnosti (15 minuta). Nakon isteka tog vremena, prikazuje se upozorenje o odjavi iz sustava od dodatnih 60 sekundi. Ako korisnik ne reagira u zadano vrijeme, sustav ga automatski odjavljuje.
 
 \begin{figure}[h]
     
-\includegraphics[width=1\linewidth, height=6cm]{slike/automatska_odjava.png}
+\includegraphics[width=1\linewidth]{slike/automatska_odjava.png}
 \caption{Zaslon automatske odjave nakon neaktivnosti}
 \end{figure}
 
-Također je osigurana samo jedna instanca aplikacije kao zaštita protiv \textit{bruteforce} napada, ali i kako bi se osigurao ispravan rad sustava u slučaju da korisnik namjerno ili slučajno pokuša otvoriti više instanci aplikacije. Jedna instanca aplikacije je osigurana komunikacijom putem lokalnih utičnica (engl. \textit{local socket}) na način gdje inicijalno otvorena instanca aplikacije pokreće \textit{server} koristeći identifikator aplikacije, i svaka instanca aplikacije koja se pokuša pokrenuti nakon prve će provjeriti postojanje \textit{servera} putem lokalne utičnice, i ako \textit{server} postoji ugasiti svoju instancu i poslati originalnoj instanci poruku kako bi se prebacila u fokus, npr. stavila u prvi plan ili maknula iz minimizacije.\newline
+Također je osigurana samo jedna instanca aplikacije kao zaštita protiv \textit{bruteforce} napada, ali i kako bi se osigurao ispravan rad sustava u slučaju da korisnik namjerno ili slučajno pokuša otvoriti više instanci aplikacije. Jedna instanca aplikacije je osigurana komunikacijom putem lokalnih utičnica (engl. \textit{local socket}) na način gdje inicijalno otvorena instanca aplikacije pokreće \textit{server} koristeći identifikator aplikacije, i svaka instanca aplikacije koja se pokuša pokrenuti nakon prve će provjeriti postojanje \textit{servera} putem lokalne utičnice, i ako \textit{server} postoji, ugasiti svoju instancu i poslati originalnoj instanci poruku kako bi se prebacila u fokus, npr. stavila u prvi plan ili maknula iz minimizacije.\newline
 Kao i ostatak implementacije, i ovaj mehanizam je u potpunosti kompatibilan sa svim operacijskim sustavima zbog korištenja \textit{QLocalSocket} i \textit{QLocalServer} biblioteka koje koriste \textit{unix domain socket} na Linux/macOS sustavima i \textit{imenovane cjevovode} na Windows sustavima.
 
 \subsection{Generiranje javnog i privatnog ključa}
 
 Nakon uspješne registracije, sustav generira par ključeva (javni i privatni) koristeći \textbf{RSA algoritam} s duljinom ključa od \textbf{4096 bita}. 
-Prije kriptiranja privatnog ključa generiraju se dva međuključa pomoću \textbf{PBKDF2 algoritma}. U prvoj iteraciji, generira se \textit{Master key} (dalje u teksu MK) sa velikim brojem iteracija (6000000) nakon kojega se generira \textit{Password Derived Key} (dalje u tekstu PDK) s manjim brojem iteracija (1) koji se koristi za kriptiranje privatnog ključa. PDK ključ se NE sprema u bazu nego ostaje samo u memoriji tijekom trajanja sesije.
+Prije kriptiranja privatnog ključa generiraju se dva međuključa pomoću \textbf{PBKDF2 algoritma}. U prvoj iteraciji, generira se \textit{Master key} (dalje u teksu MK) sa velikim brojem iteracija (600000) nakon kojega se generira \textit{Password Derived Key} (dalje u tekstu PDK) s manjim brojem iteracija (1) koji se koristi za kriptiranje privatnog ključa. PDK ključ se NE sprema u bazu nego ostaje samo u memoriji tijekom trajanja sesije.
 Privatni ključ se zatim kriptira \textbf{AES-256-GCM algoritmom} koristeći PDK generiran iz lozinke.
 Na kraju se  javni ključ, kriptirani privatni ključ i hash lozinke spremaju u bazu.
 
@@ -211,12 +231,12 @@ Sustav omogućava definiranje sigurnosne politike, tj. kontrolu nad većinom par
 
 Rotacija ključeva se može odviti u dva slučaja: automatski od strane sustava ili ručno od strane korisnika. Nakon prijave korisnika, sustav provjerava zadnji datum rotacije i uspoređuje ga s propisanim intervalom u sigurnosnoj politici te izvršava rotaciju ukoliko je potrebno. Pri izvršavanju rotacije, korisniku se prikazuje napredak rotacije kroz novi prozor koji blokira korisničko sučelje kako korisnik ne bi mogao obaviti nijednu radnju ili izaći iz aplikacije dok se rotacija obavlja s obzirom da je to osjetljiva radnja. U pozadini se rotacija odvija na bazi transakcije, tj. tek nakon što su svi ključevi rotirani i sve je obavljeno se promjene spremaju u bazu. Ovo je napravljeno kako prisilno gašenje tijekom rotacije ne bi oštetilo funkcionalnost sustava zbog djelomične rotacije. Pojednostavljeni algoritam koji se odvija je sljedeći:
 \begin{enumerate}
-    \item Generira se novi par ključeva
-    \item Uzima se DEK svake datoteke
-    \item DEK se dekriptira postojećim privatnim ključem i kriptira novim KEK-om (javnim ključem)
-    \item Nakon kriptiranja svih DEK-ova kriptira se novi privatni ključ
-    \item Spremaju se svi rotirani DEK-ovi, novi par ključeva i ažurira datum zadnje rotacije
-    \item Radnja se bilježi u revizijski trag
+    \item Generira se novi par ključeva.
+    \item Uzima se DEK svake datoteke.
+    \item DEK se dekriptira postojećim privatnim ključem i kriptira novim KEK-om (javnim ključem).
+    \item Nakon kriptiranja svih DEK-ova kriptira se novi privatni ključ.
+    \item Spremaju se svi rotirani DEK-ovi, novi par ključeva i ažurira datum zadnje rotacije.
+    \item Radnja se bilježi u revizijski trag.
 \end{enumerate}
 
 Sljedeća slika prikazuje prozor koji potvrđuje uspješnu rotaciju ključeva:
@@ -235,7 +255,7 @@ Nakon prijenosa datoteke, ona je vidljiva na popisu svih zaključanih datoteka. 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{slike/prenesene_datoteke.png}
-    \caption{Datoteke su prenesene u sustav.}
+    \caption{Datoteke su prenesene u sustav}
 \end{figure}
 
 Kako datoteka još nije prošla otključavanje i ponovno zaključavanje, ispod nazive piše vrijeme prijenosa, a ne vrijeme ažuriranja.
@@ -256,7 +276,7 @@ Iako Python sadrži sakupljač smeća (engl. \textit{garbage collector}), za sva
 file.content = b'\x00' * len(file.content)
 del file
     \end{minted}
-    \caption{Uklanjanje sadržaja učitane datoteke iz memorije.}
+    \caption{Uklanjanje sadržaja učitane datoteke iz memorije}
 \end{listing}
 
 Kriptirane datoteke se mogu vidjeti u direktoriju, no ne mogu se pročitati bez DEK-a:
@@ -264,31 +284,31 @@ Kriptirane datoteke se mogu vidjeti u direktoriju, no ne mogu se pročitati bez 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.4\textwidth]{slike/kriptirane_datoteke.png}
-    \caption{Kriptirane datoteke u sustavu.}
+    \caption{Kriptirane datoteke u sustavu}
 \end{figure}
 
 \section{Otključavanje i zaključavanje datoteke}
 
 Nakon inicijalnog prijenosa datoteke u trezor, ona se može otključavati i zaključavati. Način otključavanja u ovom sustavu je takav da se u memoriji dekriptira sadržaj datoteke koja se otključava i da se ona pohrani u privremeni (engl. \textit{temporary}) direktorij na operacijskom sustavu te se automatski pokreće proces tj. aplikacija koja je zadužena za tu vrstu datoteku na uređaju. Nakon što je korisnik gotov s pregledavanjem ili uređivanjem datoteke, mora ju ponovno zaključati. Pojednostavljeni algoritam za otključavanje je sljedeći:
 \begin{enumerate}
-    \item Privatni ključ korisnika se dekriptira koristeći PDK
-    \item DEK datoteke se dekriptira koristeći privatni ključ
-    \item Datoteka se dekriptira koristeći DEK
-    \item Provjerava se trenutni sažetak datoteke s pohranjenim sažetkom u prethodnom zaključavanju
-    \item Datoteka se sprema u privremeni direktorij
-    \item Otključavanje se bilježi u revizijski trag
-    \item Pokreće se aplikacija zadužena za tu vrstu datoteke
+    \item Privatni ključ korisnika se dekriptira koristeći PDK.
+    \item DEK datoteke se dekriptira koristeći privatni ključ.
+    \item Datoteka se dekriptira koristeći DEK.
+    \item Provjerava se trenutni sažetak datoteke s pohranjenim sažetkom u prethodnom zaključavanju.
+    \item Datoteka se sprema u privremeni direktorij.
+    \item Otključavanje se bilježi u revizijski trag.
+    \item Pokreće se aplikacija zadužena za tu vrstu datoteke.
 \end{enumerate}
 
 Prilikom zaključavanja se koristi vrlo sličan algoritam kao i kod inicijalnog prijenosa, ali se nakon pohrane novo-kriptirane datoteke sigurnosno briše \textit{plaintext} datoteka iz privremenog direktorija jer više nije potrebna. Pojednostavljeni algoritam za zaključavanje je sljedeći:
 \begin{enumerate}
-    \item Datoteka se učitava iz privremenog direktorija
-    \item Stvara se sažetak datoteke i pohranjuje
-    \item DEK datoteke se dekriptira koristeći privatni ključ
-    \item Datoteka se kriptira koristeći DEK
-    \item Zaključavanje se bilježi u revizijski trag
-    \item Kriptirana datoteka se sprema u direktorij trezora
-    \item Sigurnosno se briše \textit{plaintext} datoteka iz privremenog direktorija
+    \item Datoteka se učitava iz privremenog direktorija.
+    \item Stvara se sažetak datoteke i pohranjuje.
+    \item DEK datoteke se dekriptira koristeći privatni ključ.
+    \item Datoteka se kriptira koristeći DEK.
+    \item Zaključavanje se bilježi u revizijski trag.
+    \item Kriptirana datoteka se sprema u direktorij trezora.
+    \item Sigurnosno se briše \textit{plaintext} datoteka iz privremenog direktorija.
 \end{enumerate}
 
 Sljedeća slika prikazuje zaslon nakon što je datoteka otključana:
@@ -296,29 +316,31 @@ Sljedeća slika prikazuje zaslon nakon što je datoteka otključana:
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{slike/otkljucana_datoteka.png}
-    \caption{Otključana datoteka s gumbom za zaključavanje.}
+    \caption{Otključana datoteka s gumbom za zaključavanje}
 \end{figure}
 
 
 \section{Brisanje datoteke}
 
-Pritiskom gumba za brisanje na odabranoj datoteci, poziva se funkcija koja prvo traži postoji li odabrana kriptirana datoteka na našem računalu. Ako postoji, datoteka se prvo otvara, prepisuje tako što se upišu nulti bajtovi preko cijele datoteke, zatim se zatvara i briše iz datotečnog sustava. Nakon brisanja datoteke na računalu, briše se i zapis o datoteci iz baze podataka. Sve ove radnje bilježe se u revizijski trag. 
+Pritiskom gumba za brisanje na odabranoj datoteci, poziva se funkcija koja prvo traži postoji li odabrana kriptirana datoteka na korisnikovom računalu. Ako postoji, datoteka se prvo otvara, prepisuje tako što se upišu nulti bajtovi preko cijele datoteke, zatim se zatvara i briše iz datotečnog sustava. Nakon brisanja datoteke na računalu, briše se i zapis o datoteci iz baze podataka. Sve ove radnje bilježe se u revizijski trag. 
 
 Implementirana je zaštita od pogrešnog brisanja datoteka tako što se pritiskom na gumb otvara dijalog prozor koji traži potvrdu brisanja datoteke. Kao potvrda za brisanje, korisnik mora unjeti naziv datoteke koju želi izbrisati. Ako uneseni naziv odgovara nazivu datoteke koja se briše, datoteka se briše, inače se ispisuje greška.
 
 \begin{figure}[h]
-
-\begin{subfigure}
-\includegraphics[width=0.5\linewidth, height=6cm]{slike/dijalog_brisanje_datoteke.png} 
-\end{subfigure}
-\begin{subfigure}
-\includegraphics[width=0.5\linewidth, height=6cm]{slike/dijalog_brisanje_greska.png}
-\end{subfigure}
-
-\caption{Zaslon za potvrdu brisanja datoteke i prikaz greške pri pogrešnom unosu}
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{slike/dijalog_brisanje_datoteke.png} 
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{slike/dijalog_brisanje_greska.png}
+    \end{subfigure}
+    \caption{Zaslon za potvrdu brisanja datoteke i prikaz greške pri pogrešnom unosu}
 \end{figure}
 
-\pagebreak
+\newpage
 
 \section{Dijeljenje datoteke}
 
@@ -327,7 +349,7 @@ Klikom na taj gumb otvara se zaslon na kojemu je moguće unijeti javni ključ os
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{slike/zaslon_za_dijeljenje_datoteke.png}
-    \caption{Zaslon za dijeljenje datoteke.}
+    \caption{Zaslon za dijeljenje datoteke}
 \end{figure}
 
 Nakon unosa javnog ključa i klika na gumb "Podijeli", dijeljena datoteka se izvozi s ekstenzijom \textit{.shfipkg} (\textit{shared file package}):
@@ -335,7 +357,7 @@ Nakon unosa javnog ključa i klika na gumb "Podijeli", dijeljena datoteka se izv
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.2\textwidth]{slike/podijeljena_datoteka.png}
-    \caption{Podijeljena datoteka.}
+    \caption{Podijeljena datoteka}
 \end{figure}
 
 Osoba koja želi učitati dijeljenu datoteku, \textbf{prvo mora osobi koja dijeli datoteku poslati svoj javni ključ}. To je moguće učiniti na zaslonu "Prijenos dijeljene datoteke":
@@ -343,7 +365,7 @@ Osoba koja želi učitati dijeljenu datoteku, \textbf{prvo mora osobi koja dijel
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{slike/zaslon_za_prijenos_dijeljene_datoteke.png}
-    \caption{Zaslon za prijenos dijeljene datoteke.}
+    \caption{Zaslon za prijenos dijeljene datoteke}
 \end{figure}
 
 Na slici je vidljiv gumb "Kopiraj javni ključ" koji kopira javni ključ te osobe, odnosno javni dio KEK-a u međuspremnik. Na dnu zaslona se nalazi gumb "Učitaj datoteku" koji otvara odabir dijeljene datoteke.
@@ -379,7 +401,7 @@ del decrypted_dek
 decrypted_file = b'\x00' * len(decrypted_file)
 del decrypted_file
     \end{minted}
-    \caption{Uklanjanje sadržaja učitane datoteke i dekriptiranog DEK-a iz memorije.}
+    \caption{Uklanjanje sadržaja učitane datoteke i dekriptiranog DEK-a iz memorije}
 \end{listing}
 
 \section{Revizijski trag}
@@ -392,7 +414,7 @@ U bazi podataka zapisi revizijskog traga imaju sljedeći oblik:
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{slike/revizijski_trag_u_bazi.png}
-    \caption{Revizijski trag u bazi podataka.}
+    \caption{Revizijski trag u bazi podataka}
 \end{figure}
 
 Na slici je vidljivo kako svaki zapis ima vlastiti sažetak (engl. \textit{hash}) i sažetak prethodnog zapisa, čime se ostvaruje \textbf{lanac sažetaka} (engl. \textit{hash chain}) i onemogućuje bilo kakva izmjena u prethodnim zapisima.
@@ -404,7 +426,7 @@ Izvoz zapisa revizijskog traga moguće je obaviti na kartici "Izvoz audit logova
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{slike/izvoz_audit_logova.png}
-    \caption{Izvoz revizijskog traga.}
+    \caption{Izvoz revizijskog traga}
 \end{figure}
 
 Nakon izvoza stvara se datoteka s ekstenzijom \textit{.alogpkg} (\textit{audit log package}) koja sadrži enkriptirane zapise, enkriptiran simetrični ključ i digitalni potpis korisnika koji je izveo revizijski trag.
@@ -414,7 +436,7 @@ Aplikacija pri izvozu revizijskog traga obavlja sljedeće:
 \begin{enumerate}
     \item Učitava zalijepljen javni ključ osobe koja će pregledavati revizijski trag.
     \item Generira novi nasumični simetrični ključ kojim će biti kriptirani zapisi revizijskog traga.
-    \item Dohvaća sve zapise revizijskog traga iz baze podataka. \textbf{U slučaju da lanac sažetaka (engl. \textit{hash chain}) zapisa ne odgovara, u zapisima će biti vidljivo.}
+    \item Dohvaća sve zapise revizijskog traga iz baze podataka. \textbf{U slučaju da lanac sažetaka (engl. \textit{hash chain}) zapisa ne odgovara, u zapisima će biti naznačeno.}
     \item Kriptira zapise revizijskog traga koristeći simetrični ključ i AES algoritam.
     \item Kriptira novogenerirani simetrični ključ javnim ključem osobe koja će provjeravati zapise koristeći RSA algoritam.
     \item Digitalno potpisuje nekriptiran tekst zapisa revizijskog traga javnim ključem osobe čiji se zapisi izvoze.
@@ -438,7 +460,7 @@ ZAPISI SU MIJENJANI: Log zapisi nisu validni od zapisa s ID-om 5 - nije validan 
 7 | 27.11.2025. 18:12:24 | Aplikacija je pokrenuta.
 8 | 27.11.2025. 18:12:54 | Aplikacija je pokrenuta.
     \end{minted}
-    \caption{Izmijenjeni zapisi revizijskog traga.}
+    \caption{Izmijenjeni zapisi revizijskog traga}
 \end{listing}
 
 \subsection{Učitavanje revizijskog traga}
@@ -448,7 +470,7 @@ Učitavanje revizijskog traga moguće je obaviti na zaslonu "Pregled audit logov
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{slike/ucitavanje_audit_logova.png}
-    \caption{Učitavanje revizijskog traga.}
+    \caption{Učitavanje revizijskog traga}
 \end{figure}
 
 Ako je učitana ispravna datoteka te su zapisi ispravni i digitalni potpis odgovarajući, moguće je vidjeti sve zapise revizijskog traga unutar same aplikacije:
@@ -456,7 +478,7 @@ Ako je učitana ispravna datoteka te su zapisi ispravni i digitalni potpis odgov
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{slike/svi_zapisi_audit_logova.png}
-    \caption{Svi zapisi revizijskog traga vidljivi unutar aplikacije.}
+    \caption{Svi zapisi revizijskog traga vidljivi unutar aplikacije}
 \end{figure}
 
 Aplikacija pri učitavanju revizijskog traga obavlja sljedeće:
@@ -471,11 +493,11 @@ Aplikacija pri učitavanju revizijskog traga obavlja sljedeće:
 
 \chapter{Zaključak}
 
-Digitalni sigurnosni trezori nisu uobičajeni sustavi za pohranu podataka. U njima datoteke nisu samo pohranjene, nego su i zaštićene mnoštvom složenih kriptografskih algoritama i sigurnosnim mehanizmima. Takvi sustavi su uglavnom implementirani pomoću Web tehnologija i nalaze se na internetu kako bi korisnicima omogućili kolaboraciju, dijelenje i pristup podacima s bilo koje lokacije. Mana takvih sustava je upravo to da su na mreži te su k puno više izloženi prijetnjama i napadima. Ovakvi trezori su već odavno u upotrebi u velikim organizacijama koje rukuju osjetljivim podacima kao što su financijski dokumenti, medicinski zapisi, pravni dokumenti itd. Dostupni su i komercijalno proizvodi za osobnu upotrebu iako su dosta skupi i ne baš toliko popularni kod običnih korisnika.
+Digitalni sigurnosni trezori nisu uobičajeni sustavi za pohranu podataka. U njima datoteke, osim što su pohranjene, su i zaštićene mnoštvom složenih kriptografskih algoritama i sigurnosnim mehanizmima. Takvi sustavi su uglavnom implementirani pomoću Web tehnologija i nalaze se na internetu kako bi korisnicima omogućili kolaboraciju, dijelenje i pristup podacima s bilo koje lokacije. Mana takvih sustava je upravo to da su na mreži te su puno više izloženi prijetnjama i napadima. Ovakvi trezori su već odavno u upotrebi u velikim organizacijama koje rukuju osjetljivim podacima kao što su financijski dokumenti, medicinski zapisi, pravni dokumenti itd. Dostupni su i komercijalni proizvodi za osobnu upotrebu iako su poprilično skupi i nisu baš toliko popularni kod običnih korisnika.
 
-S druge strane, postoje klijentski sigurnosni trezori tj. aplikacije koje se mogu instalirati na računalo i zaštititi datoteke korisnika. Takvi sustavi sigurniji su od mrežnih napada i prijetnji jer nemaju taj vektor napada. Takvi sustavi su dosta rijetki i nisu toliko razvijeni jer nema velikog broja korisnika za njim. Često takvi alati i nisu javno dostupni ili su pak razvijeni za interne potrebe velikih organizacija.
+S druge strane, postoje klijentski sigurnosni trezori, odnosno aplikacije koje se mogu instalirati na računalo i zaštititi datoteke korisnika. Takvi sustavi sigurniji su u pogledu mrežnih napada i prijetnji jer nemaju taj vektor napada. Takvi sustavi su dosta rijetki i nisu toliko razvijeni jer nema velikog broja korisnika za njima. Često takvi alati i nisu javno dostupni ili su pak razvijeni za interne potrebe velikih organizacija.
 
-U radu smo pokušali razviti jedan takav sustav koji bi zadovoljio potrebe malih korisnika. Najveća prednost ovog rada je taj što se datoteke u sustavu uništavaju i čiste tako da ako se i dođe do korisnikovog računala. datoteke neće biti dostupne. Poštovanjem standarda ISO 27001, pokušali smo dovesti sustav do visoke razine sigurnosti. Služio nam je kao vodič za implementaciju mehanizama unutar aplikacije. Bez njega, teško bi znali od kuda početi i što sve zapravo treba implementirati da bi sustav bio dovoljno siguran. Trenutna implementacija sadrži dosad najbolje kriprografske algoritme koji ne bi trebali biti probijeni neko duže vrijeme. Sigurnost sustava također ovisi i o korisniku koji ga koristi i o tome kako će on podesiti parametre svoje sigurnosne politike. Sustav nije savršen i uvjek postoji mogućnost poboljšanja, ali za sada je ovo odličan početak. 
+U radu smo pokušali razviti jedan takav sustav koji bi zadovoljio potrebe malih korisnika. Najveća prednost ovog rada je taj što se datoteke u sustavu uništavaju i čiste tako da ako i dođe do napada na korisnikovo računalo, datoteke neće biti dostupne. Poštivanjem standarda ISO 27001, pokušali smo dovesti sustav do visoke razine sigurnosti. Služio nam je kao vodič za implementaciju mehanizama unutar aplikacije. Bez njega, teško bi znali od kuda početi i što sve zapravo treba implementirati da bi sustav bio dovoljno siguran. Trenutna implementacija sadrži dosad najbolje kriprografske algoritme koji ne bi trebali biti probijeni neko duže vrijeme. Sigurnost sustava također ovisi i o korisniku koji ga koristi i o tome kako će on postaviti parametre svoje sigurnosne politike. Sustav nije savršen i uvjek postoji mogućnost poboljšanja, ali za sada je ovo odličan početak. 
 
 \makebackmatter
 
