@@ -159,7 +159,7 @@ Hash lozinke se sprema se u bazu podataka.
 Odjava iz sustava vrši se pritiskom na gumb odjave koji briše sve osjetljive podatke (KEK, PDK) iz memorije (sesije) i vraća korisnika na ekran prijave.
 Sve akcije (registracija, prijava i odjava) se bilježe u revizijski trag u bazi podataka.
 
-\subsection{Dodatni zaštitni mehanizmi prijave i dojave}
+\subsection{Dodatni zaštitni mehanizmi prijave i odjave}
 
 Kako bi se spriječili \textit{bruteforce} napadi na lozinku, implementirani je \textit{lockout} mehanizam. Nakon 3 nesupjela pokušaja prijave, vrijeme čekanja za sljedeća 3 pokušaja povećava za minutu (npr. 3 neuspjela = 60s, 6 neuspjelih = 120s...). Važno je napomenuti da nema gornje granice za broj pokušaja. Kako bi se spriječilo rsetiranje vremena čekanja ako se korisnik ugasi aplikaciju ili računalo, vrijeme posljednjeg neuspjelog pokušaja prijave se sprema u bazu podataka i koristi se za izračun vremena čekanja prilikom svakog novog pokušaja prijave.
 
@@ -183,6 +183,8 @@ Drugi mehanizam zaštite je automatska odjava iz sustava nakon određenog vremen
 \caption{Zaslon automatske odjave nakon neaktivnosti}
 \end{figure}
 
+Također je osigurana samo jedna instanca aplikacije kao zaštita protiv \textit{bruteforce} napada, ali i kako bi se osigurao ispravan rad sustava u slučaju da korisnik namjerno ili slučajno pokuša otvoriti više instanci aplikacije. Jedna instanca aplikacije je osigurana komunikacijom putem lokalnih utičnica (engl. \textit{local socket}) na način gdje inicijalno otvorena instanca aplikacije pokreće \textit{server} koristeći identifikator aplikacije, i svaka instanca aplikacije koja se pokuša pokrenuti nakon prve će provjeriti postojanje \textit{servera} putem lokalne utičnice, i ako \textit{server} postoji ugasiti svoju instancu i poslati originalnoj instanci poruku kako bi se prebacila u fokus, npr. stavila u prvi plan ili maknula iz minimizacije.
+
 \subsection{Generiranje javnog i privatnog ključa}
 
 Nakon uspješne registracije, sustav generira par ključeva (javni i privatni) koristeći \textbf{RSA algoritam} s duljinom ključa od \textbf{4096 bita}. 
@@ -195,10 +197,6 @@ Na kraju se  javni ključ, kriptirani privatni ključ i hash lozinke spremaju u 
 S obzirom da korisnik ručno otključava i zaključava datoteke prema potrebi, nužno je osigurati dva slučaja: situacija gdje korisnik izađe iz aplikacije dok ima otključane datoteke i situacija gdje se aplikacija prisilno ugasi kroz ubijanje procesa ili naglog prestanka rada uređaja dok korisnik ima otključane datoteke. \newline
 \textbf{U slučaju da korisnik izađe iz aplikacije bez da je zaključao sve datoteke}, neovisno je li se izlazak izvršio putem gumba za odjavu, pritiskom "X" gumba za izlaz na prozoru aplikacije, prečacem ili slično, sustav će u pozadini zaključati sve otključane datoteke korisnika istim algoritmom zaključavanja koji se odvija i kada korisnik ručno zaključa datoteku. \newline
 \textbf{U slučaju da sustav prisilno prestane s radom, a ima otključane datoteke}, prilikom sljedeće prijave u sustav se sigurno brišu sve otključane datoteke jer se smatraju komprimiranima. Korisniku ostaje dostupna njegova prošla zaključana verzija datoteke u trezoru.
-
-\subsection{Jedna instanca}
-
-Viktor
 
 \section{Sigurnosna politika i rotacija ključeva}
 
