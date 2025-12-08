@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QWidget, QLabel, QScrollArea, QFrame, QVBoxLayout, QPushButton
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
+import PySide6.QtSvg
 from src.utils.path_manager import path_manager
 
 from src.views.components.file_item_widget import FileItemWidget
