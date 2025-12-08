@@ -159,7 +159,7 @@ Hash lozinke se sprema se u bazu podataka.
 Odjava iz sustava vrši se pritiskom na gumb odjave koji briše sve osjetljive podatke (KEK, PDK) iz memorije (sesije) i vraća korisnika na ekran prijave.
 Sve akcije (registracija, prijava i odjava) se bilježe u revizijski trag u bazi podataka.
 
-\subsection{Dodatni zaštitni mehanizmi prijave i dojave}
+\subsection{Dodatni zaštitni mehanizmi prijave i odjave}
 
 Kako bi se spriječili \textit{bruteforce} napadi na lozinku, implementirani je \textit{lockout} mehanizam. Nakon 3 nesupjela pokušaja prijave, vrijeme čekanja za sljedeća 3 pokušaja povećava za minutu (npr. 3 neuspjela = 60s, 6 neuspjelih = 120s...). Važno je napomenuti da nema gornje granice za broj pokušaja. Kako bi se spriječilo resetiranje vremena čekanja ako se korisnik ugasi aplikaciju ili računalo, vrijeme posljednjeg neuspjelog pokušaja prijave se sprema u bazu podataka i koristi se za izračun vremena čekanja prilikom svakog novog pokušaja prijave.
 
@@ -183,6 +183,9 @@ Drugi mehanizam zaštite je automatska odjava iz sustava nakon određenog vremen
 \caption{Zaslon automatske odjave nakon neaktivnosti}
 \end{figure}
 
+Također je osigurana samo jedna instanca aplikacije kao zaštita protiv \textit{bruteforce} napada, ali i kako bi se osigurao ispravan rad sustava u slučaju da korisnik namjerno ili slučajno pokuša otvoriti više instanci aplikacije. Jedna instanca aplikacije je osigurana komunikacijom putem lokalnih utičnica (engl. \textit{local socket}) na način gdje inicijalno otvorena instanca aplikacije pokreće \textit{server} koristeći identifikator aplikacije, i svaka instanca aplikacije koja se pokuša pokrenuti nakon prve će provjeriti postojanje \textit{servera} putem lokalne utičnice, i ako \textit{server} postoji ugasiti svoju instancu i poslati originalnoj instanci poruku kako bi se prebacila u fokus, npr. stavila u prvi plan ili maknula iz minimizacije.\newline
+Kao i ostatak implementacije, i ovaj mehanizam je u potpunosti kompatibilan sa svim operacijskim sustavima zbog korištenja \texit{QLocalSocket} i \texit{QLocalServer} biblioteka koje koriste \textit{unix domain socket} na Linux/macOS sustavima i \textit{imenovane cjevovode} na Windows sustavima.
+
 \subsection{Generiranje javnog i privatnog ključa}
 
 Nakon uspješne registracije, sustav generira par ključeva (javni i privatni) koristeći \textbf{RSA algoritam} s duljinom ključa od \textbf{4096 bita}. 
@@ -190,17 +193,38 @@ Prije kriptiranja privatnog ključa generiraju se dva međuključa pomoću \text
 Privatni ključ se zatim kriptira \textbf{AES-256-GCM algoritmom} koristeći PDK generiran iz lozinke.
 Na kraju se  javni ključ, kriptirani privatni ključ i hash lozinke spremaju u bazu.
 
-\subsection{Cleananje datoteka}
+\subsection{Procedura sigurnog zatvaranja aplikacije i oporavka od pogreške}
 
-Viktor
-
-\subsection{Jedna instanca}
-
-Viktor
+S obzirom da korisnik ručno otključava i zaključava datoteke prema potrebi, nužno je osigurati dva slučaja: situacija gdje korisnik izađe iz aplikacije dok ima otključane datoteke i situacija gdje se aplikacija prisilno ugasi kroz ubijanje procesa ili naglog prestanka rada uređaja dok korisnik ima otključane datoteke. \newline
+\textbf{U slučaju da korisnik izađe iz aplikacije bez da je zaključao sve datoteke}, neovisno je li se izlazak izvršio putem gumba za odjavu, pritiskom "X" gumba za izlaz na prozoru aplikacije, prečacem ili slično, sustav će u pozadini zaključati sve otključane datoteke korisnika istim algoritmom zaključavanja koji se odvija i kada korisnik ručno zaključa datoteku. \newline
+\textbf{U slučaju da sustav prisilno prestane s radom, a ima otključane datoteke}, prilikom sljedeće prijave u sustav se sigurno brišu sve otključane datoteke jer se smatraju komprimiranima. Korisniku ostaje dostupna njegova prošla zaključana verzija datoteke u trezoru.
 
 \section{Sigurnosna politika i rotacija ključeva}
 
-Viktor
+Sustav omogućava definiranje sigurnosne politike, tj. kontrolu nad većinom parametara koji se koriste u radu sustava. Parametri sigurnosne politike se mogu podijeliti u četiri glavne vrste:
+\begin{itemize}
+    \item \textbf{Parametri za algoritme} - ovi parametri se koriste u algoritmima generiranja ključeva, stvaranja sažetaka, kriptiranja i dekriptiranja i slično. Neki od njih su \textit{duljina ključa}, \textit{duljina inicijalizacijskog vektora}, \textit{broj iteracija za PBKDF2 algoritam} i \textit{algoritam sažimanja u PBKDF2}.
+    \item \textbf{Parametri za lozinku} - ovi se parametri koriste za minimalne karakteristike lozinke korisnika kako bi se osigurala željena minimalna razina entropije i kompleksnosti. Neki od njih su \textit{duljina lozinke}, \textit{minimalna entropija}, \textit{nužnost brojeva, znakova i ostaloga} i \textit{mogući posebni znakovi}
+    \item \textbf{Parametri za neaktivnost} - ovi parametri određuju broj minuta prije nego sesija korisnika završi zbog neaktivnosti
+    \item \textbf{Interval dana između rotacije ključeva} - ovaj parametar određuje maksimalan interval dana između rotacije ključeva, nakon čega se vrši automatska rotacija
+\end{itemize}
+
+Rotacija ključeva se može odviti u dva slučaja: automatski od strane sustava ili ručno od strane korisnika. Nakon prijave korisnika, sustav provjerava zadnji datum rotacije i uspoređuje ga s propisanim intervalom u sigurnosnoj politici te izvršava rotaciju ukoliko je potrebno. Pri izvršavanju rotacije, korisniku se prikazuje napredak rotacije kroz novi prozor koji blokira korisničko sučelje kako korisnik ne bi mogao obaviti nijednu radnju ili izaći iz aplikacije dok se rotacija obavlja s obzirom da je to osjetljiva radnja. U pozadini se rotacija odvija na bazi transakcije, tj. tek nakon što su svi ključevi rotirani i sve je obavljeno se promjene spremaju u bazu. Ovo je napravljeno kako prisilno gašenje tijekom rotacije ne bi oštetilo funkcionalnost sustava zbog djelomične rotacije. Pojednostavljeni algoritam koji se odvija je sljedeći:
+\begin{enumerate}
+    \item Generira se novi par ključeva
+    \item Uzima se DEK svake datoteke
+    \item DEK se dekriptira postojećim privatnim ključem i kriptira novim KEK-om (javnim ključem)
+    \item Nakon kriptiranja svih DEK-ova kriptira se novi privatni ključ
+    \item Spremaju se svi rotirani DEK-ovi, novi par ključeva i ažurira datum zadnje rotacije
+    \item Radnja se bilježi u revizijski trag
+\end{enumerate}
+
+Sljedeća slika prikazuje prozor koji potvrđuje uspješnu rotaciju ključeva:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{slike/rotacija_popup.png}
+    \caption{Uspješna rotacija ključeva}
+\end{figure}
 
 \section{Prijenos datoteke}
 
@@ -243,9 +267,38 @@ Kriptirane datoteke se mogu vidjeti u direktoriju, no ne mogu se pročitati bez 
     \caption{Kriptirane datoteke u sustavu.}
 \end{figure}
 
-\section{Zaključavanje i otključavanje datoteke}
+\section{Otključavanje i zaključavanje datoteke}
 
-Viktor
+Nakon inicijalnog prijenosa datoteke u trezor, ona se može otključavati i zaključavati. Način otključavanja u ovom sustavu je takav da se u memoriji dekriptira sadržaj datoteke koja se otključava i da se ona pohrani u privremeni (engl. \textit{temporary}) direktorij na operacijskom sustavu te se automatski pokreće proces tj. aplikacija koja je zadužena za tu vrstu datoteku na uređaju. Nakon što je korisnik gotov s pregledavanjem ili uređivanjem datoteke, mora ju ponovno zaključati. Pojednostavljeni algoritam za otključavanje je sljedeći:
+\begin{enumerate}
+    \item Privatni ključ korisnika se dekriptira koristeći PDK
+    \item DEK datoteke se dekriptira koristeći privatni ključ
+    \item Datoteka se dekriptira koristeći DEK
+    \item Provjerava se trenutni sažetak datoteke s pohranjenim sažetkom u prethodnom zaključavanju
+    \item Datoteka se sprema u privremeni direktorij
+    \item Otključavanje se bilježi u revizijski trag
+    \item Pokreće se aplikacija zadužena za tu vrstu datoteke
+\end{enumerate}
+
+Prilikom zaključavanja se koristi vrlo sličan algoritam kao i kod inicijalnog prijenosa, ali se nakon pohrane novo-kriptirane datoteke sigurnosno briše \textit{plaintext} datoteka iz privremenog direktorija jer više nije potrebna. Pojednostavljeni algoritam za zaključavanje je sljedeći:
+\begin{enumerate}
+    \item Datoteka se učitava iz privremenog direktorija
+    \item Stvara se sažetak datoteke i pohranjuje
+    \item DEK datoteke se dekriptira koristeći privatni ključ
+    \item Datoteka se kriptira koristeći DEK
+    \item Zaključavanje se bilježi u revizijski trag
+    \item Kriptirana datoteka se sprema u direktorij trezora
+    \item Sigurnosno se briše \textit{plaintext} datoteka iz privremenog direktorija
+\end{enumerate}
+
+Sljedeća slika prikazuje zaslon nakon što je datoteka otključana:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{slike/otkljucana_datoteka.png}
+    \caption{Otključana datoteka s gumbom za zaključavanje.}
+\end{figure}
+
 
 \section{Brisanje datoteke}
 
