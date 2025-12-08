@@ -2,6 +2,7 @@
 \usepackage{lipsum}
 \usepackage[utf8]{inputenc}
 \usepackage{float}
+\usepackage{subcaption}
 
 \vrstaRada{\seminar}
 \predmet{Strate\v{s}ko upravljanje informacijskom sigurno\v{s}\'{c}u i privatno\v{s}\'{c}u}
@@ -43,7 +44,7 @@ Ključan dio ISO 27001 standarda za ovaj projekt su \textbf{kriptografske kontro
 
 \textbf{Kontrole pristupa i autentikacije (A.9.4.2 i A.9.4.3)} zahtjevaju definiranje i upravljanje pravima pristupa korisnika te implementaciju sigurnih metoda autentikacije prije pristupanja resursima. Ove kontrole direktno se odnose na implementaciju lozinki i autentikacijskih mehanizama temeljenih na ključevima. 
 
-\textbf{Kontrola A.11.2.7} (Sigurno odlaganje ili ponovna upotreba opreme) zahtijeva da sva oprema koja sadrži medije za pohranu bude provjerena kako bi se osiguralo da su svi podaci uklonjeni ili zaštićeni, što projekt adresira kroz \textit{secure deletion workflow} koji osigurava kriptografski siguran način brisanja podataka i ključeva.
+\textbf{Kontrola "Sigurno odlaganje ili ponovna upotreba opreme" (A.11.2.7)} zahtijeva da sva oprema koja sadrži medije za pohranu bude provjerena kako bi se osiguralo da su svi podaci uklonjeni ili zaštićeni, što projekt adresira kroz \textit{secure deletion workflow} koji osigurava kriptografski siguran način brisanja podataka i ključeva.
 
 \textbf{Kontrole zapisivanja i zaštite zapisa revizije (A.12.4.1, A.12.4.2 i A.12.4.3)} zahtijevaju izradu zapisnika događaja koji bilježe aktivnosti korisnika, iznimke i greške u sustavu, te zaštitu tih zapisa od neovlaštenih promjena. Projekt implementira nepromjenjivi zapisnik revizije koji evidentira sve operacije s ključevima, rotacije, pristupe datotekama te administratorske aktivnosti. Zapisnici su zaštićeni od izmjena i omogućuju export za eksterne revizije, čime se osigurava transparentnost i mogućnost revizije sigurnosnih događaja u skladu s regulatornim zahtjevima.
 \cite{iso_27001}
@@ -131,6 +132,7 @@ Kako za sigurnost softvera vrijedi: "ako se za ono što sustav nije namijenjen n
 
 Softver će biti implementiran koristeći programski jezik Python. Bit će klijentski (bez poslužitelja), odnosno izvršavat će se na jednom računalu za jednog korisnika. Imat će korisničko sučelje (GUI). Za kriptografske funkcionalnosti koristit će se već poznate Python biblioteke.
 
+
 \chapter{Implementacija}
 
 \section{Prijava, registracija i odjava}
@@ -138,15 +140,17 @@ Softver će biti implementiran koristeći programski jezik Python. Bit će klije
 Implementacija aplikacije započinje izradom registracije odnosno postavljanjem inicijalne lozinke u sustav. Aplikacija prepoznaje ako ne postoji niti jedan korisnik u sustavu te upućuje korisnika na ekran registracije. Ako korisnik već postoji u bazi, aplikacija korisnika upućuje na ekran prijave. Važno je napomenuti da se do registracije ne može doći niti jednim drugim načinom osim ako u bazi ne postoji korisnik, stoga se aplikacija može korisititi isklučivo od strane jednog korisnika koji je ujedno i vlasnik profila na računalu. 
 
 \begin{figure}[h]
-
-\begin{subfigure}
-\includegraphics[width=0.5\linewidth, height=6cm]{slike/prijava_suisp.png} 
-\end{subfigure}
-\begin{subfigure}
-\includegraphics[width=0.5\linewidth, height=6cm]{slike/registracija_suisp.png}
-\end{subfigure}
-
-\caption{Zaslon prijave i registracije}
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{slike/prijava_suisp.png} 
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{slike/registracija_suisp.png}
+    \end{subfigure}
+    \caption{Zaslon prijave i registracije}
 \end{figure}
 
 Kako bi lozinka bila sigurna, prilikom unosa se provjeravaju njezina jačina i složenost po slijedećim parametrima:
@@ -164,15 +168,17 @@ Sve akcije (registracija, prijava i odjava) se bilježe u revizijski trag u bazi
 Kako bi se spriječili \textit{bruteforce} napadi na lozinku, implementirani je \textit{lockout} mehanizam. Nakon 3 nesupjela pokušaja prijave, vrijeme čekanja za sljedeća 3 pokušaja povećava za minutu (npr. 3 neuspjela = 60s, 6 neuspjelih = 120s...). Važno je napomenuti da nema gornje granice za broj pokušaja. Kako bi se spriječilo resetiranje vremena čekanja ako se korisnik ugasi aplikaciju ili računalo, vrijeme posljednjeg neuspjelog pokušaja prijave se sprema u bazu podataka i koristi se za izračun vremena čekanja prilikom svakog novog pokušaja prijave.
 
 \begin{figure}[h]
-
-\begin{subfigure}
-\includegraphics[width=0.5\linewidth, height=6cm]{slike/odbrojavanje_60.png} 
-\end{subfigure}
-\begin{subfigure}
-\includegraphics[width=0.5\linewidth, height=6cm]{slike/odbrojavanje_120.png}
-\end{subfigure}
-
-\caption{Primjer lockout mehanizma nakon 3 i 6 neuspjelih pokušaja prijave}
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{slike/odbrojavanje_60.png} 
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{slike/odbrojavanje_120.png}
+    \end{subfigure}
+    \caption{Primjer lockout mehanizma nakon 3 i 6 neuspjelih pokušaja prijave}
 \end{figure}
 
 Drugi mehanizam zaštite je automatska odjava iz sustava nakon određenog vremena neaktivnosti (15 minuta). Nakon isteka tog vremena, prikazuje se upozorenje o odjavi iz sustava od dodatnih 60 sekundi. Ako korisnik ne reagira u zadano vrijeme, sustav ga automatski odjavljuje.
@@ -307,18 +313,18 @@ Pritiskom gumba za brisanje na odabranoj datoteci, poziva se funkcija koja prvo 
 Implementirana je zaštita od pogrešnog brisanja datoteka tako što se pritiskom na gumb otvara dijalog prozor koji traži potvrdu brisanja datoteke. Kao potvrda za brisanje, korisnik mora unjeti naziv datoteke koju želi izbrisati. Ako uneseni naziv odgovara nazivu datoteke koja se briše, datoteka se briše, inače se ispisuje greška.
 
 \begin{figure}[h]
-
-\begin{subfigure}
-\includegraphics[width=0.5\linewidth, height=6cm]{slike/dijalog_brisanje_datoteke.png} 
-\end{subfigure}
-\begin{subfigure}
-\includegraphics[width=0.5\linewidth, height=6cm]{slike/dijalog_brisanje_greska.png}
-\end{subfigure}
-
-\caption{Zaslon za potvrdu brisanja datoteke i prikaz greške pri pogrešnom unosu}
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{slike/dijalog_brisanje_datoteke.png} 
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{slike/dijalog_brisanje_greska.png}
+    \end{subfigure}
+    \caption{Zaslon za potvrdu brisanja datoteke i prikaz greške pri pogrešnom unosu}
 \end{figure}
-
-\pagebreak
 
 \section{Dijeljenje datoteke}
 
