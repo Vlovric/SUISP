@@ -1,3 +1,4 @@
+from pathlib import Path
 import subprocess
 import os
 import platform
@@ -10,7 +11,8 @@ class ProcessHelper:
 
         try:
             if system_name == "Windows":
-                os.startfile(file_path)
+                path = Path(file_path)
+                os.startfile(path.resolve())
             elif system_name == "Darwin":
                 subprocess.run(["open", file_path])
             else:

@@ -163,7 +163,6 @@ class PregledDatotekaController(BaseController):
 
         temp_path = path_manager.TEMP_DIR
         full_path = temp_path / file["name"]
-        
 
         successful = file_manager.save_file(full_path, decrypted_content)
         decrypted_content = b'\x00' * len(decrypted_content)

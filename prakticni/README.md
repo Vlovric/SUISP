@@ -1,6 +1,6 @@
 # Praktični dio
 
-Svugdje gdje piše "python" kod mene npr ide "python3" tako da imajte na umu mozda i kod vas.
+Svugdje gdje piše "python" kod mene npr ide "python3" tako da imajte na umu mozda i kod vas, nekad na Windowsu može ići samo "py".
 Ja imam Python 3.12.3, ako netko ima noviju mozda da se prebacimo na tu? Ili instalirajte ovu pa ju koristite
 
 ## Stvaranje virtualnog okuženja
