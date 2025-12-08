@@ -139,9 +139,11 @@ Softver će biti implementiran koristeći programski jezik Python. Bit će klije
 
 Megi
 
-\subsection{Cleananje datoteka}
+\subsection{Procedura sigurnog zatvaranja aplikacije i oporavka od pogreške}
 
-Viktor
+S obzirom da korisnik ručno otključava i zaključava datoteke prema potrebi, nužno je osigurati dva slučaja: situacija gdje korisnik izađe iz aplikacije dok ima otključane datoteke i situacija gdje se aplikacija prisilno ugasi kroz ubijanje procesa ili naglog prestanka rada uređaja dok korisnik ima otključane datoteke. \newline
+\textbf{U slučaju da korisnik izađe iz aplikacije bez da je zaključao sve datoteke}, neovisno je li se izlazak izvršio putem gumba za odjavu, pritiskom "X" gumba za izlaz na prozoru aplikacije, prečacem ili slično, sustav će u pozadini zaključati sve otključane datoteke korisnika istim algoritmom zaključavanja koji se odvija i kada korisnik ručno zaključa datoteku. \newline
+\textbf{U slučaju da sustav prisilno prestane s radom, a ima otključane datoteke}, prilikom sljedeće prijave u sustav se sigurno brišu sve otključane datoteke jer se smatraju komprimiranima. Korisniku ostaje dostupna njegova prošla zaključana verzija datoteke u trezoru.
 
 \subsection{Jedna instanca}
 
@@ -149,7 +151,30 @@ Viktor
 
 \section{Sigurnosna politika i rotacija ključeva}
 
-Viktor
+Sustav omogućava definiranje sigurnosne politike, tj. kontrolu nad većinom parametara koji se koriste u radu sustava. Parametri sigurnosne politike se mogu podijeliti u četiri glavne vrste:
+\begin{itemize}
+    \item \textbf{Parametri za algoritme} - ovi parametri se koriste u algoritmima generiranja ključeva, stvaranja sažetaka, kriptiranja i dekriptiranja i slično. Neki od njih su \textit{duljina ključa}, \textit{duljina inicijalizacijskog vektora}, \textit{broj iteracija za PBKDF2 algoritam} i \textit{algoritam sažimanja u PBKDF2}.
+    \item \textbf{Parametri za lozinku} - ovi se parametri koriste za minimalne karakteristike lozinke korisnika kako bi se osigurala željena minimalna razina entropije i kompleksnosti. Neki od njih su \textit{duljina lozinke}, \textit{minimalna entropija}, \textit{nužnost brojeva, znakova i ostaloga} i \textit{mogući posebni znakovi}
+    \item \textbf{Parametri za neaktivnost} - ovi parametri određuju broj minuta prije nego sesija korisnika završi zbog neaktivnosti
+    \item \textbf{Interval dana između rotacije ključeva} - ovaj parametar određuje maksimalan interval dana između rotacije ključeva, nakon čega se vrši automatska rotacija
+\end{itemize}
+
+Rotacija ključeva se može odviti u dva slučaja: automatski od strane sustava ili ručno od strane korisnika. Nakon prijave korisnika, sustav provjerava zadnji datum rotacije i uspoređuje ga s propisanim intervalom u sigurnosnoj politici te izvršava rotaciju ukoliko je potrebno. Pri izvršavanju rotacije, korisniku se prikazuje napredak rotacije kroz novi prozor koji blokira korisničko sučelje kako korisnik ne bi mogao obaviti nijednu radnju ili izaći iz aplikacije dok se rotacija obavlja s obzirom da je to osjetljiva radnja. U pozadini se rotacija odvija na bazi transakcije, tj. tek nakon što su svi ključevi rotirani i sve je obavljeno se promjene spremaju u bazu. Ovo je napravljeno kako prisilno gašenje tijekom rotacije ne bi oštetilo funkcionalnost sustava zbog djelomične rotacije. Pojednostavljeni algoritam koji se odvija je sljedeći:
+\begin{enumerate}
+    \item Generira se novi par ključeva
+    \item Uzima se DEK svake datoteke
+    \item DEK se dekriptira postojećim privatnim ključem i kriptira novim KEK-om (javnim ključem)
+    \item Nakon kriptiranja svih DEK-ova kriptira se novi privatni ključ
+    \item Spremaju se svi rotirani DEK-ovi, novi par ključeva i ažurira datum zadnje rotacije
+    \item Radnja se bilježi u revizijski trag
+\end{enumerate}
+
+Sljedeća slika prikazuje prozor koji potvrđuje uspješnu rotaciju ključeva:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{slike/rotacija_popup.png}
+    \caption{Uspješna rotacija ključeva}
+\end{figure}
 
 \section{Prijenos datoteke}
 
