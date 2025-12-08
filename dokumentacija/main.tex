@@ -217,9 +217,38 @@ Kriptirane datoteke se mogu vidjeti u direktoriju, no ne mogu se pročitati bez 
     \caption{Kriptirane datoteke u sustavu.}
 \end{figure}
 
-\section{Zaključavanje i otključavanje datoteke}
+\section{Otključavanje i zaključavanje datoteke}
 
-Viktor
+Nakon inicijalnog prijenosa datoteke u trezor, ona se može otključavati i zaključavati. Način otključavanja u ovom sustavu je takav da se u memoriji dekriptira sadržaj datoteke koja se otključava i da se ona pohrani u privremeni (engl. \textit{temporary}) direktorij na operacijskom sustavu te se automatski pokreće proces tj. aplikacija koja je zadužena za tu vrstu datoteku na uređaju. Nakon što je korisnik gotov s pregledavanjem ili uređivanjem datoteke, mora ju ponovno zaključati. Pojednostavljeni algoritam za otključavanje je sljedeći:
+\begin{enumerate}
+    \item Privatni ključ korisnika se dekriptira koristeći PDK
+    \item DEK datoteke se dekriptira koristeći privatni ključ
+    \item Datoteka se dekriptira koristeći DEK
+    \item Provjerava se trenutni sažetak datoteke s pohranjenim sažetkom u prethodnom zaključavanju
+    \item Datoteka se sprema u privremeni direktorij
+    \item Otključavanje se bilježi u revizijski trag
+    \item Pokreće se aplikacija zadužena za tu vrstu datoteke
+\end{enumerate}
+
+Prilikom zaključavanja se koristi vrlo sličan algoritam kao i kod inicijalnog prijenosa, ali se nakon pohrane novo-kriptirane datoteke sigurnosno briše \textit{plaintext} datoteka iz privremenog direktorija jer više nije potrebna. Pojednostavljeni algoritam za zaključavanje je sljedeći:
+\begin{enumerate}
+    \item Datoteka se učitava iz privremenog direktorija
+    \item Stvara se sažetak datoteke i pohranjuje
+    \item DEK datoteke se dekriptira koristeći privatni ključ
+    \item Datoteka se kriptira koristeći DEK
+    \item Zaključavanje se bilježi u revizijski trag
+    \item Kriptirana datoteka se sprema u direktorij trezora
+    \item Sigurnosno se briše \textit{plaintext} datoteka iz privremenog direktorija
+\end{enumerate}
+
+Sljedeća slika prikazuje zaslon nakon što je datoteka otključana:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{slike/otkljucana_datoteka.png}
+    \caption{Otključana datoteka s gumbom za zaključavanje.}
+\end{figure}
+
 
 \section{Brisanje datoteke}
 
