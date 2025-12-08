@@ -1,0 +1,12 @@
+ID | Vrijeme | Poruka
+
+ZAPISI SU MIJENJANI: Log zapisi nisu validni od zapisa s ID-om 5 - nije validan hash tog zapisa.
+
+1 | 27.11.2025. 17:56:30 | Aplikacija je pokrenuta.
+2 | 27.11.2025. 17:59:13 | Aplikacija je pokrenuta.
+3 | 27.11.2025. 17:59:20 | Aplikacija je pokrenuta.
+4 | 27.11.2025. 18:08:33 | Aplikacija je pokrenuta.
+5 | 27.11.2025. 18:08:55 | Aplikacija NIJE pokrenuta.  <--- POTENCIJALNE IZMJENE OD OVOG ZAPISA
+6 | 27.11.2025. 18:09:53 | Aplikacija je pokrenuta.
+7 | 27.11.2025. 18:12:24 | Aplikacija je pokrenuta.
+8 | 27.11.2025. 18:12:54 | Aplikacija je pokrenuta.

@@ -135,9 +135,60 @@ Softver će biti implementiran koristeći programski jezik Python. Bit će klije
 
 \section{Prijava, registracija i odjava}
 
+Implementacija aplikacije započinje izradom registracije odnosno postavljanjem inicijalne lozinke u sustav. Aplikacija prepozaje ako ne postoji niti jedan korisnik u sustavu te upućuje korisnika na ekran registracije. Ako korisnik već postoji u bazi, aplikacija korisnika upućuje na ekran prijaveKVažno je napomenuti da se do registracije ne mođe doći niti jednim drugim načinom osim ako u bazi ne postoji korisnik, stoga se aplikacija može korisititi isklučivo od strane jednog korisnika koji je ujedno i vlasnik profila na računalu. 
+
+\begin{figure}[h]
+
+\begin{subfigure}
+\includegraphics[width=0.5\linewidth, height=6cm]{slike/prijava_suisp.png} 
+\end{subfigure}
+\begin{subfigure}
+\includegraphics[width=0.5\linewidth, height=6cm]{slike/registracija_suisp.png}
+\end{subfigure}
+
+\caption{Zaslon prijave i registracije}
+\end{figure}
+
+Kako bi lozinka bila sigurna, prilikom unosa se provjeravaju njezina jačina i složenost po slijedećim parametrima:
+   \textbf{minimalna duljina od 12 znakova}, \textbf{barem jedno veliko slovo}, \textbf{barem jedno malo slovo}, \textbf{barem jedan broj} i \textbf{barem jedan specijalni znak}.
+Aplikacija provjerava i minimalnu entropiju lozinke koja po ne smije niti manja od 80 bitova. Ukoliko lozinka ne zadovoljava navedene uvjete, korisnik dobiva povratnu informaciju o tome što treba popraviti. 
+
+Lozinka se, nakon upisa, hashira koristeći \textbf{PBKDF2 algoritam} s \textbf{SHA-256} funkcijom sažetka, \textbf{600000 iteracija}. Algoritam kao parametre prima Master key (objašnjeno u nastavku) i lozinku u obličnom tekstu kao sol.
+Hash lozinke se sprema se u bazu podataka.
+
+Odjava iz sustava vrši se pritiskom na gumb odjave koji briše sve osjetljive podatke (KEK, PDK) iz memorije (sesije) i vraća korisnika na ekran prijave.
+Sve akcije (registracija, prijava i odjava) se bilježe u revizijski trag u bazi podataka.
+
+\subsection{Dodatni zaštitni mehanizmi prijave i dojave}
+
+Kako bi se spriječili \textit{bruteforce} napadi na lozinku, implementirani je \textit{lockout} mehanizam. Nakon 3 nesupjela pokušaja prijave, vrijeme čekanja za sljedeća 3 pokušaja povećava za minutu (npr. 3 neuspjela = 60s, 6 neuspjelih = 120s...). Važno je napomenuti da nema gornje granice za broj pokušaja. Kako bi se spriječilo rsetiranje vremena čekanja ako se korisnik ugasi aplikaciju ili računalo, vrijeme posljednjeg neuspjelog pokušaja prijave se sprema u bazu podataka i koristi se za izračun vremena čekanja prilikom svakog novog pokušaja prijave.
+
+\begin{figure}[h]
+
+\begin{subfigure}
+\includegraphics[width=0.5\linewidth, height=6cm]{slike/odbrojavanje_60.png} 
+\end{subfigure}
+\begin{subfigure}
+\includegraphics[width=0.5\linewidth, height=6cm]{slike/odbrojavanje_120.png}
+\end{subfigure}
+
+\caption{Primjer lockout mehanizma nakon 3 i 6 neuspjelih pokušaja prijave}
+\end{figure}
+
+Drugi mehanizam zaštite je automatska odjava iz sustava nakon određenog vremena neaktivnosti (15 minuta). Nakon isteka tog vremena, prikazuje se upozorenje o odjavi iz sustava od dodatnih 60 sekundi. Ako korisnik ne reagira u zadano vrijeme, sustav ga automatski odjavljuje.
+
+\begin{figure}[h]
+    
+\includegraphics[width=1\linewidth, height=6cm]{slike/automatska_odjava.png}
+\caption{Zaslon automatske odjave nakon neaktivnosti}
+\end{figure}
+
 \subsection{Generiranje javnog i privatnog ključa}
 
-Megi
+Nakon uspješne registracije, sustav generira par ključeva (javni i privatni) koristeći \textbf{RSA algoritam} s duljinom ključa od \textbf{4096 bita}. 
+Prije kriptiranja privatnog ključa generiraju se dva međuključa pomoću \textbf{PBKDF2 algoritma}. U prvoj iteraciji, generira se \textit{Master key} (dalje u teksu MK) sa velikim brojem iteracija (6000000) nakon kojega se generira \textit{Password Derived Key} (dalje u tekstu PDK) s manjim brojem iteracija (1) koji se koristi za kriptiranje privatnog ključa. PDK ključ se NE sprema u bazu nego ostaje samo u memoriji tijekom trajanja sesije.
+Privatni ključ se zatim kriptira \textbf{AES-256-GCM algoritmom} koristeći PDK generiran iz lozinke.
+Na kraju se  javni ključ, kriptirani privatni ključ i hash lozinke spremaju u bazu.
 
 \subsection{Procedura sigurnog zatvaranja aplikacije i oporavka od pogreške}
 
@@ -252,7 +303,23 @@ Sljedeća slika prikazuje zaslon nakon što je datoteka otključana:
 
 \section{Brisanje datoteke}
 
-Magdalena
+Pritiskom gumba za brisanje na odabranoj datoteci, poziva se funkcija koja prvo traži postoji li odabrana kriptirana datoteka na našem računalu. Ako postoji, datoteka se prvo otvara, prepisuje tako što se upišu nulti bajtovi preko cijele datoteke, zatim se zatvara i briše iz datotečnog sustava. Nakon brisanja datoteke na računalu, briše se i zapis o datoteci iz baze podataka. Sve ove radnje bilježe se u revizijski trag. 
+
+Implementirana je zaštita od pogrešnog prisanja datoteka tako što se pritiskom na gumb otvara dijalog prozor koji traži potvrdu brisanja datoteke. KAo potvrda za brisanje, korisnik mora unjeti naziv datoteke koju želi izbrisati. Ako uneseni naziv odgovara nazivu datoteke koja se briše, datoteka se briše, inače se ispisuje greška.
+
+\begin{figure}[h]
+
+\begin{subfigure}
+\includegraphics[width=0.5\linewidth, height=6cm]{slike/dijalog_brisanje_datoteke.png} 
+\end{subfigure}
+\begin{subfigure}
+\includegraphics[width=0.5\linewidth, height=6cm]{slike/dijalog_brisanje_greska.png}
+\end{subfigure}
+
+\caption{Zaslon za potvrdu brisanja datoteke i prikaz greške pri pogrešnom unosu}
+\end{figure}
+
+\pagebreak
 
 \section{Dijeljenje datoteke}
 
@@ -405,7 +472,11 @@ Aplikacija pri učitavanju revizijskog traga obavlja sljedeće:
 
 \chapter{Zaključak}
 
-Megi
+Digitalni sigurnosni trezori nisu uobičajeni sustavi za pohranu podataka. U njima datoteke nisu samo pohranjene, nego su i zaštićene mnoštvom složenih kriptografskih algoritama i sigurnosnim mehanizmima. Takvi sustavi su uglavnom implementirani pomoću Web tehnologija i nalaze se na internetu kako bi korisnicima omogućili kolaboraciju, dijelenje i pristup podacima s bilo koje lokacije. Mana takvih sustava je upravo to da su na mreži te su k puno više izloženi prijetnjama i napadima. Ovakvi trezori su već odavno u upotrebi u velikim organizacijama koje rukuju osjetljivim podacima kao što su financijski dokumenti, medicinski zapisi, pravni dokumenti itd. Dostupni su i komercijalno proizvodi za osobnu upotrebu iako su dosta skupi i ne baš toliko popularni kod običnih korisnika.
+
+S druge strane, postoje klijentski sigurnosni trezori tj. aplikacije koje se mogu instalirati na računalo i zaštititi datoteke korisnika. Takvi sustavi sigurniji su od mrežnih napada i prijetnji jer nemaju taj vektor napada. Takvi sustavi su dosta rijetki i nisu toliko razvijeni jer nema velikog broja korisnika za njim. Često takvi alati i nisu javno dostupni ili su pak razvijeni za interne potrebe velikih organizacija.
+
+U radu smo pokušali razviti jedan takav sustav koji bi zadovoljio potrebe malih korisnika. Najveća prednost ovog rada je taj što se datoteke u sustavu uništavaju i čiste tako da ako se i dođe do korisnikovog računala. datoteke neće biti dostupne. Poštovanjem standarda ISO 27001, pokušali smo dovesti sustav do visoke razine sigurnosti. Služio nam je kao vodič za implementaciju mehanizama unutar aplikacije. Bez njega, teško bi znali od kuda početi i što sve zapravo treba implementirati da bi sustav bio dovoljno siguran. Trenutna implementacija sadrži dosad najbolje kriprografske algoritme koji ne bi trebali biti probijeni neko duže vrijeme. Sigurnost sustava također ovisi i o korisniku koji ga koristi i o tome kako će on podesiti parametre svoje sigurnosne politike. Sustav nije savršen i uvjek postoji mogućnost poboljšanja, ali za sada je ovo odličan početak. 
 
 \makebackmatter
 
